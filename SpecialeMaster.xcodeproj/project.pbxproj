@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5BCAFD4F24F3FF7600F3DE2C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BCAFD4E24F3FF7600F3DE2C /* main.cpp */; };
+		5BCAFD5924F3FFF800F3DE2C /* RNG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BCAFD5724F3FFF800F3DE2C /* RNG.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		5BCAFD4B24F3FF7600F3DE2C /* SpecialeMaster */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SpecialeMaster; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BCAFD4E24F3FF7600F3DE2C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		5BCAFD5724F3FFF800F3DE2C /* RNG.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RNG.cpp; path = include/RNG.cpp; sourceTree = "<group>"; };
+		5BCAFD5824F3FFF800F3DE2C /* RNG.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RNG.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,9 +60,27 @@
 		5BCAFD4D24F3FF7600F3DE2C /* SpecialeMaster */ = {
 			isa = PBXGroup;
 			children = (
+				5BCAFD5624F3FFE200F3DE2C /* source */,
+				5BCAFD5524F3FFD800F3DE2C /* include */,
 				5BCAFD4E24F3FF7600F3DE2C /* main.cpp */,
 			);
 			path = SpecialeMaster;
+			sourceTree = "<group>";
+		};
+		5BCAFD5524F3FFD800F3DE2C /* include */ = {
+			isa = PBXGroup;
+			children = (
+				5BCAFD5824F3FFF800F3DE2C /* RNG.hpp */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		5BCAFD5624F3FFE200F3DE2C /* source */ = {
+			isa = PBXGroup;
+			children = (
+				5BCAFD5724F3FFF800F3DE2C /* RNG.cpp */,
+			);
+			name = source;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -120,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5BCAFD4F24F3FF7600F3DE2C /* main.cpp in Sources */,
+				5BCAFD5924F3FFF800F3DE2C /* RNG.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
