@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/Users/Martin/opt/anaconda3/bin/python",
+    "terminal.integrated.env.osx": {"PYTHONPATH": "${workspaceFolder}"},
+    "python.linting.pylintArgs": [
+        "--disable=F0401"
+    ] 
+}
