@@ -8,3 +8,4 @@ def monteCarloBS(spot, mat, strike, sigma, r, paths):
     movedSpot = spot * np.exp(r * mat - 0.5 * var)
     payoffSum = np.sum(np.maximum(movedSpot * np.exp(vol * np.random.standard_normal(paths)) - strike, 0))
     return np.exp(-r * mat) * payoffSum / paths
+

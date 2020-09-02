@@ -1,6 +1,8 @@
 {
-    "python.pythonPath": "/Users/Martin/opt/anaconda3/bin/python",
+    "python.pythonPath": "c:\\Python\\python.exe",
+    "python.envFile": "${workspaceFolder}/.env",
     "terminal.integrated.env.osx": {"PYTHONPATH": "${workspaceFolder}"},
+    "terminal.integrated.env.windows": {"PYTHONPATH": "${workspaceFolder}"},
     "python.linting.pylintArgs": [
         "--disable=F0401"
     ] 

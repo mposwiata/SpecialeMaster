@@ -1,9 +1,14 @@
 import numpy as np
 import time
 import itertools
+import sys
+import os
 from scipy.stats import norm
+sys.path.append(os.getcwd()) #added cause windows wont add to PYTHONPATH
+
 from Thesis.Functions import monte_carlo as mc
 from Thesis.Functions import mc_numba as mc_n
+
 
 t11 = time.time()
 for i in range(1, 100):
