@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "c:\\Python\\python.exe",
+    "python.pythonPath": "/Users/Martin/opt/anaconda3/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
     "terminal.integrated.env.osx": {"PYTHONPATH": "${workspaceFolder}"},
     "terminal.integrated.env.windows": {"PYTHONPATH": "${workspaceFolder}"},
