@@ -1,10 +1,10 @@
 import numpy as np
 
-def hagan_sigma_b(f0, alpha, beta, strike, nu, rho, mat):
+def hagan_sigma_b(mat, alpha, rho, nu, strike, f0 = 1, beta = 1):
     if (np.abs(f0 - strike) < 1e-12):
         strike = f0
     elif (strike < 1e-12):
-        strike = 0
+        return 0
     power2 = (1-beta)*(1-beta)
     if strike != f0:
         power = (1-beta)/2
