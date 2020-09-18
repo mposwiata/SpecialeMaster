@@ -24,7 +24,17 @@ def model_train(train_input, train_output, test_input, test_output,
     model.add(Activation('softplus')) # Rectified Linear Unit, f(x) = max(x,0)
     model.add(Dropout(0.1))
 
-    # Layer 2, output
+    # Layer 2
+    model.add(Dense(nodes))
+    model.add(Activation('softplus')) # Rectified Linear Unit, f(x) = max(x,0)
+    model.add(Dropout(0.1))
+
+    # Layer 3
+    model.add(Dense(nodes))
+    model.add(Activation('softplus')) # Rectified Linear Unit, f(x) = max(x,0)
+    model.add(Dropout(0.1))
+
+    # Layer 4, output
     model.add(Dense(1))
     model.add(Activation('elu'))
 
@@ -41,11 +51,11 @@ def model_train(train_input, train_output, test_input, test_output,
         optimizer = opt
     )
 
-    callbacks_list = [EarlyStopping(monitor='val_loss', patience=3)] #stop if cross validation fails to decrease over #patience epochs
+    callbacks_list = [EarlyStopping(monitor='val_loss', patience=15)] #stop if cross validation fails to decrease over #patience epochs
 
-    model.fit(train_input, train_output, epochs=30, batch_size=batch_size, validation_split=validation_split, verbose=0, callbacks=callbacks_list)
+    model.fit(train_input, train_output, epochs=30, batch_size=batch_size, validation_split=validation_split, verbose=1, callbacks=callbacks_list)
 
-    #model.save(file_name)
+    model.save(file_name)
 
     return model.evaluate(test_input, test_output, verbose = 2)
 

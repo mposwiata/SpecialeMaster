@@ -7,7 +7,7 @@ from Thesis.Functions import SABR_ANN as sa
 from Thesis.Functions import hagan
 
 # Maturity
-mat_1Y = np.linspace(start = 1/360, stop = 1, num = 100)
+mat_1Y = np.linspace(start = 0.5, stop = 2, num = 50)
 mat_2Y = mat_1Y + 1
 
 # Alpha, starting vol
@@ -38,7 +38,9 @@ for mat in mat_1Y[1:]:
     mat_input = np.array(list(itertools.product(alpha, rho, nu_dict[mat])))
     mat_input_array = np.repeat(mat, np.shape(mat_input)[0])
     input_array = np.vstack((input_array, np.column_stack((mat_input_array, mat_input))))
-empty_strike = np.empty([100000, 10])
+
+input_len = np.shape(input_array)[0]
+empty_strike = np.empty([input_len, 10])
 input_array = np.column_stack((input_array, empty_strike))
 i = 0
 for row in input_array:
@@ -56,8 +58,8 @@ for row in input_array:
         j += 1
     i += 1
 
-random_indices_train = np.random.choice(100000, size = 150000, replace = True) # extra 150k training
-random_indices_test = np.random.choice(100000, size = 50000, replace = True) # 50k random for test
+random_indices_train = np.random.choice(input_len, size = int(input_len * 1.5), replace = True) # extra 150k training
+random_indices_test = np.random.choice(input_len, size = int(input_len * 0.5), replace = True) # 50k random for test
 train_array = np.concatenate((input_array, input_array[random_indices_train, :]), 0)
 test_array = input_array[random_indices_test, :]
 train_output_array = np.concatenate((output_array, output_array[random_indices_train, :]), 0)

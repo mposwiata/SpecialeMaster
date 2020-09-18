@@ -17,20 +17,24 @@ data = np.array(list(itertools.product(spot, strike, mat, sigma)))
 
 output = np.empty([np.shape(data)[0],1])
 
-i = 0
-for row in data:
-    output[i] = bs.BlackScholesFormula(row[0], row[1], row[2], row[3], r)
-    i += 1
-
-
 random_indices_train = np.random.choice(20*20*20*15, size = 150000, replace = True) # extra 150k training
 random_indices_test = np.random.choice(20*20*20*15, size = 50000, replace = True) # 50k random for test
 train_array = np.concatenate((data, data[random_indices_train, :]), 0)
 test_array = data[random_indices_test, :]
-train_output_array = np.concatenate((output, output[random_indices_train, :]), 0)
-test_output_array = output[random_indices_test, :]
+train_output_array = np.empty([np.shape(train_array)[0], 1])
+test_output_array = np.empty([np.shape(test_array)[0], 1])
 
-np.savetxt("train_input_bs.csv", train_array, delimiter=",")
-np.savetxt("train_output_bs.csv", train_output_array, delimiter=",")
-np.savetxt("test_input_bs.csv", test_array, delimiter=",")
-np.savetxt("test_output_bs.csv", test_output_array, delimiter=",")
+i = 0
+for row in train_array:
+    train_output_array[i] = mcn.monteCarloBS(row[0], row[1], row[2], row[3], r, 50000)
+    i += 1
+
+i = 0
+for row in test_array:
+    test_output_array[i] = mcn.monteCarloBS(row[0], row[1], row[2], row[3], r, 50000)
+    i += 1
+
+np.savetxt("train_input_bs_sim.csv", train_array, delimiter=",")
+np.savetxt("train_output_bs_sim.csv", train_output_array, delimiter=",")
+np.savetxt("test_input_bs_sim.csv", test_array, delimiter=",")
+np.savetxt("test_output_bs_sim.csv", test_output_array, delimiter=",")

@@ -17,6 +17,8 @@ def BlackScholesFormula(spot, strike, mat, sigma, r, type = "call"):
     else:
        return norm.cdf(-d2)*strike*np.exp(-r*mat)-norm.cdf(-d1)*spot
 
+vBlackScholesFormula = np.vectorize(BlackScholesFormula)
+
 class BlackScholesClass:
     def __init__(self, spot, mat, strike, sigma, r):
         self.spot = spot

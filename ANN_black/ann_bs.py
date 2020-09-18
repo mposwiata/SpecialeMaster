@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-#import keras
 import tensorflow
 import matplotlib.pyplot as plt
 from multiprocess import Pool
@@ -12,11 +11,14 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.model_selection import train_test_split
 from keras.optimizers import schedules, Adam
 
-train_input = np.loadtxt("train_input_bs.csv", delimiter=",")
-train_output = np.loadtxt("train_output_bs.csv", delimiter=",")
-test_input = np.loadtxt("test_input_bs.csv", delimiter=",")
-test_output = np.loadtxt("test_output_bs.csv", delimiter=",")
+train_input = np.loadtxt("train_input_bs_sim.csv", delimiter=",")
+train_output = np.loadtxt("train_output_bs_sim.csv", delimiter=",")
+test_input = np.loadtxt("test_input_bs_sim.csv", delimiter=",")
+test_output = np.loadtxt("test_output_bs_sim.csv", delimiter=",")
 
+mbs.model_train(train_input, train_output, test_input, test_output, 1000, 100, 0.01, "bs_model.h5", 1000, 0.9, 0.1)
+
+"""
 pool = Pool(4)
 input_set = [
     [train_input, train_output, test_input, test_output, 1000, 128, 0.01, "test7.h5", 500, 0.9, 0.1],
@@ -26,6 +28,7 @@ input_set = [
 ]
 res = pool.starmap(mbs.model_train, input_set)
 print(res)
+"""
 
 
 """

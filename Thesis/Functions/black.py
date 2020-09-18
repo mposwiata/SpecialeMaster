@@ -3,6 +3,7 @@
 import numpy as np
 import timeit
 from scipy.stats import norm
+import sys
 
 def BlackPricer(f0, strike, mat, sigmaB):
     d1 = (np.log(f0/strike)+0.5*sigmaB*sigmaB*mat) / (sigmaB*np.sqrt(mat))
