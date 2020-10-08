@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense
 from keras.initializers import VarianceScaling
 
-def NNGenerator(nLayers : int, nNodes : int, inputDim : int) -> Sequential:
+def NNGenerator(nLayers : int, nNodes : int, inputDim : int, outputDim : int) -> Sequential:
     model = Sequential()
 
     # Layer 1, input
@@ -20,7 +20,7 @@ def NNGenerator(nLayers : int, nNodes : int, inputDim : int) -> Sequential:
             model.add(layer)
     
     # Output layer, price
-    priceLayer = Dense(1, kernel_initializer=VarianceScaling())
+    priceLayer = Dense(outputDim, kernel_initializer=VarianceScaling())
     
     model.add(priceLayer)
 
