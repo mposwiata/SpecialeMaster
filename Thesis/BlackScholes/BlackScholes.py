@@ -3,6 +3,7 @@ import time
 from scipy.stats import norm
 from Thesis.misc import VanillaOptions as vo
 from scipy.special import ndtr
+from scipy.optimize import root
 
 class BlackScholesForward:
     def __init__(self, forward : float, vol : float, rate : float):
@@ -20,16 +21,9 @@ class BlackScholesForward:
         d1 = (np.log(self.forward / option.strike) + 0.5 * self.vol * self.vol * option.tau) / (self.vol * np.sqrt(option.tau))
         return self.forward * norm._pdf(d1) * np.sqrt(option.tau)
 
-    def impVol(self, price, option : vo.VanillaOption):
-        precision = 10e-6
-        max_iter = 200
+    def impVol(self, price : float, option : vo.VanillaOption): 
+        def root_func(vol : float, price : float, option : vo.VanillaOption) -> float:
+            self.vol = vol
+            return self.BSFormula(option) - price
 
-        for i in range(max_iter):
-            BSPrice = self.BSFormula(option)
-            vega = self.BSVega(option)
-            diff = price - BSPrice
-            if (abs(diff) < precision):
-                return self.vol
-            self.vol = self.vol + diff / vega
-        
-        return self.vol
+        return root(root_func, 0.1, args = (price, option),tol=10e-6).x

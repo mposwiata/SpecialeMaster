@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from scipy.optimize import fminbound, brentq
 from scipy.integrate import quad
 
@@ -7,18 +8,15 @@ from Thesis.misc import VanillaOptions as vo
 from Thesis.Heston import HestonModel
 
 def alpha_min_func(alpha : float, model : HestonModel.HestonClass, option: vo.VanillaOption) -> (float, float):
-    omega = np.log(model.forward / option.strike)
-
-    return model.logCharFunc(alpha, option.tau) - np.log(alpha * (alpha + 1)) + alpha * omega
+    return model.logCharFunc(alpha, option.tau) - np.log(alpha * (alpha + 1)) + alpha * model.omega
 
 def optimal_alpha(model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
     epsilon = np.finfo(float).eps # used for open / closed intervals, as brentq uses closed intervals
-    omega = np.log(model.forward / option.strike)
     alpha_min, alpha_max = alpha_min_max(model, option)
 
-    if omega >= 0:
+    if model.omega >= 0:
         alpha, value = fminbound(alpha_min_func, x1 = alpha_min, x2 = -1 - epsilon, args = (model, option), full_output=True)[0:2]
-    elif omega < 0 and model.kappa - model.rho * model.epsilon > 0:
+    elif model.omega < 0 and model.kappa - model.rho * model.epsilon > 0:
         alpha, value = fminbound(alpha_min_func, x1 = epsilon, x2 = alpha_max, args = (model, option), full_output=True)[0:2]
     else:
         alpha, value = fminbound(alpha_min_func, x1 = epsilon, x2 = alpha_max, args = (model, option), full_output=True)[0:2]
@@ -81,28 +79,19 @@ def alpha_min_max(model : HestonModel.HestonClass, option : vo.VanillaOption) ->
     
     return k_min - 1, k_max - 1
 
-def phi_func(model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
-    omega = np.log(model.forward / option.strike)
-    r = model.rho - (model.epsilon * omega) / (model.vol + model.kappa * model.theta * option.tau)
-    if r * omega < 0:
-        return np.pi / 12 * np.sign(omega)
-    else:
-        return 0
-
 def Q_H(z, model : HestonModel.HestonClass, option : vo.VanillaOption) -> complex:
     return model.charFunc(z - 1J, option.tau) / (z * (z - 1J))
 
 def Andersen_Lake(model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
-    omega = np.log(model.forward / option.strike)
-    phi = phi_func(model, option)
+    # calculating andersen lake parameters
+    model.AndersenLakeParameters(option)
     alpha = optimal_alpha(model, option)
-
-    def integrand(x):
-        integrand = np.exp(-x * np.tan(phi) * omega + 1J * x * omega) * Q_H(-1J * alpha + x * (1 + 1J * np.tan(phi)), model, option) * (1 + 1J * np.tan(phi))
-        return integrand.real
     
-    integral = np.exp(alpha * omega) * quad(integrand, 0, np.inf, epsabs=10e-8, epsrel=10e-8, limit=10000)[0]
-
+    def integrand(x):
+        return (np.exp(-x * np.tan(model.phi) * model.omega + 1J * x * model.omega) * Q_H(-1J * alpha + x * (1 + 1J * np.tan(model.phi)), model, option) * (1 + 1J * np.tan(model.phi))).real
+    
+    integral = np.exp(alpha * model.omega) * quad(integrand, 0, np.inf)[0]
+    
     R = model.forward * (alpha <= 0) - option.strike * (alpha <= -1) - 0.5 * (model.forward * (alpha == 0) - option.strike * (alpha == -1))
 
     return np.exp(-model.rate * option.tau) * (R - model.forward / np.pi * integral)

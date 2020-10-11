@@ -13,7 +13,6 @@ from scipy.stats import norm
 from Thesis.Heston import helper
 from Thesis.BlackScholes import BlackScholes as bs
 from Thesis.misc import VanillaOptions as vo
-from Thesis.Heston import AndersenLake as al
 
 NUMPY_COMPLEX128_MAX = np.finfo(np.complex128).max
 NUMPY_LOG_COMPLEX128_MAX = np.log(NUMPY_COMPLEX128_MAX)
@@ -27,6 +26,8 @@ class HestonClass:
         self.epsilon = epsilon
         self.rho = rho
         self.rate = rate
+        self.omega = None
+        self.phi = None
 
     def charFunc(self, u : complex, tau : float) -> complex:
         beta = self.kappa - 1J * self.epsilon * self.rho * u
@@ -48,8 +49,10 @@ class HestonClass:
 
         B = u * (u + 1J) * y / (1 - r * y)
 
+        
         if A + B * self.vol > NUMPY_LOG_COMPLEX128_MAX:
             raise OverflowError("too large exponent in characteristic function")
+        
 
         return np.exp(A + B * self.vol)
 
@@ -84,6 +87,14 @@ class HestonClass:
             )
 
         return A + B * self.vol
+
+    def AndersenLakeParameters(self, option : vo.VanillaOption):
+        self.omega = np.log(self.forward / option.strike)
+        r = self.rho - (self.epsilon * self.omega) / (self.vol + self.kappa * self.theta * option.tau)
+        if r * self.omega < 0:
+            self.phi = np.pi / 12 * np.sign(self.omega)
+        else:
+            self.phi = 0 
     
     def impVol(self, price : float, option : vo.VanillaOption):
         tempBS = bs.BlackScholesForward(self.forward, self.vol, self.rate)
