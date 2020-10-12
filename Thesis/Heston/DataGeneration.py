@@ -65,7 +65,7 @@ for option in option_input:
 input1 = model_input
 start = time.time()
 # going parallel
-pool = Pool(2)
+pool = Pool(4)
 parallel_set = np.array_split(model_input, 4, axis=0)
 parallel_input = [
     [parallel_set[0], someOptionList],
@@ -77,8 +77,8 @@ res = pool.starmap(impVolGenerator, parallel_input)
 output1 = np.concatenate(res, axis = 0)
 stop = time.time()
 print("time: ", stop-start)
-np.savetxt("hestonGridInput.csv", input1, delimiter=",")
-np.savetxt("hestonGridOutput.csv", output1, delimiter=",")
+np.savetxt("Data/hestonGridInput.csv", input1, delimiter=",")
+np.savetxt("Data/hestonGridOutput.csv", output1, delimiter=",")
 
 # generating data for nn with all inputs and 1 output price
 total_comb = np.shape(model_input)[0] * np.shape(output1)[1]
@@ -91,8 +91,9 @@ for i in range(np.shape(model_input)[0]):
         input2[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
         input2[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
         output2[i*total_options+j] = output1[i, j]
-np.savetxt("hestonSingleInput.csv", input2, delimiter=",")
-np.savetxt("hestonSingleOutput.csv", output2, delimiter=",")
+np.savetxt("Data/hestonSingleInput.csv", input2, delimiter=",")
+np.savetxt("Data/hestonSingleOutput.csv", output2, delimiter=",")
+
 
 """
 # Data generation through parallel
