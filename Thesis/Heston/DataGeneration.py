@@ -1,9 +1,9 @@
 import numpy as np
 import itertools
 import time
+import sys
 import os
-# adding to PYTHONPATH
-os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.getcwd())
 from multiprocess import Pool, cpu_count
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm
