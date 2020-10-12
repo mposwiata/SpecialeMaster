@@ -10,7 +10,6 @@ import numpy as np
 from scipy.stats import norm
 
 # Own project
-from Thesis.Heston import helper
 from Thesis.BlackScholes import BlackScholes as bs
 from Thesis.misc import VanillaOptions as vo
 

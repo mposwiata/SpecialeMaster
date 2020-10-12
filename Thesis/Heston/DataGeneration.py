@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 import time
-from multiprocess import Pool
+from multiprocess import Pool, cpu_count
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm
 from Thesis.misc import VanillaOptions as vo
@@ -32,28 +32,28 @@ def impVolGenerator(inputArray : np.ndarray, optionList : np.array) -> np.ndarra
 forward = np.linspace(start = 75, stop = 125, num = 10)
 
 # vol
-vol = np.linspace(start = 0.01, stop = 0.1, num = 2)
+vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
 
 # kappa
-kappa = np.linspace(start = 0.1, stop = 2, num = 2)
+kappa = np.linspace(start = 0.1, stop = 2, num = 5)
 
 # theta
-theta = np.linspace(start = 0.01, stop = 0.1, num = 2)
+theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
 
 # epsilon
-epsilon = np.linspace(start = 0.1, stop = 2, num = 2)
+epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
 
 # rho
-rho = np.linspace(start = -0.99, stop = 0.99, num = 2)
+rho = np.linspace(start = -0.99, stop = 0.99, num = 10)
 
 # rate
-rate = np.linspace(start = 0, stop = 0.2, num = 2)
+rate = np.linspace(start = 0, stop = 0.2, num = 5)
 
 # Maturity
-maturity = np.linspace(start = 0.5, stop = 1, num = 2)
+maturity = np.linspace(start = 0.01, stop = 2, num = 5)
 
 # strike
-strike = np.linspace(start = 100, stop = 105, num = 2)
+strike = np.linspace(start = 75, stop = 125, num = 5)
 
 model_input = np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 option_input = np.array(list(itertools.product(maturity, strike))) # different option combinations
@@ -64,19 +64,24 @@ for option in option_input:
 # generating data for neural net with model as input and grid as output
 input1 = model_input
 start = time.time()
+
 # going parallel
-pool = Pool(4)
-parallel_set = np.array_split(model_input, 4, axis=0)
-parallel_input = [
-    [parallel_set[0], someOptionList],
-    [parallel_set[1], someOptionList],
-    [parallel_set[2], someOptionList],
-    [parallel_set[3], someOptionList]
-]
-res = pool.starmap(impVolGenerator, parallel_input)
+cpu_cores = cpu_count()
+parallel_set = np.array_split(model_input[0:64], cpu_cores, axis=0)
+parallel_list = []
+
+# generating list of datasets for parallel
+for i in range(cpu_cores):
+    parallel_list.append((parallel_set[i], someOptionList))
+
+# parallel
+pool = Pool(cpu_cores)
+res = pool.starmap(impVolGenerator, parallel_list)
 output1 = np.concatenate(res, axis = 0)
 stop = time.time()
 print("time: ", stop-start)
+
+# saving dataset1
 np.savetxt("Data/hestonGridInput.csv", input1, delimiter=",")
 np.savetxt("Data/hestonGridOutput.csv", output1, delimiter=",")
 
@@ -91,24 +96,7 @@ for i in range(np.shape(model_input)[0]):
         input2[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
         input2[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
         output2[i*total_options+j] = output1[i, j]
+
+# saving dataset2
 np.savetxt("Data/hestonSingleInput.csv", input2, delimiter=",")
 np.savetxt("Data/hestonSingleOutput.csv", output2, delimiter=",")
-
-
-"""
-# Data generation through parallel
-start = time.time()
-pool = Pool(2)
-parallel_set = np.array_split(model_input, 4, axis=0)
-parallel_input = [
-    [parallel_set[0], someOptionList],
-    [parallel_set[1], someOptionList],
-    [parallel_set[2], someOptionList],
-    [parallel_set[3], someOptionList]
-]
-res = pool.starmap(impVolGenerator, parallel_input)
-result = np.concatenate(res, axis = 0)
-print(np.shape(result))
-stop = time.time()
-print(stop-start)
-"""
