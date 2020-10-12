@@ -3,7 +3,7 @@ import itertools
 import time
 import sys
 import os
-sys.path.append(os.getcwd())
+sys.path.append(os.getcwd()) # added for calc server support
 from multiprocess import Pool, cpu_count
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm
@@ -70,7 +70,7 @@ start = time.time()
 
 # going parallel
 cpu_cores = cpu_count()
-parallel_set = np.array_split(model_input[0:64], cpu_cores, axis=0)
+parallel_set = np.array_split(model_input, cpu_cores, axis=0)
 parallel_list = []
 
 # generating list of datasets for parallel
