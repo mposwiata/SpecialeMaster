@@ -9,7 +9,7 @@ from multiprocess import Pool, cpu_count
 from Thesis.Heston import AndersenLake as al, HestonModel as hm
 from Thesis.misc import VanillaOptions as vo
 
-def calcImpVol(inputArray : np.array, optionList : np.array) -> np.ndarray:
+def calcImpVol(inputArray : np.array, optionList : np.array) -> np.array:
     someModel = hm.HestonClass(inputArray[0], inputArray[1], inputArray[2], inputArray[3], inputArray[4], inputArray[5], inputArray[6])
     outputLenght = np.shape(optionList)[0]
     output = np.empty(outputLenght, dtype=np.float64)
@@ -64,10 +64,12 @@ someOptionList = np.array([])
 for option in option_input:
     someOptionList = np.append(someOptionList, vo.EUCall(option[0], option[1]))
 
+
 # generating data for neural net with model as input and grid as output
 input1 = model_input
 start = time.time()
 
+"""
 # going parallel
 cpu_cores = cpu_count()
 parallel_set = np.array_split(model_input, cpu_cores, axis=0)
@@ -103,3 +105,4 @@ for i in range(np.shape(model_input)[0]):
 # saving dataset2
 np.savetxt("Data/hestonSingleInput.csv", input2, delimiter=",")
 np.savetxt("Data/hestonSingleOutput.csv", output2, delimiter=",")
+"""
