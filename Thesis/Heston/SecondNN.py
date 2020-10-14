@@ -21,6 +21,12 @@ def lr_schedule(n, alpha):
 
 input1 = np.loadtxt("Data/hestonSingleInput.csv", delimiter=",")
 output1 = np.loadtxt("Data/hestonSingleOutput.csv", delimiter=",")
+
+# filtering out 0 and 0.1 values
+filterArray = np.nonzero((output1 != 0) & (output1 != 0.1))
+input1 = input1[filterArray]
+output1 = output1[filterArray]
+
 output_data = np.reshape(output1, (-1, 1))
 
 X_train, X_test, y_train, y_test = train_test_split(input1, output_data, test_size=0.3, random_state=42)
@@ -45,7 +51,7 @@ model.compile(
 
 callbacks_list = [
     LearningRateScheduler(lr_schedule, verbose = 0),
-    EarlyStopping(monitor='val_loss', patience=25)
+    EarlyStopping(monitor='val_loss', patience=15)
 ]
 
 model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=1024, verbose = 2, callbacks = callbacks_list, validation_split = 0.1)
@@ -54,4 +60,4 @@ score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
 print(score)
 
-model.save("testHestonSingleModel.h5")
+model.save("Heston_imp_single_1.h5")
