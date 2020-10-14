@@ -39,7 +39,7 @@ Y_test_norm = norm_labels.transform(y_test)
 
 model = nng.NNGenerator(4, 1000, np.shape(input1)[1], np.shape(output1)[1])
 
-adam = Adam(lr = 0.01)
+adam = Adam(lr = 0.1)
 
 model.compile(
     loss = 'mean_squared_error', #mean squared error
