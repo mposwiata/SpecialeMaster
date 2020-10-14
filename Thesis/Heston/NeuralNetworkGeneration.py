@@ -28,7 +28,7 @@ output1 = np.loadtxt("Data/hestonPriceGridOutput.csv", delimiter=",")
 
 X_train, X_test, y_train, y_test = train_test_split(input1, output1, test_size=0.3, random_state=42)
 
-norm_features = MinMaxScaler(feature_range = (-1, 1)) #StandardScaler()
+norm_features = StandardScaler() # MinMaxScaler(feature_range = (-1, 1)) #
 norm_labels = StandardScaler()
 
 X_train_norm = norm_features.fit_transform(X_train)
@@ -48,10 +48,10 @@ model.compile(
 
 callbacks_list = [
     LearningRateScheduler(lr_schedule, verbose = 0),
-    EarlyStopping(monitor='val_loss', patience=5)
+    EarlyStopping(monitor='val_loss', patience=10)
 ]
 
-model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=512, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
  
 score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
