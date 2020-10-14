@@ -1,8 +1,9 @@
 import numpy as np
+import joblib
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from keras import backend as k
 
 from Thesis import NeuralNetworkGenerator as nng
@@ -60,4 +61,9 @@ score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
 print(score)
 
-model.save("Heston_imp_single_1.h5")
+# Saving model
+model.save("Models/HestonSinglePrice/Heston_imp_single_1.h5")
+
+# Saving normalization parameters
+joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features.pkl")
+joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels.pkl")
