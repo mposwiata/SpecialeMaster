@@ -58,8 +58,8 @@ score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 print(score)
 
 # Saving model
-model.save("Models/HestonGridPrice/Heston_price_grid_1.h5")
+model.save("Models/HestonGridPrice/Heston_price_grid_2.h5")
 
 # Saving normalization parameters
-joblib.dump(norm_features, "Models/HestonGridPrice/norm_features_1.pkl")
-joblib.dump(norm_labels, "Models/HestonGridPrice/norm_labels_1.pkl")
+joblib.dump(norm_features, "Models/HestonGridPrice/norm_features_2.pkl")
+joblib.dump(norm_labels, "Models/HestonGridPrice/norm_labels_2.pkl")
