@@ -79,7 +79,7 @@ for i in range(cpu_cores):
 
 # parallel
 pool = Pool(cpu_cores)
-res = pool.starmap(impVolGenerator, parallel_list)
+res = pool.starmap(priceGenerator, parallel_list)
 output1 = np.concatenate(res, axis = 0)
 stop = time.time()
 print("time: ", stop-start)
