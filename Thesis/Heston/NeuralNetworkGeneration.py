@@ -37,7 +37,7 @@ Y_train_norm = norm_labels.fit_transform(y_train)
 X_test_norm = norm_features.transform(X_test)
 Y_test_norm = norm_labels.transform(y_test)
 
-model = nng.NNGenerator(4, 1000, np.shape(input1)[1], np.shape(output1)[1])
+model = nng.NNGenerator(4, 100, np.shape(input1)[1], np.shape(output1)[1])
 
 adam = Adam(lr = 0.01)
 
@@ -48,11 +48,11 @@ model.compile(
 
 callbacks_list = [
     LearningRateScheduler(lr_schedule, verbose = 0),
-    EarlyStopping(monitor='val_loss', patience=25)
+    EarlyStopping(monitor='val_loss', patience=5)
 ]
 
-model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=1024, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
-
+model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=512, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+ 
 score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
 print(score)
