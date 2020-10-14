@@ -5,6 +5,9 @@ from keras.callbacks import LearningRateScheduler, EarlyStopping
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras import backend as k
 import joblib
+import sys
+import os
+sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis import NeuralNetworkGenerator as nng
 from sklearn.model_selection import train_test_split
