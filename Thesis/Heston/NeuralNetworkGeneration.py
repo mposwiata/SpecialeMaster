@@ -28,7 +28,7 @@ output1 = np.loadtxt("Data/hestonPriceGridOutput.csv", delimiter=",")
 
 X_train, X_test, y_train, y_test = train_test_split(input1, output1, test_size=0.3, random_state=42)
 
-norm_features = StandardScaler() #MinMaxScaler(feature_range = (-1, 1))
+norm_features = MinMaxScaler(feature_range = (-1, 1)) #StandardScaler()
 norm_labels = StandardScaler()
 
 X_train_norm = norm_features.fit_transform(X_train)
