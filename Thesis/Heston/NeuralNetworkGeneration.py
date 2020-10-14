@@ -4,6 +4,7 @@ from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras import backend as k
+import joblib
 
 from Thesis import NeuralNetworkGenerator as nng
 from sklearn.model_selection import train_test_split
@@ -19,8 +20,8 @@ def lr_schedule(n, alpha):
     else:
         return a
 
-input1 = np.loadtxt("Data/hestonGridInput.csv", delimiter=",")
-output1 = np.loadtxt("Data/hestonGridOutput.csv", delimiter=",")
+input1 = np.loadtxt("Data/hestonPriceGridInput.csv", delimiter=",")
+output1 = np.loadtxt("Data/hestonPriceGridOutput.csv", delimiter=",")
 
 X_train, X_test, y_train, y_test = train_test_split(input1, output1, test_size=0.3, random_state=42)
 
@@ -53,4 +54,9 @@ score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
 print(score)
 
-model.save("testHestonModel.h5")
+# Saving model
+model.save("Models/HestonGridPrice/Heston_price_grid_1.h5")
+
+# Saving normalization parameters
+joblib.dump(norm_features, "Models/HestonGridPrice/norm_features_1.pkl")
+joblib.dump(norm_labels, "Models/HestonGridPrice/norm_labels_1.pkl")
