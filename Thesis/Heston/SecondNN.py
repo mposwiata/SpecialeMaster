@@ -64,9 +64,16 @@ score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
 
 print(score)
 
+no = 0
+for i in range(1, 100):
+    saveString = "Models/HestonSinglePrice/Heston_imp_single_"+str(i)+".h5"
+    no = i
+    if os.path.isfile(saveString) == False:
+        break
+
 # Saving model
-model.save("Models/HestonSinglePrice/Heston_imp_single_1.h5")
+model.save("Models/HestonSinglePrice/Heston_imp_single_"+str(no)+".h5")
 
 # Saving normalization parameters
-joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features.pkl")
-joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels.pkl")
+joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features_"+str(no)+".pkl")
+joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels_"+str(no)+".pkl")
