@@ -1,5 +1,6 @@
 import numpy as np
 import joblib
+import itertools
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
@@ -23,17 +24,62 @@ def lr_schedule(n, alpha):
     else:
         return a
 
-input1 = np.loadtxt("Data/hestonSingleInput.csv", delimiter=",")
-output1 = np.loadtxt("Data/hestonSingleOutput.csv", delimiter=",")
+# For option input
+# Forward
+forward = np.linspace(start = 75, stop = 125, num = 10)
 
-# filtering out 0 and 0.1 values
-filterArray = np.nonzero((output1 != 0) & (output1 != 0.1))
-input1 = input1[filterArray]
-output1 = output1[filterArray]
+# vol
+vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
 
-output_data = np.reshape(output1, (-1, 1))
+# kappa
+kappa = np.linspace(start = 0.1, stop = 2, num = 5)
 
-X_train, X_test, y_train, y_test = train_test_split(input1, output_data, test_size=0.3, random_state=42)
+# theta
+theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
+
+# epsilon
+epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
+
+# rho
+rho = np.linspace(start = -0.99, stop = 0.99, num = 10)
+
+# rate
+rate = np.linspace(start = 0, stop = 0.2, num = 5)
+
+# Maturity
+maturity = np.linspace(start = 0.01, stop = 2, num = 5)
+
+# strike
+strike = np.linspace(start = 75, stop = 125, num = 5)
+
+model_input = np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
+option_input = np.array(list(itertools.product(maturity, strike))) # different option combinations
+
+output1 = np.loadtxt("Data/hestonPriceGridOutput.csv", delimiter=",")
+# generating data for nn with all inputs and 1 output price
+total_comb = np.shape(model_input)[0] * np.shape(output1)[1]
+total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
+total_options = np.shape(option_input)[0]
+input2 = np.empty((total_comb, total_cols))
+output2 = np.empty((total_comb, 1))
+for i in range(np.shape(model_input)[0]):
+    for j in range(total_options):
+        input2[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
+        input2[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
+        output2[i*total_options+j] = output1[i, j]
+
+# filtering out 0 values
+output2 = output2.flatten()
+filterArray = np.nonzero((output2 != 0))
+print(np.shape(input2))
+input2 = input2[filterArray]
+print(np.shape(input2))
+output2 = output2[filterArray]
+print(np.shape(output2))
+
+output_data = np.reshape(output2, (-1, 1))
+
+X_train, X_test, y_train, y_test = train_test_split(input2, output_data, test_size=0.3, random_state=42)
 
 norm_features = StandardScaler() #MinMaxScaler(feature_range = (-1, 1))
 norm_labels = StandardScaler()
@@ -44,7 +90,7 @@ Y_train_norm = norm_labels.fit_transform(y_train)
 X_test_norm = norm_features.transform(X_test)
 Y_test_norm = norm_labels.transform(y_test)
 
-model = nng.NNGenerator(4, 1000, np.shape(input1)[1], np.shape(output_data)[1])
+model = nng.NNGenerator(4, 1000, np.shape(input2)[1], np.shape(output_data)[1])
 
 adam = Adam(lr = 0.1)
 
@@ -66,14 +112,14 @@ print(score)
 
 no = 0
 for i in range(1, 100):
-    saveString = "Models/HestonSinglePrice/Heston_imp_single_"+str(i)+".h5"
+    saveString = "Models/HestonSinglePrice/Heston_price_single_"+str(i)+".h5"
     no = i
     if os.path.isfile(saveString) == False:
         break
 
 # Saving model
-model.save("Models/HestonSinglePrice/Heston_imp_single_"+str(no)+".h5")
+model.save("Models/HestonSinglePrice/Heston_price_single_"+str(no)+".h5")
 
 # Saving normalization parameters
-joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features_"+str(no)+".pkl")
-joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels_"+str(no)+".pkl")
+joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features_price_"+str(no)+".pkl")
+joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels_price_"+str(no)+".pkl")

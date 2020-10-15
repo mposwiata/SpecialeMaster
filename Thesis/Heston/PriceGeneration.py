@@ -31,6 +31,7 @@ def priceGenerator(inputArray : np.ndarray, optionList : np.array) -> np.ndarray
     
     return output_matrix
 
+"""
 # Forward
 forward = np.linspace(start = 75, stop = 125, num = 10)
 
@@ -87,6 +88,8 @@ print("time: ", stop-start)
 # saving dataset1
 np.savetxt("Data/hestonPriceGridInput.csv", input1, delimiter=",")
 np.savetxt("Data/hestonPriceGridOutput.csv", output1, delimiter=",")
+
+"""
 
 """
 # generating data for nn with all inputs and 1 output price
