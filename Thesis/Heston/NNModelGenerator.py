@@ -23,7 +23,7 @@ def lr_schedule(n, alpha):
     else:
         return a
 
-def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nNeurons : int, modelname : str):
+def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nNeurons : int, modelname : str) -> float:
     X_train, X_test, y_train, y_test = train_test_split(inputArray, outputArray, test_size=0.3, random_state=42)
 
     norm_features = StandardScaler() # MinMaxScaler(feature_range = (-1, 1))
@@ -54,6 +54,7 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     score = model.evaluate(X_test_norm, Y_test_norm, verbose=2)
     print(modelname+" has a testscore of: "+str(score))
 
+    # checking file name
     no = 0
     for i in range(1,100):
         saveString = "Models/Heston/"+modelname+"_"+str(i)+".h5"
@@ -68,5 +69,9 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     joblib.dump(norm_features, "Models/Heston/"+modelname+"_norm_features_"+str(no)+".pkl")
     joblib.dump(norm_labels, "Models/Heston/"+modelname+"_norm_labels_"+str(no)+".pkl")
 
-    with open("Models/Heston/HestonModels.txt", "w") as output_file:
+    # Appending test score to file
+    with open("Models/Heston/HestonModels.txt", "a") as output_file:
+        output_file.write("\n")
         output_file.write(modelname+" has a score of: "+str(score))
+
+    return score

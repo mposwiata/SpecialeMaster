@@ -68,8 +68,6 @@ def optionInputGenerator() -> np.ndarray:
 
     return np.array(list(itertools.product(maturity, strike)))
 
-
-
 if __name__ == "__main__":
     model_input = modelInputGenerator()
 

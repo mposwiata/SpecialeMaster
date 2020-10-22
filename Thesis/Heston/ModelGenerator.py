@@ -58,6 +58,33 @@ singleImpVol_output = np.reshape(singleImpVol_output, (-1, 1))
 filteredPriceSingle = np.reshape(filteredPriceSingle, (-1, 1))
 filteredImpVolSingle = np.reshape(filteredImpVolSingle, (-1, 1))
 
+cpu_cores = cpu_count()
+parallel_list = [
+    [model_input, gridPriceOutput, 4, 100, "HestonGridPriceAll_100"],
+    [model_input, gridPriceOutput, 4, 1000, "HestonGridPriceAll_1000"],
+    [model_input, gridImpVolOutput, 4, 100, "HestonGridImpVolAll_100"],
+    [model_input, gridImpVolOutput, 4, 1000, "HestonGridImpVolAll_100"],
+    [filteredGridModelPrice, filteredGridPrice, 4, 100, "HestonGridPriceFilter_100"],
+    [filteredGridModelPrice, filteredGridPrice, 4, 1000, "HestonGridPriceFilter_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 100, "HestonGridImpVolFilter_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 1000, "HestonGridImpVolFilter_1000"],
+    [singleInput, gridPriceOutput, 4, 100, "HestonSinglePriceAll_100"],
+    [singleInput, gridPriceOutput, 4, 1000, "HestonSinglePriceAll_1000"],
+    [singleInput, gridImpVolOutput, 4, 100, "HestonSingleImpVolAll_100"],
+    [singleInput, gridImpVolOutput, 4, 1000, "HestonSingleImpVolAll_100"],
+    [filteredSingleModelPrice, filteredGridPrice, 4, 100, "HestonSinglePriceFilter_100"],
+    [filteredSingleModelPrice, filteredGridPrice, 4, 1000, "HestonSinglePriceFilter_1000"],
+    [filteredSingleModelImpVol, filteredGridImpVol, 4, 100, "HestonSingleImpVolFilter_100"],
+    [filteredSingleModelImpVol, filteredGridImpVol, 4, 1000, "HestonSingleImpVolFilter_1000"]
+]
+
+# parallel
+pool = Pool(cpu_cores)
+res = pool.starmap(mg.NNModel, parallel_list)
+print(res)
+
+
+"""
 processes = [
     Process(target = mg.NNModel, args=(model_input, gridPriceOutput, 4, 100, "HestonGridPriceAll_100")),
     Process(target = mg.NNModel, args=(model_input, gridPriceOutput, 4, 1000, "HestonGridPriceAll_1000")),
@@ -77,8 +104,12 @@ processes = [
     Process(target = mg.NNModel, args=(filteredSingleModelImpVol, filteredGridImpVol, 4, 1000, "HestonSingleImpVolFilter_1000"))
 ]
 
-for process in processes:
-    process.start()
+for p in processes:
+    p.start()
+
+results = [output.get() for p in p in processes]
 
 for process in processes:
         process.join()
+
+"""
