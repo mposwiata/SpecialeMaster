@@ -5,13 +5,14 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 from keras import backend as k
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis import NeuralNetworkGenerator as nng
-from sklearn.model_selection import train_test_split
+from Thesis.Heston import DataGeneration as dg
 
 def lr_schedule(n, alpha):
     a, b = 1e-4, 1e-2
@@ -24,36 +25,54 @@ def lr_schedule(n, alpha):
     else:
         return a
 
-# For option input
-# Forward
-forward = np.linspace(start = 75, stop = 125, num = 10)
+def singleNN(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nNeurons : int, modelname : str):
+    X_train, X_test, y_train, y_test = train_test_split(input2, output_data, test_size=0.3, random_state=42)
 
-# vol
-vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
+    norm_features = StandardScaler() #MinMaxScaler(feature_range = (-1, 1))
+    norm_labels = StandardScaler()
 
-# kappa
-kappa = np.linspace(start = 0.1, stop = 2, num = 5)
+    X_train_norm = norm_features.fit_transform(X_train)
+    Y_train_norm = norm_labels.fit_transform(y_train)
 
-# theta
-theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
+    X_test_norm = norm_features.transform(X_test)
+    Y_test_norm = norm_labels.transform(y_test)
 
-# epsilon
-epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
+    model = nng.NNGenerator(4, 1000, np.shape(input2)[1], np.shape(output_data)[1])
 
-# rho
-rho = np.linspace(start = -0.99, stop = 0.99, num = 10)
+    adam = Adam(lr = 0.01)
 
-# rate
-rate = np.linspace(start = 0, stop = 0.2, num = 5)
+    model.compile(
+        loss = 'mean_squared_error', #mean squared error
+        optimizer = adam
+        )
 
-# Maturity
-maturity = np.linspace(start = 0.01, stop = 2, num = 5)
+    callbacks_list = [
+        LearningRateScheduler(lr_schedule, verbose = 0),
+        EarlyStopping(monitor='val_loss', patience=15)
+    ]
 
-# strike
-strike = np.linspace(start = 75, stop = 125, num = 5)
+    model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=1024, verbose = 2, callbacks = callbacks_list, validation_split = 0.1)
 
-model_input = np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
-option_input = np.array(list(itertools.product(maturity, strike))) # different option combinations
+    score=model.evaluate(X_test_norm, Y_test_norm, verbose=2)
+
+    print(score)
+
+    no = 0
+    for i in range(1, 100):
+        saveString = "Models/HestonSinglePrice/Heston_price_single_"+str(i)+".h5"
+        no = i
+        if os.path.isfile(saveString) == False:
+            break
+
+    # Saving model
+    model.save("Models/HestonSinglePrice/Heston_price_single_"+str(no)+".h5")
+
+    # Saving normalization parameters
+    joblib.dump(norm_features, "Models/HestonSinglePrice/norm_features_price_"+str(no)+".pkl")
+    joblib.dump(norm_labels, "Models/HestonSinglePrice/norm_labels_price_"+str(no)+".pkl")
+
+model_input = dg.modelInputGenerator
+option_input = dg.optionInputGenerator
 
 output1 = np.loadtxt("Data/hestonPriceGridOutput.csv", delimiter=",")
 # generating data for nn with all inputs and 1 output price

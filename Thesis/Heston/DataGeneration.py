@@ -35,7 +35,7 @@ def impVolGenerator(inputArray : np.ndarray, optionList : np.array) -> (np.ndarr
     
     return output_price_matrix, output_impVol_matrix
 
-if __name__ == "__main__":
+def modelInputGenerator() -> np.ndarray:
     # Forward
     forward = np.linspace(start = 75, stop = 125, num = 10)
 
@@ -57,14 +57,23 @@ if __name__ == "__main__":
     # rate
     rate = np.linspace(start = 0, stop = 0.2, num = 5)
 
+    return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
+
+def optionInputGenerator() -> np.ndarray:
     # Maturity
     maturity = np.linspace(start = 0.01, stop = 2, num = 5)
 
     # strike
     strike = np.linspace(start = 75, stop = 125, num = 5)
 
-    model_input = np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
-    option_input = np.array(list(itertools.product(maturity, strike))) # different option combinations
+    return np.array(list(itertools.product(maturity, strike)))
+
+
+
+if __name__ == "__main__":
+    model_input = modelInputGenerator()
+
+    option_input = optionInputGenerator() # different option combinations
     someOptionList = np.array([])
     for option in option_input:
         someOptionList = np.append(someOptionList, vo.EUCall(option[0], option[1]))
@@ -93,8 +102,9 @@ if __name__ == "__main__":
     np.savetxt("Data/hestonGridPrice.csv", price_output, delimiter=",")
     np.savetxt("Data/hestonGridImpVol.csv", impVol_output, delimiter=",")
 
+    """
     # Generating single outputs
-    total_comb = np.shape(model_input)[0] * np.shape(price_output)[1]
+    total_comb = np.shape(model_input)[0] * np.shape(option_input)[0]
     total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
     total_options = np.shape(option_input)[0]
     singleInput = np.empty((total_comb, total_cols))
@@ -111,3 +121,4 @@ if __name__ == "__main__":
     np.savetxt("Data/hestonSingleInput.csv", singleInput, delimiter=",")
     np.savetxt("Data/hestonSinglePrice.csv", singlePrice_output, delimiter=",")
     np.savetxt("Data/hestonSingleImpVol.csv", impVol_output, delimiter=",")
+    """
