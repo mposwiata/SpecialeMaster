@@ -69,4 +69,4 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     joblib.dump(norm_labels, "Models/Heston/"+modelname+"_norm_labels_"+str(no)+".pkl")
 
     with open("Model/Heston/HestonModels.txt", "w") as output_file:
-        output_file.write(modelname+" has a score of: "+str(score)))
+        output_file.write(modelname+" has a score of: "+str(score))
