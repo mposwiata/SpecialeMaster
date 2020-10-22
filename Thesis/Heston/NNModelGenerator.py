@@ -46,7 +46,7 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
 
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
-        EarlyStopping(monitor='val_loss', patience=10)
+        EarlyStopping(monitor='val_loss', patience=15)
     ]
 
     model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
@@ -68,5 +68,5 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     joblib.dump(norm_features, "Models/Heston/"+modelname+"_norm_features_"+str(no)+".pkl")
     joblib.dump(norm_labels, "Models/Heston/"+modelname+"_norm_labels_"+str(no)+".pkl")
 
-    with open("Model/Heston/HestonModels.txt", "w") as output_file:
+    with open("Models/Heston/HestonModels.txt", "w") as output_file:
         output_file.write(modelname+" has a score of: "+str(score))
