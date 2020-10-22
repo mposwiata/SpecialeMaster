@@ -56,13 +56,13 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
 
     no = 0
     for i in range(1,100):
-        saveString = "Models/HestonGrid/"+modelname+"_"+str(i)+".h5"
+        saveString = "Models/"+modelname+"_"+str(i)+".h5"
         no = i
         if os.path.isfile(saveString) == False:
             break
 
     # Saving model
-    model.save("Models/HestonGrid/"+modelname+"_"+str(no)+".h5")
+    model.save("Models/"+modelname+"_"+str(no)+".h5")
 
     # Saving normalization parameters
     joblib.dump(norm_features, "Models/Heston/"+modelname+"_norm_features_"+str(no)+".pkl")
