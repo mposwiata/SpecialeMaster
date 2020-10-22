@@ -56,14 +56,17 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
 
     no = 0
     for i in range(1,100):
-        saveString = "Models/"+modelname+"_"+str(i)+".h5"
+        saveString = "Models/Heston/"+modelname+"_"+str(i)+".h5"
         no = i
         if os.path.isfile(saveString) == False:
             break
 
     # Saving model
-    model.save("Models/"+modelname+"_"+str(no)+".h5")
+    model.save("Models/Heston/"+modelname+"_"+str(no)+".h5")
 
     # Saving normalization parameters
     joblib.dump(norm_features, "Models/Heston/"+modelname+"_norm_features_"+str(no)+".pkl")
     joblib.dump(norm_labels, "Models/Heston/"+modelname+"_norm_labels_"+str(no)+".pkl")
+
+    with open("Model/Heston/HestonModels.txt", "w") as output_file:
+        output_file.write(modelname+" has a score of: "+str(score)))
