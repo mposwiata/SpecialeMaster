@@ -26,4 +26,4 @@ class BlackScholesForward:
             self.vol = vol
             return self.BSFormula(option) - price
 
-        return root(root_func, 0.1, args = (price, option),tol=10e-6).x
+        return root(root_func, 1, args = (price, option),tol=10e-6).x

@@ -52,7 +52,7 @@ for option in option_input:
 test1Data = np.array((forward, vol, kappa, theta, epsilon, rho, rate))
 test1Data = np.reshape(test1Data, (1, 7))
 
-# Model test for multiple outputs
+# Model test for single outputs
 testLength = np.shape(option_input)[0]
 predictions_single = np.empty(testLength)
 for i in range(testLength):
