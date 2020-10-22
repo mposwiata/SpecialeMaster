@@ -52,7 +52,7 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     
     score = model.evaluate(X_test_norm, Y_test_norm, verbose=2)
-    print(modelname+" has a testscore of: "+score)
+    print(modelname+" has a testscore of: "+str(score))
 
     no = 0
     for i in range(1,100):

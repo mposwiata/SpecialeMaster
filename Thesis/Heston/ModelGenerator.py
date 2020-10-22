@@ -78,7 +78,6 @@ processes = [
 ]
 
 for process in processes:
-    print("Starting process")
     process.start()
 
 for process in processes:
