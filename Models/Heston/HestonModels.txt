@@ -15,3 +15,5 @@ HestonSinglePriceFilter_1000 has a score of: 1.001872181892395
 HestonSingleImpVolAll_100 has a score of: 21.328067779541016
 HestonSinglePriceAll_1000 has a score of: 0.9988278150558472
 HestonSingleImpVolFilter_1000 has a score of: 3.7722045931332104e-07
+
+New day:

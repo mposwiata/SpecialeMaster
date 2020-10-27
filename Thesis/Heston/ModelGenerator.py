@@ -35,7 +35,7 @@ for i in range(np.shape(model_input)[0]):
         singleImpVol_output[i*total_options+j] = gridImpVolOutput[i, j]
 
 singlePrice_output = singlePrice_output.flatten()
-singleImpVol_output = singlePrice_output.flatten()
+singleImpVol_output = singleImpVol_output.flatten()
 
 # Grid filtering, rows with 0 in
 filterPriceGrid = np.all(gridPriceOutput != 0, axis = 1)
@@ -50,7 +50,7 @@ filteredGridImpVol = gridImpVolOutput[filterImpVolGrid, :]
 filteredPriceSingle = singlePrice_output[singlePrice_output != 0]
 filteredSingleModelPrice = singleInput[singlePrice_output != 0]
 filteredImpVolSingle = singleImpVol_output[singleImpVol_output != 0]
-filteredSingleModelImpVol = singleInput[singlePrice_output != 0]
+filteredSingleModelImpVol = singleInput[singleImpVol_output != 0]
 
 # shaping for NN's
 singlePrice_output = np.reshape(singlePrice_output, (-1, 1))
@@ -60,18 +60,18 @@ filteredImpVolSingle = np.reshape(filteredImpVolSingle, (-1, 1))
 
 cpu_cores = cpu_count()
 parallel_list = [
-    #[model_input, gridPriceOutput, 4, 100, "HestonGridPriceAll_100"],
-    #[model_input, gridPriceOutput, 4, 1000, "HestonGridPriceAll_1000"],
-    #[model_input, gridImpVolOutput, 4, 100, "HestonGridImpVolAll_100"],
-    #[model_input, gridImpVolOutput, 4, 1000, "HestonGridImpVolAll_100"],
-    #[filteredGridModelPrice, filteredGridPrice, 4, 100, "HestonGridPriceFilter_100"],
-    #[filteredGridModelPrice, filteredGridPrice, 4, 1000, "HestonGridPriceFilter_1000"],
-    #[filteredGridModelImpVol, filteredGridImpVol, 4, 100, "HestonGridImpVolFilter_100"],
-    #[filteredGridModelImpVol, filteredGridImpVol, 4, 1000, "HestonGridImpVolFilter_1000"],
+    [model_input, gridPriceOutput, 4, 100, "HestonGridPriceAll_100"],
+    [model_input, gridPriceOutput, 4, 1000, "HestonGridPriceAll_1000"],
+    [model_input, gridImpVolOutput, 4, 100, "HestonGridImpVolAll_100"],
+    [model_input, gridImpVolOutput, 4, 1000, "HestonGridImpVolAll_1000"],
+    [filteredGridModelPrice, filteredGridPrice, 4, 100, "HestonGridPriceFilter_100"],
+    [filteredGridModelPrice, filteredGridPrice, 4, 1000, "HestonGridPriceFilter_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 100, "HestonGridImpVolFilter_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 1000, "HestonGridImpVolFilter_1000"],
     [singleInput, singlePrice_output, 4, 100, "HestonSinglePriceAll_100"],
     [singleInput, singlePrice_output, 4, 1000, "HestonSinglePriceAll_1000"],
     [singleInput, singleImpVol_output, 4, 100, "HestonSingleImpVolAll_100"],
-    [singleInput, singleImpVol_output, 4, 1000, "HestonSingleImpVolAll_100"],
+    [singleInput, singleImpVol_output, 4, 1000, "HestonSingleImpVolAll_1000"],
     [filteredSingleModelPrice, filteredPriceSingle, 4, 100, "HestonSinglePriceFilter_100"],
     [filteredSingleModelPrice, filteredPriceSingle, 4, 1000, "HestonSinglePriceFilter_1000"],
     [filteredSingleModelImpVol, filteredImpVolSingle, 4, 100, "HestonSingleImpVolFilter_100"],
@@ -82,7 +82,6 @@ parallel_list = [
 pool = Pool(cpu_cores)
 res = pool.starmap(mg.NNModel, parallel_list)
 print(res)
-
 
 """
 processes = [
