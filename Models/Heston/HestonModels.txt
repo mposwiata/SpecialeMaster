@@ -1,19 +1,2 @@
 Model scores:
-HestonGridPriceFilter_100 has a score of: 7.463042948074872e-06
-HestonGridImpVolFilter_100 has a score of: 0.0001237665710505098
-HestonGridImpVolAll_100 has a score of: 0.0021771322935819626
-HestonGridPriceAll_100 has a score of: 0.0019194727065041661
-HestonGridPriceFilter_1000 has a score of: 1.0022296905517578
-HestonGridImpVolAll_100 has a score of: 0.03253204748034477
-HestonGridImpVolFilter_1000 has a score of: 0.002742935437709093
-HestonGridPriceAll_1000 has a score of: 0.009458771906793118
-HestonSingleImpVolAll_100 has a score of: 0.005975019186735153
-HestonSinglePriceAll_100 has a score of: 0.3842802941799164
-HestonSinglePriceFilter_100 has a score of: 0.0001298935094382614
-HestonSingleImpVolFilter_100 has a score of: 6.210931928762875e-07
-HestonSinglePriceFilter_1000 has a score of: 1.001872181892395
-HestonSingleImpVolAll_100 has a score of: 21.328067779541016
-HestonSinglePriceAll_1000 has a score of: 0.9988278150558472
-HestonSingleImpVolFilter_1000 has a score of: 3.7722045931332104e-07
 
-New day:

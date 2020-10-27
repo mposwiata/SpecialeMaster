@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
@@ -49,10 +50,11 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
         EarlyStopping(monitor='val_loss', patience=15)
     ]
 
+    start_time = time.time()
     model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
-    
+    stop_time = time.time()
+
     score = model.evaluate(X_test_norm, Y_test_norm, verbose=2)
-    print(modelname+" has a testscore of: "+str(score))
 
     # checking file name
     no = 0
@@ -72,6 +74,6 @@ def NNModel(inputArray : np.ndarray, outputArray : np.ndarray, nLayers : int, nN
     # Appending test score to file
     with open("Models/Heston/HestonModels.txt", "a") as output_file:
         output_file.write("\n")
-        output_file.write(modelname+" has a score of: "+str(score))
+        output_file.write(modelname+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
 
     return score
