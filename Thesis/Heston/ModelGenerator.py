@@ -21,6 +21,7 @@ option_input = dg.optionInputGenerator()
 gridPriceOutput = np.loadtxt("Data/hestonGridPrice.csv", delimiter = ",")
 gridImpVolOutput = np.loadtxt("Data/hestonGridImpVol.csv", delimiter = ",")
 
+"""
 total_comb = np.shape(model_input)[0] * np.shape(option_input)[0]
 total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
 total_options = np.shape(option_input)[0]
@@ -36,6 +37,7 @@ for i in range(np.shape(model_input)[0]):
 
 singlePrice_output = singlePrice_output.flatten()
 singleImpVol_output = singleImpVol_output.flatten()
+"""
 
 # Grid filtering, rows with 0 in
 filterPriceGrid = np.all(gridPriceOutput != 0, axis = 1)
@@ -46,6 +48,7 @@ filterImpVolGrid = np.all(gridImpVolOutput != 0, axis = 1)
 filteredGridModelImpVol = model_input[filterImpVolGrid, :]
 filteredGridImpVol = gridImpVolOutput[filterImpVolGrid, :]
 
+"""
 # Single filtering
 filteredPriceSingle = singlePrice_output[singlePrice_output != 0]
 filteredSingleModelPrice = singleInput[singlePrice_output != 0]
@@ -57,25 +60,42 @@ singlePrice_output = np.reshape(singlePrice_output, (-1, 1))
 singleImpVol_output = np.reshape(singleImpVol_output, (-1, 1))
 filteredPriceSingle = np.reshape(filteredPriceSingle, (-1, 1))
 filteredImpVolSingle = np.reshape(filteredImpVolSingle, (-1, 1))
+"""
 
 cpu_cores = cpu_count()
 parallel_list = [
-    [model_input, gridPriceOutput, 4, 100, "HestonGridPriceAll_100"],
-    [model_input, gridPriceOutput, 4, 1000, "HestonGridPriceAll_1000"],
-    [model_input, gridImpVolOutput, 4, 100, "HestonGridImpVolAll_100"],
-    [model_input, gridImpVolOutput, 4, 1000, "HestonGridImpVolAll_1000"],
-    [filteredGridModelPrice, filteredGridPrice, 4, 100, "HestonGridPriceFilter_100"],
-    [filteredGridModelPrice, filteredGridPrice, 4, 1000, "HestonGridPriceFilter_1000"],
-    [filteredGridModelImpVol, filteredGridImpVol, 4, 100, "HestonGridImpVolFilter_100"],
-    [filteredGridModelImpVol, filteredGridImpVol, 4, 1000, "HestonGridImpVolFilter_1000"],
-    [singleInput, singlePrice_output, 4, 100, "HestonSinglePriceAll_100"],
-    [singleInput, singlePrice_output, 4, 1000, "HestonSinglePriceAll_1000"],
-    [singleInput, singleImpVol_output, 4, 100, "HestonSingleImpVolAll_100"],
-    [singleInput, singleImpVol_output, 4, 1000, "HestonSingleImpVolAll_1000"],
-    [filteredSingleModelPrice, filteredPriceSingle, 4, 100, "HestonSinglePriceFilter_100"],
-    [filteredSingleModelPrice, filteredPriceSingle, 4, 1000, "HestonSinglePriceFilter_1000"],
-    [filteredSingleModelImpVol, filteredImpVolSingle, 4, 100, "HestonSingleImpVolFilter_100"],
-    [filteredSingleModelImpVol, filteredImpVolSingle, 4, 1000, "HestonSingleImpVolFilter_1000"]
+    [model_input, gridImpVolOutput, 1, 50, "HestonGridImpVolAll_1_50"],
+    [model_input, gridImpVolOutput, 1, 100, "HestonGridImpVolAll_1_100"],
+    [model_input, gridImpVolOutput, 1, 500, "HestonGridImpVolAll_1_500"],
+    [model_input, gridImpVolOutput, 1, 1000, "HestonGridImpVolAll_1_1000"],
+    [model_input, gridImpVolOutput, 2, 50, "HestonGridImpVolAll_2_50"],
+    [model_input, gridImpVolOutput, 2, 100, "HestonGridImpVolAll_2_100"],
+    [model_input, gridImpVolOutput, 2, 500, "HestonGridImpVolAll_2_500"],
+    [model_input, gridImpVolOutput, 2, 1000, "HestonGridImpVolAll_2_1000"],
+    [model_input, gridImpVolOutput, 3, 50, "HestonGridImpVolAll_3_50"],
+    [model_input, gridImpVolOutput, 3, 100, "HestonGridImpVolAll_3_100"],
+    [model_input, gridImpVolOutput, 3, 500, "HestonGridImpVolAll_3_500"],
+    [model_input, gridImpVolOutput, 3, 1000, "HestonGridImpVolAll_3_1000"],
+    [model_input, gridImpVolOutput, 4, 50, "HestonGridImpVolAll_4_50"],
+    [model_input, gridImpVolOutput, 4, 100, "HestonGridImpVolAll_4_100"],
+    [model_input, gridImpVolOutput, 4, 500, "HestonGridImpVolAll_4_500"],
+    [model_input, gridImpVolOutput, 4, 1000, "HestonGridImpVolAll_4_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 1, 50, "HestonGridImpVolFilter_1_50"],
+    [filteredGridModelImpVol, filteredGridImpVol, 1, 100, "HestonGridImpVolFilter_1_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 1, 500, "HestonGridImpVolFilter_1_500"],
+    [filteredGridModelImpVol, filteredGridImpVol, 1, 1000, "HestonGridImpVolFilter_1_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 2, 50, "HestonGridImpVolFilter_2_50"],
+    [filteredGridModelImpVol, filteredGridImpVol, 2, 100, "HestonGridImpVolFilter_2_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 2, 500, "HestonGridImpVolFilter_2_500"],
+    [filteredGridModelImpVol, filteredGridImpVol, 2, 1000, "HestonGridImpVolFilter_2_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 3, 50, "HestonGridImpVolFilter_3_50"],
+    [filteredGridModelImpVol, filteredGridImpVol, 3, 100, "HestonGridImpVolFilter_3_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 3, 500, "HestonGridImpVolFilter_3_500"],
+    [filteredGridModelImpVol, filteredGridImpVol, 3, 1000, "HestonGridImpVolFilter_3_1000"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 50, "HestonGridImpVolFilter_4_50"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 100, "HestonGridImpVolFilter_4_100"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 500, "HestonGridImpVolFilter_4_500"],
+    [filteredGridModelImpVol, filteredGridImpVol, 4, 1000, "HestonGridImpVolFilter_4_1000"]
 ]
 
 # parallel

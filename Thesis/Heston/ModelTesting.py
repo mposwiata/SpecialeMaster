@@ -51,19 +51,24 @@ model_class = hm.HestonClass(forward, vol, kappa, theta, epsilon, rho, rate)
 benchmark = dg.calcImpVol(test_input[0], some_option_list)[1]
 
 grid_imp_vol_list = [
-    "HestonGridImpVolAll_100", "HestonGridImpVolAll_1000", 
-    "HestonGridImpVolFilter_100", "HestonGridImpVolFilter_1000"
+    "HestonGridImpVolAll_100", 
+    #"HestonGridImpVolAll_1000", 
+    "HestonGridImpVolFilter_100"#, 
+    #"HestonGridImpVolFilter_1000"
 ]
 
 grid_price_list = [
-    "HestonGridPriceAll_100", "HestonGridPriceAll_1000",
-    "HestonGridPriceFilter_100"#, 
+    #"HestonGridPriceAll_100", 
+    #"HestonGridPriceAll_1000",
+    #"HestonGridPriceFilter_100"#, 
     #"HestonGridPriceFilter_1000"
 ]
 
 single_imp_vol_list = [
-    "HestonSingleImpVolAll_100", "HestonSingleImpVolAll_1000",
-    "HestonSingleImpVolFilter_100", "HestonSingleImpVolFilter_1000"
+    #"HestonSingleImpVolAll_100", 
+    #"HestonSingleImpVolAll_1000",
+    #"HestonSingleImpVolFilter_100"#, 
+    #"HestonSingleImpVolFilter_1000"
 ]
 
 single_price_list = [
@@ -74,7 +79,7 @@ single_price_list = [
 ]
 fig, axs = plt.subplots(5, 2)
 # Grid Imp Vol Plots
-color=iter(plt.cm.rainbow(np.linspace(0,1,8)))
+color=iter(plt.cm.rainbow(np.linspace(0,1,6)))
 for model_string in grid_imp_vol_list:
     model = load_model("Models/Heston/"+model_string+"_1.h5")
     norm_feature = joblib.load("Models/Heston/"+model_string+"_norm_features_1.pkl")
@@ -84,6 +89,7 @@ for model_string in grid_imp_vol_list:
     for i in range(5):
         axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
         axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
+        axs[i, 0].plot(option_input[0 : no_strikes, 1], benchmark[no_strikes * i : no_strikes * (i + 1)], color = "black", alpha = 0.7, label = "benchmark")
 
 # Grid Price Plots
 for model_string in grid_price_list:
@@ -97,10 +103,9 @@ for model_string in grid_price_list:
     c = next(color)
     for i in range(5):
         axs[i, 0].plot(option_input[0 : no_strikes, 1], imp_vol_predictions[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-        #axs[i, 0].plot(option_input[0 : no_strikes, 1], benchmark[no_strikes * i : no_strikes * (i + 1)], color = "black", alpha = 0.7, label = "benchmark")
         axs[i, 1].plot(option_input[0 : no_strikes, 1], imp_vol_predictions[no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
 
-"""
+
 # Single Imp Vol Plots
 for model_string in single_imp_vol_list:
     model = load_model("Models/Heston/"+model_string+"_1.h5")
@@ -117,7 +122,7 @@ for model_string in single_imp_vol_list:
     for i in range(5):
         axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
         axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-"""
+
 
 # Single Price Plots
 for model_string in single_price_list:
