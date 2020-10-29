@@ -11,7 +11,7 @@ from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration 
 from Thesis.misc import VanillaOptions as vo
 
 def generat_sobol_input(no_sobol : int):
-    model_input = sobol.i4_sobol_generate(7, 200000) # model input of sobol sequences
+    model_input = sobol.i4_sobol_generate(7, no_sobol) # model input of sobol sequences
 
     # Forward
     model_input[:,0] = model_input[:,0] * (125-75) + 75 # transformation from [0,1] to [75,125]
