@@ -9,33 +9,33 @@ from multiprocess import Pool, cpu_count
 from Thesis.Heston import AndersenLake as al, HestonModel as hm
 from Thesis.misc import VanillaOptions as vo
 
-def calcImpVol(inputArray : np.array, optionList : np.array) -> (np.array, np.array):
-    someModel = hm.HestonClass(inputArray[0], inputArray[1], inputArray[2], inputArray[3], inputArray[4], inputArray[5], inputArray[6])
-    outputLenght = np.shape(optionList)[0]
-    output_price = np.empty(outputLenght, dtype=np.float64)
-    output_impVol = np.empty(outputLenght, dtype=np.float64)
+def calc_imp_vol(input_array : np.array, option_list : np.array) -> (np.array, np.array):
+    some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
+    output_lenght = np.shape(option_list)[0]
+    output_price = np.empty(output_lenght, dtype=np.float64)
+    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
     
-    for i in range(outputLenght):
+    for i in range(output_lenght):
         try:
-            output_price[i] = al.Andersen_Lake(someModel, optionList[i])
-            output_impVol[i] = someModel.impVol(output_price[i], optionList[i])
+            output_price[i] = al.Andersen_Lake(some_model, option_list[i])
+            output_imp_vol[i] = some_model.impVol(output_price[i], option_list[i])
         except: #overflow in char function, set impvol to 0
             output_price[i] = 0
-            output_impVol[i] = 0
+            output_imp_vol[i] = 0
 
-    return output_price, output_impVol
+    return output_price, output_imp_vol
 
-def impVolGenerator(inputArray : np.ndarray, optionList : np.array) -> (np.ndarray, np.ndarray):
-    output_price_matrix = np.empty([np.shape(inputArray)[0], np.shape(optionList)[0]])
-    output_impVol_matrix = np.empty([np.shape(inputArray)[0], np.shape(optionList)[0]])
+def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.ndarray, np.ndarray):
+    output_price_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
+    output_imp_vol_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
     i = 0
-    for someInput in inputArray:
-        output_price_matrix[i, :], output_impVol_matrix[i, :] = calcImpVol(someInput, optionList)
+    for someInput in input_array:
+        output_price_matrix[i, :], output_imp_vol_matrix[i, :] = calc_imp_vol(someInput, option_list)
         i += 1
     
-    return output_price_matrix, output_impVol_matrix
+    return output_price_matrix, output_imp_vol_matrix
 
-def modelInputGenerator() -> np.ndarray:
+def model_input_generator() -> np.ndarray:
     # Forward
     forward = np.linspace(start = 75, stop = 125, num = 10)
 
@@ -59,7 +59,7 @@ def modelInputGenerator() -> np.ndarray:
 
     return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 
-def optionInputGenerator() -> np.ndarray:
+def option_input_generator() -> np.ndarray:
     # Maturity
     maturity = np.linspace(start = 0.01, stop = 2, num = 5)
 
@@ -69,15 +69,12 @@ def optionInputGenerator() -> np.ndarray:
     return np.array(list(itertools.product(maturity, strike)))
 
 if __name__ == "__main__":
-    model_input = modelInputGenerator()
+    model_input = model_input_generator()
 
-    option_input = optionInputGenerator() # different option combinations
-    someOptionList = np.array([])
+    option_input = option_input_generator() # different option combinations
+    some_option_list = np.array([])
     for option in option_input:
-        someOptionList = np.append(someOptionList, vo.EUCall(option[0], option[1]))
-
-    # generating data for neural net with model as input and grid as output
-    gridInput = model_input
+        some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
 
     # going parallel
     cpu_cores = cpu_count()
@@ -86,19 +83,19 @@ if __name__ == "__main__":
 
     # generating list of datasets for parallel
     for i in range(cpu_cores):
-        parallel_list.append((parallel_set[i], someOptionList))
+        parallel_list.append((parallel_set[i], some_option_list))
 
     # parallel
     pool = Pool(cpu_cores)
-    res = pool.starmap(impVolGenerator, parallel_list)
+    res = pool.starmap(imp_vol_generator, parallel_list)
     res = np.concatenate(res, axis = 1)
     price_output = res[0]
-    impVol_output = res[1]
+    imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonGridInput.csv", gridInput, delimiter=",")
+    np.savetxt("Data/hestonGridInput.csv", model_input, delimiter=",")
     np.savetxt("Data/hestonGridPrice.csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonGridImpVol.csv", impVol_output, delimiter=",")
+    np.savetxt("Data/hestonGridImpVol.csv", imp_vol_output, delimiter=",")
 
     """
     # Generating single outputs
