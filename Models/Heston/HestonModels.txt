@@ -12,3 +12,9 @@ HestonGridImpVolAll_3_100 has a score of: 0.0035297609865665436, and took a tota
 HestonGridImpVolAll_4_500 has a score of: 0.019917480647563934, and took a total time of: 1402.9084331989288
 HestonGridImpVolFilter_2_500 has a score of: 0.0002245965151814744, and took a total time of: 1537.5669350624084
 HestonGridImpVolAll_4_100 has a score of: 0.0023623250890523195, and took a total time of: 1694.7233548164368
+HestonGridImpVolAll_2_500 has a score of: 0.006237352266907692, and took a total time of: 2132.520820379257
+HestonGridImpVolAll_3_1000 has a score of: 0.030948596075177193, and took a total time of: 2361.059732913971
+HestonGridImpVolAll_3_500 has a score of: 0.0014681025641039014, and took a total time of: 2945.372099876404
+HestonGridImpVolAll_2_1000 has a score of: 0.006749005056917667, and took a total time of: 4879.932711601257
+HestonGridImpVolFilter_3_1000 has a score of: 9.303536353399977e-05, and took a total time of: 6003.59202170372
+HestonGridImpVolFilter_4_1000 has a score of: 8.095469820545986e-05, and took a total time of: 8107.421934843063
