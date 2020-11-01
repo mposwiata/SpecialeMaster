@@ -10,7 +10,7 @@ from multiprocess import Pool, cpu_count
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
 from Thesis.misc import VanillaOptions as vo
 
-def generat_sobol_input(no_sobol : int):
+def generate_sobol_input(no_sobol : int):
     model_input = sobol.i4_sobol_generate(7, no_sobol) # model input of sobol sequences
 
     # Forward
@@ -66,4 +66,5 @@ def generat_sobol_input(no_sobol : int):
     return 0
 
 if __name__ == "__main__":
-    print(generat_sobol_input(5))
+    generate_sobol_input(100000)
+    generate_sobol_input(200000)
