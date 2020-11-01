@@ -52,14 +52,13 @@ model_class = hm.HestonClass(forward, vol, kappa, theta, epsilon, rho, rate)
 # Generating benchmark data
 benchmark = dg.calc_imp_vol(test_input[0], some_option_list)[1]
 
-file_list = glob.glob("Models/Heston/*.h5")
+file_list = glob.glob("Models/Heston1/*.h5")
 models = []
 ending = []
 i = 0
 for some_file in file_list:
-    if (some_file.find("Price") == -1):
-        models.append(some_file[:-5])
-        ending.append(some_file[-4:-3])
+    models.append(some_file[:-5])
+    ending.append(some_file[-4:-3])
 
 #fig, axs = plt.subplots(5, 2)
 fig = plt.figure() 
@@ -76,19 +75,27 @@ for model_string in models:
     model = load_model(model_string+"_"+ending[j]+".h5")
     norm_feature = joblib.load(model_string+"_norm_features_"+ending[j]+".pkl")
     norm_labels = joblib.load(model_string+"_norm_labels_"+ending[j]+".pkl")
-    predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))
+
+    if (model_string.find("Single") != -1): # single output
+        predictions = np.empty(np.shape(option_input)[0])
+        for i in range(np.shape(option_input)[0]):
+            test_single_input = np.concatenate((test_input, option_input[i]), axis=None)
+            test_single_input = np.reshape(test_single_input, (1, -1))
+            predictions[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input)))
+    else: # we have a grid
+        predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))[0]
 
     # if prices, calc imp vol
     if (model_string.find("Price") != -1):
         imp_vol_predictions = np.empty(np.shape(predictions))
-        for i in range(np.shape(predictions)[1]):
-            imp_vol_predictions[0, i] = model_class.impVol(predictions[0, i], some_option_list[i])
+        for i in range(np.shape(predictions)):
+            imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
             predictions = imp_vol_predictions
     
-    mse_list.append((model_string, mse(predictions[0], benchmark)))
+    mse_list.append((model_string, mse(predictions, benchmark)))
     c = next(color)
 
-    z = predictions[0]
+    z = predictions
     ax.plot_trisurf(x, y, z, alpha = 0.5, label = model_string[14:])
     
     """
