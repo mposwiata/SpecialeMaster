@@ -52,7 +52,7 @@ model_class = hm.HestonClass(forward, vol, kappa, theta, epsilon, rho, rate)
 # Generating benchmark data
 benchmark = dg.calc_imp_vol(test_input[0], some_option_list)[1]
 
-file_list = glob.glob("Models/Heston1/*.h5")
+file_list = glob.glob("Models/Heston/*.h5")
 models = []
 ending = []
 i = 0
@@ -88,7 +88,7 @@ for model_string in models:
     # if prices, calc imp vol
     if (model_string.find("Price") != -1):
         imp_vol_predictions = np.empty(np.shape(predictions))
-        for i in range(np.shape(predictions)):
+        for i in range(np.shape(predictions)[0]):
             imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
             predictions = imp_vol_predictions
     
