@@ -17,7 +17,7 @@ def generat_sobol_input(no_sobol : int):
     model_input[:,0] = model_input[:,0] * (125-75) + 75 # transformation from [0,1] to [75,125]
 
     # vol
-    model_input[:,1] = model_input[:,0] * (0.2-0.01) + 0.01
+    model_input[:,1] = model_input[:,1] * (0.2-0.01) + 0.01
 
     # kappa
     model_input[:,2] = model_input[:,2] * (2-0.1) + 0.1
@@ -66,5 +66,4 @@ def generat_sobol_input(no_sobol : int):
     return 0
 
 if __name__ == "__main__":
-    generat_sobol_input(200000)
-    generat_sobol_input(100000)
+    print(generat_sobol_input(5))

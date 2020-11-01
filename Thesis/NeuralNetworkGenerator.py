@@ -3,25 +3,48 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense
 from keras.initializers import VarianceScaling
 
-def NNGenerator(nLayers : int, nNodes : int, inputDim : int, outputDim : int) -> Sequential:
+def NN_generator(n_layers : int, n_nodes : int, input_dim : int, output_dim : int) -> Sequential:
     model = Sequential()
 
     # Layer 1, input
-    layer1 = Dense(nNodes, activation = 'softplus',
+    layer1 = Dense(n_nodes, activation = 'softplus',
         kernel_initializer=VarianceScaling(), 
-        input_shape = (inputDim,))
+        input_shape = (input_dim,))
     model.add(layer1)
     
     # Hidden layers
-    if nLayers > 1:
-        for i in range(nLayers - 1):
-            layer = Dense(nNodes, activation = 'softplus',
+    if n_layers > 1:
+        for i in range(n_layers - 1):
+            layer = Dense(n_nodes, activation = 'softplus',
                 kernel_initializer=VarianceScaling())
             model.add(layer)
     
     # Output layer, price
-    priceLayer = Dense(outputDim, kernel_initializer=VarianceScaling())
+    price_layer = Dense(output_dim, kernel_initializer=VarianceScaling())
     
-    model.add(priceLayer)
+    model.add(price_layer)
+
+    return model
+
+def NN_generator_tanh(n_layers : int, n_nodes : int, input_dim : int, output_dim : int) -> Sequential:
+    model = Sequential()
+
+    # Layer 1, input
+    layer1 = Dense(n_nodes, activation = 'tanh',
+        kernel_initializer=VarianceScaling(), 
+        input_shape = (input_dim,))
+    model.add(layer1)
+    
+    # Hidden layers
+    if n_layers > 1:
+        for i in range(n_layers - 1):
+            layer = Dense(n_nodes, activation = 'tanh',
+                kernel_initializer=VarianceScaling())
+            model.add(layer)
+    
+    # Output layer, price
+    price_layer = Dense(output_dim, kernel_initializer=VarianceScaling())
+    
+    model.add(price_layer)
 
     return model

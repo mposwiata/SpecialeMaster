@@ -3,6 +3,8 @@ import itertools
 import matplotlib.pyplot as plt
 import joblib
 from keras.models import load_model
+import glob
+from sklearn.metrics import mean_squared_error as mse
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
 from Thesis.misc import VanillaOptions as vo
@@ -48,102 +50,61 @@ test_input = np.reshape(test_input, (1, 7))
 model_class = hm.HestonClass(forward, vol, kappa, theta, epsilon, rho, rate)
 
 # Generating benchmark data
-benchmark = dg.calcImpVol(test_input[0], some_option_list)[1]
+benchmark = dg.calc_imp_vol(test_input[0], some_option_list)[1]
 
-grid_imp_vol_list = [
-    "HestonGridImpVolAll_100", 
-    #"HestonGridImpVolAll_1000", 
-    "HestonGridImpVolFilter_100"#, 
-    #"HestonGridImpVolFilter_1000"
-]
+file_list = glob.glob("Models/Heston/*.h5")
+models = []
+ending = []
+i = 0
+for some_file in file_list:
+    if (some_file.find("Price") == -1):
+        models.append(some_file[:-5])
+        ending.append(some_file[-4:-3])
 
-grid_price_list = [
-    #"HestonGridPriceAll_100", 
-    #"HestonGridPriceAll_1000",
-    #"HestonGridPriceFilter_100"#, 
-    #"HestonGridPriceFilter_1000"
-]
-
-single_imp_vol_list = [
-    #"HestonSingleImpVolAll_100", 
-    #"HestonSingleImpVolAll_1000",
-    #"HestonSingleImpVolFilter_100"#, 
-    #"HestonSingleImpVolFilter_1000"
-]
-
-single_price_list = [
-    #"HestonSinglePriceAll_100", 
-    #"HestonSinglePriceAll_1000",
-    "HestonSinglePriceFilter_100"#, 
-    #"HestonSinglePriceFilter_1000"
-]
-fig, axs = plt.subplots(5, 2)
-# Grid Imp Vol Plots
-color=iter(plt.cm.rainbow(np.linspace(0,1,6)))
-for model_string in grid_imp_vol_list:
-    model = load_model("Models/Heston/"+model_string+"_1.h5")
-    norm_feature = joblib.load("Models/Heston/"+model_string+"_norm_features_1.pkl")
-    norm_labels = joblib.load("Models/Heston/"+model_string+"_norm_labels_1.pkl")
+#fig, axs = plt.subplots(5, 2)
+fig = plt.figure() 
+ax = fig.add_subplot(121, projection='3d')
+ax2 = fig.add_subplot(122)
+# Plotting
+no_models = len(file_list)
+color=iter(plt.cm.rainbow(np.linspace(0,1,no_models)))
+x = option_input[:,0]
+y = option_input[:,1]
+mse_list = []
+j = 0
+for model_string in models:
+    model = load_model(model_string+"_"+ending[j]+".h5")
+    norm_feature = joblib.load(model_string+"_norm_features_"+ending[j]+".pkl")
+    norm_labels = joblib.load(model_string+"_norm_labels_"+ending[j]+".pkl")
     predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))
+
+    # if prices, calc imp vol
+    if (model_string.find("Price") != -1):
+        imp_vol_predictions = np.empty(np.shape(predictions))
+        for i in range(np.shape(predictions)[1]):
+            imp_vol_predictions[0, i] = model_class.impVol(predictions[0, i], some_option_list[i])
+            predictions = imp_vol_predictions
+    
+    mse_list.append((model_string, mse(predictions[0], benchmark)))
     c = next(color)
+
+    z = predictions[0]
+    ax.plot_trisurf(x, y, z, alpha = 0.5, label = model_string[14:])
+    
+    """
     for i in range(5):
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-        axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
+        axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string[14:])
+        axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string[14:])
         axs[i, 0].plot(option_input[0 : no_strikes, 1], benchmark[no_strikes * i : no_strikes * (i + 1)], color = "black", alpha = 0.7, label = "benchmark")
+    """
 
-# Grid Price Plots
-for model_string in grid_price_list:
-    model = load_model("Models/Heston/"+model_string+"_1.h5")
-    norm_feature = joblib.load("Models/Heston/"+model_string+"_norm_features_1.pkl")
-    norm_labels = joblib.load("Models/Heston/"+model_string+"_norm_labels_1.pkl")
-    predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))
-    imp_vol_predictions = np.empty(np.shape(predictions)[1])
-    for i in range(np.shape(predictions)[1]):
-        imp_vol_predictions[i] = model_class.impVol(predictions[0, i], some_option_list[i])
-    c = next(color)
-    for i in range(5):
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], imp_vol_predictions[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-        axs[i, 1].plot(option_input[0 : no_strikes, 1], imp_vol_predictions[no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
+    j += 1
 
-
-# Single Imp Vol Plots
-for model_string in single_imp_vol_list:
-    model = load_model("Models/Heston/"+model_string+"_1.h5")
-    norm_feature = joblib.load("Models/Heston/"+model_string+"_norm_features_1.pkl")
-    norm_labels = joblib.load("Models/Heston/"+model_string+"_norm_labels_1.pkl")
-    c = next(color)
-    test_length = np.shape(option_input)[0]
-    predictions = np.empty(test_length)
-    for i in range(test_length):
-        test_data = np.concatenate((test_input, option_input[i]), axis=None)
-        test_data = np.reshape(test_data, (1, -1))
-        predictions[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_data)))
-
-    for i in range(5):
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-        axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-
-
-# Single Price Plots
-for model_string in single_price_list:
-    model = load_model("Models/Heston/"+model_string+"_1.h5")
-    norm_feature = joblib.load("Models/Heston/"+model_string+"_norm_features_1.pkl")
-    norm_labels = joblib.load("Models/Heston/"+model_string+"_norm_labels_1.pkl")
-    c = next(color)
-    test_length = np.shape(option_input)[0]
-    predictions = np.empty(test_length)
-    for i in range(test_length):
-        test_data = np.concatenate((test_input, option_input[i]), axis=None)
-        test_data = np.reshape(test_data, (1, -1))
-        price = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_data)))
-        predictions[i] = model_class.impVol(price[0,0], some_option_list[i])
-
-    for i in range(5):
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-        axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string)
-
+mse_list.sort(key = lambda x: x[1]) # sort by error
+"""
 fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
 handles, labels = axs[4,1].get_legend_handles_labels() 
-fig.legend(handles, labels, loc="lower center", ncol = 2, fontsize=8)
+fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=5)
 plt.savefig("HestonModelTestPlot.jpeg")
+"""
 plt.show()
