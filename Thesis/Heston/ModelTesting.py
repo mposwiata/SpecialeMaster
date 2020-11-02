@@ -98,13 +98,6 @@ for model_string in models:
     z = predictions
     ax.plot_trisurf(x, y, z, alpha = 0.5, label = model_string[14:])
     
-    """
-    for i in range(5):
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string[14:])
-        axs[i, 1].plot(option_input[0 : no_strikes, 1], predictions[0, no_strikes * i : no_strikes * (i + 1)] - benchmark[no_strikes * i : no_strikes * (i + 1)], color = c, alpha = 0.5, label = model_string[14:])
-        axs[i, 0].plot(option_input[0 : no_strikes, 1], benchmark[no_strikes * i : no_strikes * (i + 1)], color = "black", alpha = 0.7, label = "benchmark")
-    """
-
     j += 1
 
 mse_list.sort(key = lambda x: x[1]) # sort by error
