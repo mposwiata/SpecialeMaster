@@ -69,6 +69,7 @@ sobol_price_200_filter = np.all(sobol_price_200000 != 0, axis = 1)
 sobol_price_200_input = model_sobol_input_200000[sobol_price_200_filter, :]
 sobol_price_200_output = sobol_price_200000[sobol_price_200_filter, :]
 
+"""
 # Single filtering
 filtered_price_single = single_price_output[single_price_output != 0]
 filtered_single_model_price = single_input[single_price_output != 0]
@@ -184,6 +185,35 @@ paral_sobol = [
     [sobol_price_200_input, sobol_price_200_output, 5, 100, "HestonSobolGridPrice2_5_100"],
     [sobol_price_200_input, sobol_price_200_output, 5, 500, "HestonSobolGridPrice2_5_500"],
     [sobol_price_200_input, sobol_price_200_output, 5, 1000, "HestonSobolGridPrice2_5_1000"]
+]
+
+"""
+
+paral_sobol = [
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 50, "HestonSobolGridImpVol1_3_50"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 100, "HestonSobolGridImpVol1_3_100"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 500, "HestonSobolGridImpVol1_3_500"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 1000, "HestonSobolGridImpVol1_3_1000"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 4, 50, "HestonSobolGridImpVol1_4_50"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 4, 100, "HestonSobolGridImpVol1_4_100"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 4, 500, "HestonSobolGridImpVol1_4_500"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 4, 1000, "HestonSobolGridImpVol1_4_1000"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 5, 50, "HestonSobolGridImpVol1_5_50"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 5, 100, "HestonSobolGridImpVol1_5_100"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 5, 500, "HestonSobolGridImpVol1_5_500"],
+    [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 5, 1000, "HestonSobolGridImpVol1_5_1000"],
+    [sobol_price_100_input, sobol_price_100_output, 3, 50, "HestonSobolGridPrice1_3_50"],
+    [sobol_price_100_input, sobol_price_100_output, 3, 100, "HestonSobolGridPrice1_3_100"],
+    [sobol_price_100_input, sobol_price_100_output, 3, 500, "HestonSobolGridPrice1_3_500"],
+    [sobol_price_100_input, sobol_price_100_output, 3, 1000, "HestonSobolGridPrice1_3_1000"],
+    [sobol_price_100_input, sobol_price_100_output, 4, 50, "HestonSobolGridPrice1_4_50"],
+    [sobol_price_100_input, sobol_price_100_output, 4, 100, "HestonSobolGridPrice1_4_100"],
+    [sobol_price_100_input, sobol_price_100_output, 4, 500, "HestonSobolGridPrice1_4_500"],
+    [sobol_price_100_input, sobol_price_100_output, 4, 1000, "HestonSobolGridPrice1_4_1000"],
+    [sobol_price_100_input, sobol_price_100_output, 5, 50, "HestonSobolGridPrice1_5_50"],
+    [sobol_price_100_input, sobol_price_100_output, 5, 100, "HestonSobolGridPrice1_5_100"],
+    [sobol_price_100_input, sobol_price_100_output, 5, 500, "HestonSobolGridPrice1_5_500"],
+    [sobol_price_100_input, sobol_price_100_output, 5, 1000, "HestonSobolGridPrice1_5_1000"]
 ]
 
 cpu_cores = cpu_count()
