@@ -110,3 +110,12 @@ HestonGridPriceFilter_4_500 has a score of: 0.0040266611613333225, and took a to
 HestonGridPriceAll_2_1000 has a score of: 0.004912469536066055, and took a total time of: 6238.241814851761
 HestonGridPriceFilter_3_1000 has a score of: 0.0004854919097851962, and took a total time of: 2013.5917799472809
 HestonGridPriceFilter_4_1000 has a score of: 0.0004435078299138695, and took a total time of: 1756.9022669792175
+
+HestonSinglePriceAll_3_500 has a score of: 0.010796885937452316, and took a total time of: 40379.24539017677
+HestonSinglePriceFilter_4_500 has a score of: 3.579474287107587e-05, and took a total time of: 44491.84322309494
+HestonSingleImpVolFilter_3_500 has a score of: 0.0005651334649883211, and took a total time of: 46014.33704614639
+HestonSingleImpVolAll_4_500 has a score of: 0.018310580402612686, and took a total time of: 49287.90354728699
+HestonSingleImpVolAll_3_500 has a score of: 0.010580661706626415, and took a total time of: 51209.41890144348
+HestonSinglePriceAll_4_500 has a score of: 0.9992998242378235, and took a total time of: 57987.19850111008
+HestonSingleImpVolFilter_4_500 has a score of: 0.0015938861761242151, and took a total time of: 62770.01962018013
+
