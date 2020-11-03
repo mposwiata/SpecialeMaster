@@ -95,32 +95,7 @@ filtered_price_single = np.reshape(filtered_price_single, (-1, 1))
 filtered_imp_vol_single = np.reshape(filtered_imp_vol_single, (-1, 1))
 """
 
-paral_sobol1 = [
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 3, 500, "HestonSobolGridImpVol3_3_500"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 3, 1000, "HestonSobolGridImpVol3_3_1000"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 4, 50, "HestonSobolGridImpVol3_4_50"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 4, 100, "HestonSobolGridImpVol3_4_100"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 4, 500, "HestonSobolGridImpVol3_4_500"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 4, 1000, "HestonSobolGridImpVol3_4_1000"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 50, "HestonSobolGridImpVol3_5_50"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 100, "HestonSobolGridImpVol3_5_100"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 500, "HestonSobolGridImpVol3_5_500"],
-    [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 1000, "HestonSobolGridImpVol3_5_1000"],
-    [sobol_price_312_input, sobol_price_312_output, 3, 50, "HestonSobolGridPrice3_3_50"],
-    [sobol_price_312_input, sobol_price_312_output, 3, 100, "HestonSobolGridPrice3_3_100"],
-    [sobol_price_312_input, sobol_price_312_output, 3, 500, "HestonSobolGridPrice3_3_500"],
-    [sobol_price_312_input, sobol_price_312_output, 3, 1000, "HestonSobolGridPrice3_3_1000"],
-    [sobol_price_312_input, sobol_price_312_output, 4, 50, "HestonSobolGridPrice3_4_50"],
-    [sobol_price_312_input, sobol_price_312_output, 4, 100, "HestonSobolGridPrice3_4_100"],
-    [sobol_price_312_input, sobol_price_312_output, 4, 500, "HestonSobolGridPrice3_4_500"],
-    [sobol_price_312_input, sobol_price_312_output, 4, 1000, "HestonSobolGridPrice3_4_1000"],
-    [sobol_price_312_input, sobol_price_312_output, 5, 50, "HestonSobolGridPrice3_5_50"],
-    [sobol_price_312_input, sobol_price_312_output, 5, 100, "HestonSobolGridPrice3_5_100"],
-    [sobol_price_312_input, sobol_price_312_output, 5, 500, "HestonSobolGridPrice3_5_500"],
-    [sobol_price_312_input, sobol_price_312_output, 5, 1000, "HestonSobolGridPrice3_5_1000"]
-]
-
-paral_sobol2 = [
+paral_sobol = [
     [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 50, "HestonSobolGridImpVol1_3_50"],
     [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 100, "HestonSobolGridImpVol1_3_100"],
     [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 500, "HestonSobolGridImpVol1_3_500"],
@@ -174,8 +149,8 @@ paral_sobol2 = [
 cpu_cores = cpu_count()
 # parallel
 pool = Pool(cpu_cores)
-res_sobol = pool.starmap(mg.NNModel, paral_sobol1)
-res_sobol_tanh = pool.starmap(mg.NNModelTanh, paral_sobol2)
+res_sobol = pool.starmap(mg.NNModelMix, paral_sobol)
+res_sobol_tanh = pool.starmap(mg.NNModelTanh, paral_sobol)
 #res_price_grid = pool.starmap(mg.NNModel, paral_price_grid)
 #res_single = pool.starmap(mg.NNModel, paral_single)
 print(res_single)

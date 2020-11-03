@@ -62,37 +62,31 @@ for some_file in file_list:
 
 #fig, axs = plt.subplots(5, 2)
 fig = plt.figure() 
-ax = fig.add_subplot(121, projection='3d')
-ax2 = fig.add_subplot(122)
+grid_imp_ax = fig.add_subplot(421, projection='3d')
+grid_imp_ax2 = fig.add_subplot(422)
+
+grid_price_ax = fig.add_subplot(423, projection='3d')
+grid_price_ax2 = fig.add_subplot(424)
+
+sobol_grid_imp_ax = fig.add_subplot(425, projection='3d')
+sobol_grid_imp_ax2 = fig.add_subplot(426)
+
+sobol_grid_price_ax = fig.add_subplot(427, projection='3d')
+sobol_grid_price_ax2 = fig.add_subplot(428)
+
 # Plotting
 no_models = len(file_list)
 color=iter(plt.cm.rainbow(np.linspace(0,1,no_models)))
 x = option_input[:,0]
 y = option_input[:,1]
 mse_list = []
+grid_imp_mse = []
+grid_price_mse = []
+sobol_grid_imp_mse = []
+sobol_grid_price_mse = []
 j = 0
 for model_string in models:
-    model = load_model(model_string+"_"+ending[j]+".h5")
-    norm_feature = joblib.load(model_string+"_norm_features_"+ending[j]+".pkl")
-    norm_labels = joblib.load(model_string+"_norm_labels_"+ending[j]+".pkl")
-
-    if (model_string.find("Single") != -1): # single output
-        predictions = np.empty(np.shape(option_input)[0])
-        for i in range(np.shape(option_input)[0]):
-            test_single_input = np.concatenate((test_input, option_input[i]), axis=None)
-            test_single_input = np.reshape(test_single_input, (1, -1))
-            predictions[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input)))
-    else: # we have a grid
-        predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))[0]
-
-    # if prices, calc imp vol
-    if (model_string.find("Price") != -1):
-        imp_vol_predictions = np.empty(np.shape(predictions))
-        for i in range(np.shape(predictions)[0]):
-            imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
-            predictions = imp_vol_predictions
-    
-    if (model_string.find("Sobol") != -1): # single output
+    if (model_string.find("Sobol") != -1):
         name = "Sobol_"
     else:
         name = "Normal_"
@@ -106,29 +100,107 @@ for model_string in models:
         name = name + "price_"
     else:
         name = name + "imp_vol_"
+    
+    model = load_model(model_string+"_"+ending[j]+".h5")
+    norm_feature = joblib.load(model_string+"_norm_features_"+ending[j]+".pkl")
+    norm_labels = joblib.load(model_string+"_norm_labels_"+ending[j]+".pkl")
 
-    name = name + model_string[model_string.rfind("_")-1:]
+    if (model_string.find("Single") != -1): # single output
+        predictions = np.empty(np.shape(option_input)[0])
+        for i in range(np.shape(option_input)[0]):
+            test_single_input = np.concatenate((test_input, option_input[i]), axis=None)
+            test_single_input = np.reshape(test_single_input, (1, -1))
+            predictions[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input)))
+    else: # we have a grid
+        predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_input)))[0]            
+
+    # if prices, calc imp vol
+    if (model_string.find("Price") != -1):
+        imp_vol_predictions = np.empty(np.shape(predictions))
+        for i in range(np.shape(predictions)[0]):
+            imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
+            predictions = imp_vol_predictions
+
+    if (model_string.find("Sobol") != -1):
+        name = name + model_string[model_string.rfind("_")-3:]
+    else: 
+        name = name + model_string[model_string.rfind("_")-1:]
 
     mse_list.append((name, mse(predictions, benchmark)))
     c = next(color)
 
     z = predictions
-    ax.plot_trisurf(x, y, z, alpha = 0.5, label = model_string[14:])
-    
+
+    if (model_string.find("Sobol") != -1):
+        if (model_string.find("Price") != -1):
+            sobol_grid_price_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name)
+            sobol_grid_price_mse.append((name, mse(predictions, benchmark)))
+        else:
+            sobol_grid_imp_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name)
+            sobol_grid_imp_mse.append((name, mse(predictions, benchmark)))
+    else:
+        if (model_string.find("Price") != -1):
+            grid_price_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name)
+            grid_price_mse.append((name, mse(predictions, benchmark)))
+        else:
+            grid_imp_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name)
+            grid_imp_mse.append((name, mse(predictions, benchmark)))    
     j += 1
 
 mse_list.sort(key = lambda x: x[1]) # sort by error
+grid_imp_mse.sort(key = lambda x: x[1])
+grid_price_mse.sort(key = lambda x: x[1])
+sobol_grid_imp_mse.sort(key = lambda x: x[1])
+sobol_grid_price_mse.sort(key = lambda x: x[1])
 filtered_mse = list(filter(lambda x: (x[1] < 0.01), mse_list))
-labels, values = zip(*filtered_mse)
+
+# grid imp mse
+labels, values = zip(*grid_imp_mse)
 y_pos = np.arange(len(labels))
-ax2.barh(y_pos, values)
-ax2.set_yticks(y_pos)
-ax2.set_yticklabels(labels)
-ax2.invert_yaxis()
+grid_imp_ax2.barh(y_pos, values)
+grid_imp_ax2.set_yticks(y_pos)
+grid_imp_ax2.set_yticklabels(labels)
+grid_imp_ax2.invert_yaxis()
+grid_imp_ax2.tick_params(axis = "y", labelsize=3)
+grid_imp_ax.tick_params(labelsize=5)
+
+# grid price mse
+labels, values = zip(*grid_price_mse)
+y_pos = np.arange(len(labels))
+grid_price_ax2.barh(y_pos, values)
+grid_price_ax2.set_yticks(y_pos)
+grid_price_ax2.set_yticklabels(labels)
+grid_price_ax2.invert_yaxis()
+grid_price_ax2.tick_params(axis = "y", labelsize=3)
+grid_price_ax.tick_params(labelsize=5)
+
+# sobol grid imp mse
+labels, values = zip(*sobol_grid_imp_mse)
+y_pos = np.arange(len(labels))
+sobol_grid_imp_ax2.barh(y_pos, values)
+sobol_grid_imp_ax2.set_yticks(y_pos)
+sobol_grid_imp_ax2.set_yticklabels(labels)
+sobol_grid_imp_ax2.invert_yaxis()
+sobol_grid_imp_ax2.tick_params(axis = "y", labelsize=3)
+sobol_grid_imp_ax.tick_params(labelsize=5)
+
+# sobol grid price mse
+labels, values = zip(*sobol_grid_price_mse)
+y_pos = np.arange(len(labels))
+sobol_grid_price_ax2.barh(y_pos, values)
+sobol_grid_price_ax2.set_yticks(y_pos)
+sobol_grid_price_ax2.set_yticklabels(labels)
+sobol_grid_price_ax2.invert_yaxis()
+sobol_grid_price_ax2.tick_params(axis = "y", labelsize=3)
+sobol_grid_price_ax.tick_params(labelsize = 5)
+
+
+
 """
 fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
 handles, labels = axs[4,1].get_legend_handles_labels() 
 fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=5)
 plt.savefig("HestonModelTestPlot.jpeg")
 """
+plt.savefig("HestonModelsCompare.jpeg")
 plt.show()
