@@ -174,8 +174,8 @@ paral_sobol2 = [
 cpu_cores = cpu_count()
 # parallel
 pool = Pool(cpu_cores)
-#res_sobol = pool.starmap(mg.NNModel, paral_sobol)
-#res_sobol_tanh = pool.starmap(mg.NNModelTanh, paral_sobol)
+res_sobol = pool.starmap(mg.NNModel, paral_sobol1)
+res_sobol_tanh = pool.starmap(mg.NNModelTanh, paral_sobol2)
 #res_price_grid = pool.starmap(mg.NNModel, paral_price_grid)
-res_single = pool.starmap(mg.NNModel, paral_single)
+#res_single = pool.starmap(mg.NNModel, paral_single)
 print(res_single)
