@@ -92,7 +92,24 @@ for model_string in models:
             imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
             predictions = imp_vol_predictions
     
-    mse_list.append((model_string, mse(predictions, benchmark)))
+    if (model_string.find("Sobol") != -1): # single output
+        name = "Sobol_"
+    else:
+        name = "Normal_"
+
+    if (model_string.find("Single") != -1): # single output
+        name = name + "single_"
+    else:
+        name = name + "grid_"
+
+    if (model_string.find("Price") != -1):
+        name = name + "price_"
+    else:
+        name = name + "imp_vol_"
+
+    name = name + model_string[model_string.rfind("_")-1:]
+
+    mse_list.append((name, mse(predictions, benchmark)))
     c = next(color)
 
     z = predictions
@@ -101,6 +118,13 @@ for model_string in models:
     j += 1
 
 mse_list.sort(key = lambda x: x[1]) # sort by error
+filtered_mse = list(filter(lambda x: (x[1] < 0.01), mse_list))
+labels, values = zip(*filtered_mse)
+y_pos = np.arange(len(labels))
+ax2.barh(y_pos, values)
+ax2.set_yticks(y_pos)
+ax2.set_yticklabels(labels)
+ax2.invert_yaxis()
 """
 fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
 handles, labels = axs[4,1].get_legend_handles_labels() 

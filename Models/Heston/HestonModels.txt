@@ -119,3 +119,27 @@ HestonSingleImpVolAll_3_500 has a score of: 0.010580661706626415, and took a tot
 HestonSinglePriceAll_4_500 has a score of: 0.9992998242378235, and took a total time of: 57987.19850111008
 HestonSingleImpVolFilter_4_500 has a score of: 0.0015938861761242151, and took a total time of: 62770.01962018013
 
+
+HestonSobolGridImpVol1_3_50 has a score of: 0.012916415929794312, and took a total time of: 123.64708399772644
+HestonSobolGridImpVol1_5_100 has a score of: 0.012373863719403744, and took a total time of: 163.9688630104065
+HestonSobolGridImpVol1_3_100 has a score of: 0.012398489750921726, and took a total time of: 147.749605178833
+HestonSobolGridImpVol1_4_500 has a score of: 0.01633678562939167, and took a total time of: 330.4089090824127
+HestonSobolGridImpVol1_3_500 has a score of: 0.016308218240737915, and took a total time of: 276.3959379196167
+HestonSobolGridImpVol1_5_500 has a score of: 0.016612637788057327, and took a total time of: 455.01678013801575
+HestonSobolGridPrice1_3_50 has a score of: 0.00016895229055080563, and took a total time of: 125.54045915603638
+HestonSobolGridPrice1_3_100 has a score of: 5.190957017475739e-05, and took a total time of: 138.50016808509827
+HestonSobolGridImpVol1_3_1000 has a score of: 0.9960494041442871, and took a total time of: 966.0503182411194
+HestonSobolGridImpVol1_4_50 has a score of: 0.012648576870560646, and took a total time of: 133.75891613960266
+HestonSobolGridImpVol1_4_100 has a score of: 0.0123128117993474, and took a total time of: 151.03152084350586
+HestonSobolGridPrice1_3_500 has a score of: 1.4416990779864136e-05, and took a total time of: 866.2033228874207
+HestonSobolGridPrice1_3_1000 has a score of: 0.9992417693138123, and took a total time of: 850.154237985611
+HestonSobolGridPrice1_4_500 has a score of: 0.9987868070602417, and took a total time of: 425.66821789741516
+HestonSobolGridImpVol1_4_1000 has a score of: 0.015607749111950397, and took a total time of: 1876.377892255783
+HestonSobolGridPrice1_4_50 has a score of: 0.00011079010437242687, and took a total time of: 126.9645471572876
+HestonSobolGridImpVol1_5_1000 has a score of: 0.017129072919487953, and took a total time of: 1705.3320071697235
+HestonSobolGridImpVol1_5_50 has a score of: 0.012641936540603638, and took a total time of: 145.81279587745667
+HestonSobolGridPrice1_4_100 has a score of: 4.238531255396083e-05, and took a total time of: 160.04567193984985
+HestonSobolGridPrice1_5_100 has a score of: 3.542003105394542e-05, and took a total time of: 185.09584522247314
+HestonSobolGridImpVol3_3_50 has a score of: 0.01245738286525011, and took a total time of: 360.31155705451965
+HestonSobolGridPrice1_5_500 has a score of: 0.0020852750167250633, and took a total time of: 540.0485639572144
+HestonSobolGridImpVol3_3_100 has a score of: 0.012014804407954216, and took a total time of: 421.67983174324036
