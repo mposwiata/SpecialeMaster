@@ -19,15 +19,18 @@ model_input = dg.model_input_generator() #faster than reading file
 option_input = dg.option_input_generator()
 model_sobol_input_100000 = np.loadtxt("Data/hestonSobolGridInput_100000.csv", delimiter = ",")
 model_sobol_input_200000 = np.loadtxt("Data/hestonSobolGridInput_200000.csv", delimiter = ",")
+model_sobol_input_312500 = np.loadtxt("Data/hestonSobolGridInput_312500.csv", delimiter = ",")
 
 grid_price_output = np.loadtxt("Data/hestonGridPrice.csv", delimiter = ",")
 grid_imp_vol_output = np.loadtxt("Data/hestonGridImpVol.csv", delimiter = ",")
 sobol_price_100000 = np.loadtxt("Data/hestonSobolGridPrice_100000.csv", delimiter = ",")
 sobol_price_200000 = np.loadtxt("Data/hestonSobolGridPrice_200000.csv", delimiter = ",")
+sobol_price_312500 = np.loadtxt("Data/hestonSobolGridPrice_312500.csv", delimiter = ",")
 sobol_imp_vol_100000 = np.loadtxt("Data/hestonSobolGridImpVol_100000.csv", delimiter = ",")
 sobol_imp_vol_200000 = np.loadtxt("Data/hestonSobolGridImpVol_200000.csv", delimiter = ",")
+sobol_imp_vol_312500 = np.loadtxt("Data/hestonSobolGridImpVol_312500.csv", delimiter = ",")
 
-
+"""
 total_comb = np.shape(model_input)[0] * np.shape(option_input)[0]
 total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
 total_options = np.shape(option_input)[0]
@@ -43,6 +46,7 @@ for i in range(np.shape(model_input)[0]):
 
 single_price_output = single_price_output.flatten()
 single_imp_vol_output = single_imp_vol_output.flatten()
+"""
 
 # Grid filtering, rows with 0 in
 filtered_price_grid = np.all(grid_price_output != 0, axis = 1)
@@ -61,6 +65,10 @@ sobol_imp_vol_200_filter = np.all(sobol_imp_vol_200000 != 0, axis = 1)
 sobol_imp_vol_200_input = model_sobol_input_200000[sobol_imp_vol_200_filter, :]
 sobol_imp_vol_200_output = sobol_imp_vol_200000[sobol_imp_vol_200_filter, :]
 
+sobol_imp_vol_312_filter = np.all(sobol_imp_vol_312500 != 0, axis = 1)
+sobol_imp_vol_312_input = model_sobol_input_312500[sobol_imp_vol_312_filter, :]
+sobol_imp_vol_312_output = sobol_imp_vol_312500[sobol_imp_vol_312_filter, :]
+
 sobol_price_100_filter = np.all(sobol_price_100000 != 0, axis = 1)
 sobol_price_100_input = model_sobol_input_100000[sobol_price_100_filter, :]
 sobol_price_100_output = sobol_price_100000[sobol_price_100_filter, :]
@@ -69,6 +77,11 @@ sobol_price_200_filter = np.all(sobol_price_200000 != 0, axis = 1)
 sobol_price_200_input = model_sobol_input_200000[sobol_price_200_filter, :]
 sobol_price_200_output = sobol_price_200000[sobol_price_200_filter, :]
 
+sobol_price_312_filter = np.all(sobol_price_312500 != 0, axis = 1)
+sobol_price_312_input = model_sobol_input_312500[sobol_price_312_filter, :]
+sobol_price_312_output = sobol_price_312500[sobol_price_312_filter, :]
+
+"""
 # Single filtering
 filtered_price_single = single_price_output[single_price_output != 0]
 filtered_single_model_price = single_input[single_price_output != 0]
@@ -80,6 +93,7 @@ single_price_output = np.reshape(single_price_output, (-1, 1))
 single_imp_vol_output = np.reshape(single_imp_vol_output, (-1, 1))
 filtered_price_single = np.reshape(filtered_price_single, (-1, 1))
 filtered_imp_vol_single = np.reshape(filtered_imp_vol_single, (-1, 1))
+"""
 
 paral_sobol1 = [
     [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 3, 500, "HestonSobolGridImpVol3_3_500"],
