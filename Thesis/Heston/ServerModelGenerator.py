@@ -245,7 +245,7 @@ normal_set = [
     [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 500, "HestonSobolGridImpVol3_5_500", False, "mix"]
 ]
 
-cpu_cores = cpu_count() / 2
+cpu_cores = int(cpu_count() / 2)
 # parallel
 pool = Pool(cpu_cores)
 res_sobol_mix = pool.starmap(mg.NNModelMix, mix_sets)
@@ -254,4 +254,5 @@ res_sobol_norm = pool.starmap(mg.NNModel, normal_set)
 #res_price_grid = pool.starmap(mg.NNModel, paral_price_grid)
 #res_single = pool.starmap(mg.NNModel, paral_single)
 print(res_sobol_mix)
+print(res_sobol_tanh)
 print(res_sobol_tanh)
