@@ -14,19 +14,19 @@ from Thesis.misc import VanillaOptions as vo
 forward = 100
 
 # vol
-vol = 0.1
+vol = 0.04
 
 # kappa
-kappa = 0.5
+kappa = 2
 
 # theta
-theta = 0.1
+theta = 0.04
 
 # epsilon
-epsilon = 1
+epsilon = 0.5
 
 # rho
-rho = -0.5
+rho = -0.7
 
 # rate
 rate = 0.05
@@ -118,6 +118,8 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
 
         j += 1
     
+    imp_ax.plot_trisurf(x, y, benchmark, color = "black")
+
     imp_ax.set_ylabel("Strike")
     imp_ax.set_xlabel("Time to maturity")
     imp_ax.set_title("Implied volatility")

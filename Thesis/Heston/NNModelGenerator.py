@@ -80,11 +80,15 @@ def NNModelTanh(input_array : np.ndarray, output_array : np.ndarray, n_layers : 
     print("Stopping: "+model_name)
     return score
 
-def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal") -> float:
+def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
     X_train, X_test, Y_train, Y_test = train_test_split(input_array, output_array, test_size=0.3, random_state=42)
 
-    norm_features = StandardScaler() # MinMaxScaler(feature_range = (-1, 1))
+    if scalar == "stardardize":
+        norm_features = StandardScaler()
+    else:
+        norm_features = MinMaxScaler()
+
     if normal_out:
         norm_labels = StandardScaler()
         Y_train = norm_labels.fit_transform(Y_train)
@@ -119,14 +123,6 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
 
     score = model.evaluate(X_test_norm, Y_test, verbose=2)
 
-    # checking file name
-    no = 0
-    for i in range(1,100):
-        saveString = "Models/Heston/"+model_name+"_"+str(i)+".h5"
-        no = i
-        if os.path.isfile(saveString) == False:
-            break
-
     if normal_out:
         if nn_type == "normal":
             folder_name = "Heston"
@@ -144,6 +140,15 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
     
     if not os.path.exists("Models/"+folder_name):
         os.makedir("Models/"+folder_name)
+
+    # checking file name
+    no = 0
+    for i in range(1,100):
+        saveString = "Models/"+folder_name+"/"+model_name+"_"+str(i)+".h5"
+        no = i
+        if os.path.isfile(saveString) == False:
+            break
+
     # Saving model
     model.save("Models/"+folder_name+"/"+model_name+"_"+str(no)+".h5")
 

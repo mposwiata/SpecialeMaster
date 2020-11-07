@@ -14,7 +14,7 @@ def generate_sobol_input(no_sobol : int):
     model_input = sobol.i4_sobol_generate(7, no_sobol) # model input of sobol sequences
 
     # Forward
-    model_input[:,0] = model_input[:,0] * (125-75) + 75 # transformation from [0,1] to [75,125]
+    model_input[:,0] = model_input[:,0] * (150-50) + 50 # transformation from [0,1] to [75,125]
 
     # vol
     model_input[:,1] = model_input[:,1] * (0.2-0.01) + 0.01
@@ -59,13 +59,13 @@ def generate_sobol_input(no_sobol : int):
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonSobolGridInput_"+str(no_sobol)+".csv", gridInput, delimiter=",")
-    np.savetxt("Data/hestonSobolGridPrice_"+str(no_sobol)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonSobolGridImpVol_"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/hestonSobolGridInput2_"+str(no_sobol)+".csv", gridInput, delimiter=",")
+    np.savetxt("Data/hestonSobolGridPrice2_"+str(no_sobol)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/hestonSobolGridImpVol2_"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
 if __name__ == "__main__":
-    #generate_sobol_input(100000)
-    #generate_sobol_input(200000)
-    #generate_sobol_input(312500)
+    generate_sobol_input(100000)
+    generate_sobol_input(200000)
+    generate_sobol_input(312500)
