@@ -52,7 +52,7 @@ def find_nth_back(input_string : str, keyword : str, n : int):
         n -= 1
     return start
 
-models = glob.glob("Models2/Heston*/*.h5")
+models = glob.glob("Models/Heston*/*.h5")
 
 group_by_list = []
 for some_model in models:
@@ -90,7 +90,7 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
             normal_out = True
 
         if (model_string.find("Single") != -1): # single output
-            predictions = np.empty(np.shape(option_input)[0])
+            predictions = np.zeros(np.shape(option_input)[0])
             for i in range(np.shape(option_input)[0]):
                 test_single_input = np.concatenate((some_input, option_input[i]), axis=None)
                 test_single_input = np.reshape(test_single_input, (1, -1))
@@ -106,10 +106,10 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
 
         # if prices, calc imp vol
         if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
-            imp_vol_predictions = np.empty(np.shape(predictions))
+            imp_vol_predictions = np.zeros(np.shape(predictions))
             for i in range(np.shape(predictions)[0]):
                 imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
-                predictions = imp_vol_predictions
+            predictions = imp_vol_predictions
         c = next(color)
 
         z = predictions
@@ -138,7 +138,7 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
     fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
     fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
     fig.suptitle(plot_group[plot_group.find("/")+1:].replace("/", "_"))
-    plt.savefig("Plots2/"+plot_group[7:].replace("/", "_")+".png")
+    plt.savefig("Plots/"+plot_group[7:].replace("/", "_")+".png")
     plt.close()
     return mse_list
 
@@ -151,9 +151,9 @@ med_error_mse = []
 high_error_mse = []
 for model_list in mse_bar_list:
     for some_model in model_list:
-        if some_model[1] < 0.001:
+        if some_model[1] < 0.0002:
             low_error_mse.append(some_model)
-        elif some_model[1] < 0.5:
+        elif some_model[1] < 0.05:
             med_error_mse.append(some_model)
         else:
             high_error_mse.append(some_model)
@@ -171,7 +171,7 @@ def generate_bar_error(error_list : list, name : str):
     bar_fig.suptitle("MSE with benchmark, "+name)
     plt.tight_layout()
     bar_fig.subplots_adjust(top=0.95, bottom=0.1)
-    plt.savefig("Plots2/"+name+".png")
+    plt.savefig("Plots/"+name+".png")
     plt.close()
 
 generate_bar_error(low_error_mse, "low_error")

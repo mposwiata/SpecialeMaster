@@ -59,6 +59,30 @@ def model_input_generator() -> np.ndarray:
 
     return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 
+def model_input_generator_old() -> np.ndarray:
+    # Forward
+    forward = np.linspace(start = 50, stop = 150, num = 10)
+
+    # vol
+    vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
+
+    # kappa
+    kappa = np.linspace(start = 0.1, stop = 2, num = 5)
+
+    # theta
+    theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
+
+    # epsilon
+    epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
+
+    # rho
+    rho = np.linspace(start = -0.99, stop = 0.99, num = 5)
+
+    # rate
+    rate = np.linspace(start = 0, stop = 0.2, num = 5)
+
+    return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
+
 def option_input_generator() -> np.ndarray:
     # Maturity
     maturity = np.linspace(start = 0.01, stop = 2, num = 5)
