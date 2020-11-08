@@ -102,7 +102,7 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
             folder_name = "Heston_non_normal_mix"
     
     if not os.path.exists("Models2/"+folder_name):
-        os.makedir("Models2/"+folder_name)
+        os.makedirs("Models2/"+folder_name)
 
     # checking file name
     no = 0
