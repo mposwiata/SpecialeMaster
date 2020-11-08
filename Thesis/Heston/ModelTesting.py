@@ -52,7 +52,7 @@ def find_nth_back(input_string : str, keyword : str, n : int):
         n -= 1
     return start
 
-models = glob.glob("Models/Heston*/*.h5")
+models = glob.glob("Models2/Heston*/*.h5")
 
 group_by_list = []
 for some_model in models:
@@ -69,9 +69,9 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
     benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
 
     benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
-    fig = plt.figure(figsize=(20, 10), dpi = 200)
+    fig = plt.figure(figsize=(30, 10), dpi = 200)
     imp_ax = fig.add_subplot(121, projection='3d')
-    bar_ax = fig.add_subplot(122)
+    error_ax = fig.add_subplot(122, projection='3d')
 
     no_models = len(model_list)
     color=iter(plt.cm.rainbow(np.linspace(0,1,no_models)))
@@ -105,7 +105,7 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
                 predictions = model.predict(norm_feature.transform(some_input))[0]
 
         # if prices, calc imp vol
-        if (model_string.find("Price") != -1):
+        if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
             imp_vol_predictions = np.empty(np.shape(predictions))
             for i in range(np.shape(predictions)[0]):
                 imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
@@ -113,32 +113,70 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
         c = next(color)
 
         z = predictions
-        imp_ax.plot_trisurf(x, y, z, alpha = 0.5, label = model_string[model_string.rfind("/")+1:], color = c)
-        mse_list.append((model_string[model_string.rfind("/")+1:], mse(predictions, benchmark), c))
+        name = model_string[model_string.find("/")+1:]
+        imp_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name, color = c)
+        mse_list.append((name, mse(predictions, benchmark)))
+        error_ax.plot_trisurf(x, y, z - benchmark, alpha = 0.5, label = name, color = c)
 
         j += 1
     
-    imp_ax.plot_trisurf(x, y, benchmark, color = "black")
+    imp_ax.plot_trisurf(x, y, benchmark, color = "black", alpha = 0.5)
 
     imp_ax.set_ylabel("Strike")
     imp_ax.set_xlabel("Time to maturity")
     imp_ax.set_title("Implied volatility")
 
-    mse_list.sort(key = lambda x: x[1]) 
-    labels, values, color = zip(*mse_list)
+    error_ax.set_ylabel("Strike")
+    error_ax.set_xlabel("Time to maturity")
+    error_ax.set_title("Error")
+
+    handles, labels = imp_ax.get_legend_handles_labels()
+    for i in range(len(handles)):
+        handles[i]._facecolors2d = handles[i]._facecolors3d 
+        handles[i]._edgecolors2d = handles[i]._edgecolors3d 
+
+    fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
+    fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
+    fig.suptitle(plot_group[plot_group.find("/")+1:].replace("/", "_"))
+    plt.savefig("Plots2/"+plot_group[7:].replace("/", "_")+".png")
+    plt.close()
+    return mse_list
+
+mse_bar_list = []
+for model_group in plot_model_dict:
+    mse_bar_list.append(model_testing_plot(plot_model_dict[model_group], model_group, test_input, option_input))
+
+low_error_mse = []
+med_error_mse = []
+high_error_mse = []
+for model_list in mse_bar_list:
+    for some_model in model_list:
+        if some_model[1] < 0.001:
+            low_error_mse.append(some_model)
+        elif some_model[1] < 0.5:
+            med_error_mse.append(some_model)
+        else:
+            high_error_mse.append(some_model)
+
+def generate_bar_error(error_list : list, name : str):
+    error_list.sort(key = lambda x: x[1])
+    bar_fig = plt.figure(figsize=(10, 20), dpi = 200)
+    bar_ax = bar_fig.add_subplot(111)
+    labels, values = zip(*error_list)
     y_pos = np.arange(len(labels))
     bar_ax.barh(y_pos, values)
     bar_ax.set_yticks(y_pos)
     bar_ax.set_yticklabels(labels)
     bar_ax.invert_yaxis()
-    bar_ax.set_title("MSE with benchmark")
-    fig.suptitle(plot_group[7:].replace("/", "_"))
-    plt.savefig("Plots/"+plot_group[7:].replace("/", "_")+".png")
-    
-    return 0
+    bar_fig.suptitle("MSE with benchmark, "+name)
+    plt.tight_layout()
+    bar_fig.subplots_adjust(top=0.95, bottom=0.1)
+    plt.savefig("Plots2/"+name+".png")
+    plt.close()
 
-for model_group in plot_model_dict:
-    model_testing_plot(plot_model_dict[model_group], model_group, test_input, option_input)
+generate_bar_error(low_error_mse, "low_error")
+generate_bar_error(med_error_mse, "med_error")
+generate_bar_error(high_error_mse, "high_error")
 
 """
 #fig, axs = plt.subplots(5, 2)

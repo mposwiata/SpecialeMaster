@@ -15,38 +15,48 @@ from sklearn.model_selection import train_test_split
 from Thesis.Heston import NNModelGenerator as mg
 from Thesis.Heston import DataGeneration as dg
 
-model_input = dg.model_input_generator() #faster than reading file
-option_input = dg.option_input_generator()
 model_sobol_input_100000 = np.loadtxt("Data/hestonSobolGridInput_100000.csv", delimiter = ",")
 model_sobol_input_200000 = np.loadtxt("Data/hestonSobolGridInput_200000.csv", delimiter = ",")
 model_sobol_input_312500 = np.loadtxt("Data/hestonSobolGridInput_312500.csv", delimiter = ",")
+model_sobol2_input_100000= np.loadtxt("Data/hestonSobolGridInput2_100000.csv", delimiter = ",")
+model_sobol2_input_200000= np.loadtxt("Data/hestonSobolGridInput2_200000.csv", delimiter = ",")
+model_sobol2_input_312500 = np.loadtxt("Data/hestonSobolGridInput2_312500.csv", delimiter = ",")
 
 grid_price_output = np.loadtxt("Data/hestonGridPrice.csv", delimiter = ",")
 grid_imp_vol_output = np.loadtxt("Data/hestonGridImpVol.csv", delimiter = ",")
 sobol_price_100000 = np.loadtxt("Data/hestonSobolGridPrice_100000.csv", delimiter = ",")
 sobol_price_200000 = np.loadtxt("Data/hestonSobolGridPrice_200000.csv", delimiter = ",")
 sobol_price_312500 = np.loadtxt("Data/hestonSobolGridPrice_312500.csv", delimiter = ",")
+sobol2_price_100000 = np.loadtxt("Data/hestonSobolGridPrice2_100000.csv", delimiter = ",")
+sobol2_price_200000 = np.loadtxt("Data/hestonSobolGridPrice2_200000.csv", delimiter = ",")
+sobol2_price_312500 = np.loadtxt("Data/hestonSobolGridPrice2_312500.csv", delimiter = ",")
 sobol_imp_vol_100000 = np.loadtxt("Data/hestonSobolGridImpVol_100000.csv", delimiter = ",")
+sobol2_imp_vol_100000 = np.loadtxt("Data/hestonSobolGridImpVol2_100000.csv", delimiter = ",")
 sobol_imp_vol_200000 = np.loadtxt("Data/hestonSobolGridImpVol_200000.csv", delimiter = ",")
+sobol2_imp_vol_200000 = np.loadtxt("Data/hestonSobolGridImpVol2_200000.csv", delimiter = ",")
 sobol_imp_vol_312500 = np.loadtxt("Data/hestonSobolGridImpVol_312500.csv", delimiter = ",")
+sobol2_imp_vol_312500 = np.loadtxt("Data/hestonSobolGridImpVol2_312500.csv", delimiter = ",")
 
-"""
+model_input = model_sobol2_input_312500
+option_input = dg.option_input_generator()
+
 total_comb = np.shape(model_input)[0] * np.shape(option_input)[0]
 total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
 total_options = np.shape(option_input)[0]
-single_input = np.empty((total_comb, total_cols))
-single_price_output = np.empty((total_comb, 1))
-single_imp_vol_output = np.empty((total_comb, 1))
+sobol2_single_input = np.empty((total_comb, total_cols))
+sobol2_single_price_output = np.empty((total_comb, 1))
+sobol2_single_imp_vol_output = np.empty((total_comb, 1))
 for i in range(np.shape(model_input)[0]):
     for j in range(total_options):
-        single_input[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
-        single_input[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
-        single_price_output[i*total_options+j] = grid_price_output[i, j]
-        single_imp_vol_output[i*total_options+j] = grid_imp_vol_output[i, j]
+        sobol2_single_input[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
+        sobol2_single_input[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
+        sobol2_single_price_output[i*total_options+j] = sobol2_price_312500[i, j]
+        sobol2_single_imp_vol_output[i*total_options+j] = sobol2_imp_vol_312500[i, j]
 
-single_price_output = single_price_output.flatten()
-single_imp_vol_output = single_imp_vol_output.flatten()
-"""
+sobol2_single_price_output = sobol2_single_price_output.flatten()
+sobol2_single_imp_vol_output = sobol2_single_imp_vol_output.flatten()
+model_input = dg.model_input_generator() #faster than reading file
+
 
 # Grid filtering, rows with 0 in
 filtered_price_grid = np.all(grid_price_output != 0, axis = 1)
@@ -69,6 +79,18 @@ sobol_imp_vol_312_filter = np.all(sobol_imp_vol_312500 != 0, axis = 1)
 sobol_imp_vol_312_input = model_sobol_input_312500[sobol_imp_vol_312_filter, :]
 sobol_imp_vol_312_output = sobol_imp_vol_312500[sobol_imp_vol_312_filter, :]
 
+sobol2_imp_vol_100_filter = np.all(sobol2_imp_vol_100000 != 0, axis = 1)
+sobol2_imp_vol_100_input = model_sobol2_input_100000[sobol2_imp_vol_100_filter, :]
+sobol2_imp_vol_100_output = sobol2_imp_vol_100000[sobol2_imp_vol_100_filter, :]
+
+sobol2_imp_vol_200_filter = np.all(sobol2_imp_vol_200000 != 0, axis = 1)
+sobol2_imp_vol_200_input = model_sobol2_input_200000[sobol2_imp_vol_200_filter, :]
+sobol2_imp_vol_200_output = sobol2_imp_vol_200000[sobol2_imp_vol_200_filter, :]
+
+sobol2_imp_vol_312_filter = np.all(sobol2_imp_vol_312500 != 0, axis = 1)
+sobol2_imp_vol_312_input = model_sobol2_input_312500[sobol2_imp_vol_312_filter, :]
+sobol2_imp_vol_312_output = sobol2_imp_vol_312500[sobol2_imp_vol_312_filter, :]
+
 sobol_price_100_filter = np.all(sobol_price_100000 != 0, axis = 1)
 sobol_price_100_input = model_sobol_input_100000[sobol_price_100_filter, :]
 sobol_price_100_output = sobol_price_100000[sobol_price_100_filter, :]
@@ -81,20 +103,31 @@ sobol_price_312_filter = np.all(sobol_price_312500 != 0, axis = 1)
 sobol_price_312_input = model_sobol_input_312500[sobol_price_312_filter, :]
 sobol_price_312_output = sobol_price_312500[sobol_price_312_filter, :]
 
-"""
+sobol2_price_100_filter = np.all(sobol2_price_100000 != 0, axis = 1)
+sobol2_price_100_input = model_sobol2_input_100000[sobol2_price_100_filter, :]
+sobol2_price_100_output = sobol2_price_100000[sobol2_price_100_filter, :]
+
+sobol2_price_200_filter = np.all(sobol2_price_200000 != 0, axis = 1)
+sobol2_price_200_input = model_sobol2_input_200000[sobol2_price_200_filter, :]
+sobol2_price_200_output = sobol2_price_200000[sobol2_price_200_filter, :]
+
+sobol2_price_312_filter = np.all(sobol2_price_312500 != 0, axis = 1)
+sobol2_price_312_input = model_sobol2_input_312500[sobol2_price_312_filter, :]
+sobol2_price_312_output = sobol2_price_312500[sobol2_price_312_filter, :]
+
 # Single filtering
-filtered_price_single = single_price_output[single_price_output != 0]
-filtered_single_model_price = single_input[single_price_output != 0]
-filtered_imp_vol_single = single_imp_vol_output[single_imp_vol_output != 0]
-filtered_single_model_imp_vol = single_input[single_imp_vol_output != 0]
+sobol2_single_price = sobol2_single_price_output[sobol2_single_price_output != 0]
+sobol2_single_price_input = sobol2_single_input[sobol2_single_price_output != 0]
+sobol2_single_imp_vol = sobol2_single_imp_vol_output[sobol2_single_imp_vol_output != 0]
+sobol2_single_imp_vol_input = sobol2_single_input[sobol2_single_imp_vol_output != 0]
 
 # shaping for NN's
-single_price_output = np.reshape(single_price_output, (-1, 1))
-single_imp_vol_output = np.reshape(single_imp_vol_output, (-1, 1))
-filtered_price_single = np.reshape(filtered_price_single, (-1, 1))
-filtered_imp_vol_single = np.reshape(filtered_imp_vol_single, (-1, 1))
-"""
+sobol2_single_price_input = np.reshape(sobol2_single_price_input, (-1, 1))
+sobol2_single_imp_vol_input = np.reshape(sobol2_single_imp_vol_input, (-1, 1))
+sobol2_single_price = np.reshape(sobol2_single_price, (-1, 1))
+sobol2_single_imp_vol = np.reshape(sobol2_single_imp_vol, (-1, 1))
 
+"""
 tanh_set = [
     [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 50, "HestonSobolGridImpVol1_3_50", True, "tanh"],
     [sobol_imp_vol_100_input, sobol_imp_vol_100_output, 3, 100, "HestonSobolGridImpVol1_3_100", True, "tanh"],
@@ -203,16 +236,55 @@ normalize_set = [
     [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 100, "HestonSobolGridImpVol3_5_100", False, "mix", "normalize"],
     [sobol_imp_vol_312_input, sobol_imp_vol_312_output, 5, 1000, "HestonSobolGridImpVol3_5_1000", False, "mix", "normalize"]
 ]
+"""
+
+sobol2_set = [
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 3, 100, "Sobol2_grid_imp_vol_312_3_100", False, "normal", "normalize"],
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 3, 1000, "Sobol2_grid_imp_vol_312_3_1000", False, "normal", "normalize"],
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 4, 100, "Sobol2_grid_imp_vol_312_4_100", False, "normal", "normalize"],
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 4, 1000, "Sobol2_grid_imp_vol_312_4_1000", False, "normal", "normalize"],
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 5, 100, "Sobol2_grid_imp_vol_312_5_100", False, "normal", "normalize"],
+    [sobol2_imp_vol_312_input, sobol2_imp_vol_312_output, 5, 1000, "Sobol2_grid_imp_vol_312_5_1000", False, "normal", "normalize"],
+    [sobol2_imp_vol_100_input, sobol2_imp_vol_100_output, 4, 100, "Sobol2_grid_imp_vol_100_4_100", False, "normal", "normalize"],
+    [sobol2_imp_vol_100_input, sobol2_imp_vol_100_output, 4, 1000, "Sobol2_grid_imp_vol_100_4_1000", False, "normal", "normalize"],
+]
+
+wide_set = [
+    [sobol2_price_312_input, sobol2_price_312_output, 3, 100, "Sobol2_grid_price_312_3_100", True, "normal", "standardize"],
+    [sobol2_price_312_input, sobol2_price_312_output, 4, 100, "Sobol2_grid_price_312_4_100", True, "normal", "standardize"],
+    [sobol2_price_312_input, sobol2_price_312_output, 5, 100, "Sobol2_grid_price_312_5_100", True, "normal", "standardize"],
+    [sobol2_price_312_input, sobol2_price_312_output, 3, 500, "Sobol2_grid_price_312_3_500", True, "normal", "standardize"],
+    [sobol2_price_312_input, sobol2_price_312_output, 4, 500, "Sobol2_grid_price_312_4_500", True, "normal", "standardize"],
+    [sobol2_price_312_input, sobol2_price_312_output, 5, 500, "Sobol2_grid_price_312_5_500", True, "normal", "standardize"]
+]
+
+single_price_set = [
+    [sobol2_single_price_input, sobol2_single_price, 3, 100, "sobol_single_price_3_100", False, "normal", "normalize"],
+    [sobol2_single_price_input, sobol2_single_price, 3, 500, "sobol_single_price_3_500", False, "normal", "normalize"],
+    [sobol2_single_price_input, sobol2_single_price, 4, 100, "sobol_single_price_4_100", False, "normal", "normalize"],
+    [sobol2_single_price_input, sobol2_single_price, 4, 500, "sobol_single_price_4_500", False, "normal", "normalize"],
+    [sobol2_single_price_input, sobol2_single_price, 5, 100, "sobol_single_price_5_100", False, "normal", "normalize"],
+    [sobol2_single_price_input, sobol2_single_price, 5, 500, "sobol_single_price_5_500", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 3, 100, "sobol_single_imp_vol_3_100", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 3, 500, "sobol_single_imp_vol_3_500", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 4, 100, "sobol_single_imp_vol_4_100", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 4, 500, "sobol_single_imp_vol_4_500", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 5, 100, "sobol_single_imp_vol_5_100", False, "normal", "normalize"],
+    [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 5, 500, "sobol_single_imp_vol_5_500", False, "normal", "normalize"]
+]
 
 cpu_cores = 4
 # parallel
 pool = Pool(cpu_cores)
 #res_sobol_normalize = pool.starmap(mg.NNModel, normalize_set)
 #res_sobol_tanh = pool.starmap(mg.NNModel, tanh_set)
-res_sobol_norm = pool.starmap(mg.NNModel, normal_out_set)
+res_sobol2 = pool.starmap(mg.NNModel, wide_set)
+print(res_sobol2)
+print("Starting single sets")
+res_single = pool.starmap(mg.NNModel, single_price_set)
 
 #res_price_grid = pool.starmap(mg.NNModel, paral_price_grid)
 #res_single = pool.starmap(mg.NNModel, paral_single)
 #print(res_sobol_mix)
 #print(res_sobol_tanh)
-print(res_sobol_norm)
+print(res_single)

@@ -37,25 +37,25 @@ def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.n
 
 def model_input_generator() -> np.ndarray:
     # Forward
-    forward = np.linspace(start = 75, stop = 125, num = 10)
+    forward = np.linspace(start = 50, stop = 150, num = 6)
 
     # vol
-    vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
+    vol = np.linspace(start = 0.01, stop = 0.2, num = 6)
 
     # kappa
-    kappa = np.linspace(start = 0.1, stop = 2, num = 5)
+    kappa = np.linspace(start = 0.1, stop = 2, num = 6)
 
     # theta
-    theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
+    theta = np.linspace(start = 0.01, stop = 0.2, num = 6)
 
     # epsilon
-    epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
+    epsilon = np.linspace(start = 0.1, stop = 2, num = 6)
 
     # rho
-    rho = np.linspace(start = -0.99, stop = 0.99, num = 10)
+    rho = np.linspace(start = -0.99, stop = 0.99, num = 6)
 
     # rate
-    rate = np.linspace(start = 0, stop = 0.2, num = 5)
+    rate = np.linspace(start = 0, stop = 0.2, num = 6)
 
     return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 
@@ -93,9 +93,9 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonGridInput.csv", model_input, delimiter=",")
-    np.savetxt("Data/hestonGridPrice.csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonGridImpVol.csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/hestonGridInput_wide.csv", model_input, delimiter=",")
+    np.savetxt("Data/hestonGridPrice_wide.csv", price_output, delimiter=",")
+    np.savetxt("Data/hestonGridImpVol_wide.csv", imp_vol_output, delimiter=",")
 
     """
     # Generating single outputs
