@@ -52,7 +52,7 @@ def find_nth_back(input_string : str, keyword : str, n : int):
         n -= 1
     return start
 
-models = glob.glob("Models/Heston*/*.h5")
+models = glob.glob("Models/Heston/HestonGrid*.h5")
 
 group_by_list = []
 for some_model in models:
@@ -120,7 +120,7 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
 
         j += 1
     
-    imp_ax.plot_trisurf(x, y, benchmark, color = "black", alpha = 0.5)
+    imp_ax.plot_trisurf(x, y, benchmark, color = "black", alpha = 0.5, label = "benchmark")
 
     imp_ax.set_ylabel("Strike")
     imp_ax.set_xlabel("Time to maturity")
@@ -138,7 +138,7 @@ def model_testing_plot(model_list : list, plot_group : str, some_input : np.ndar
     fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
     fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
     fig.suptitle(plot_group[plot_group.find("/")+1:].replace("/", "_"))
-    plt.savefig("Plots/"+plot_group[7:].replace("/", "_")+".png")
+    plt.savefig("Plots2/"+plot_group[7:].replace("/", "_")+".png")
     plt.close()
     return mse_list
 
@@ -158,7 +158,9 @@ for model_list in mse_bar_list:
         else:
             high_error_mse.append(some_model)
 
-def generate_bar_error(error_list : list, name : str):
+mse_bar_list = [item for items in mse_bar_list for item in items]
+
+def generate_barh_error(error_list : list, name : str):
     error_list.sort(key = lambda x: x[1])
     bar_fig = plt.figure(figsize=(10, 20), dpi = 200)
     bar_ax = bar_fig.add_subplot(111)
@@ -171,12 +173,26 @@ def generate_bar_error(error_list : list, name : str):
     bar_fig.suptitle("MSE with benchmark, "+name)
     plt.tight_layout()
     bar_fig.subplots_adjust(top=0.95, bottom=0.1)
-    plt.savefig("Plots/"+name+".png")
+    plt.savefig("Plots2/"+name+".png")
+    plt.close()
+
+def generate_bar_error(error_list : list, name : str):
+    error_list.sort(key = lambda x: x[1])
+    bar_fig = plt.figure(figsize=(20, 10), dpi = 200)
+    bar_ax = bar_fig.add_subplot(111)
+    labels, values = zip(*error_list)
+    x_pos = np.arange(len(labels))
+    bar_ax.bar(x_pos, values)
+    bar_ax.set_xticks(x_pos)
+    bar_ax.set_xticklabels(labels, rotation=90)
+    bar_fig.suptitle("MSE with benchmark, "+name)
+    plt.tight_layout()
+    plt.savefig("Plots2/"+name+".png")
     plt.close()
 
 generate_bar_error(low_error_mse, "low_error")
 generate_bar_error(med_error_mse, "med_error")
-generate_bar_error(high_error_mse, "high_error")
+generate_bar_error(high_error_mse, "price vs. implied")
 
 """
 #fig, axs = plt.subplots(5, 2)
