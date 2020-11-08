@@ -55,8 +55,8 @@ sobol_set = [
     [sobol_input, sobol_imp, 5, 1000, "sobol_5_1000", False, "normal", "normalize"]
 ]
 
-cpu_cores = 2
+cpu_cores = cpu_count()
 # parallel
 pool = Pool(cpu_cores)
 res_sobol = pool.starmap(mg.NNModel, sobol_set)
-print(res_sobol2)
+print(res_sobol)
