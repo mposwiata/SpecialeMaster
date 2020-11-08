@@ -76,7 +76,7 @@ def model_input_generator_old() -> np.ndarray:
     epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
 
     # rho
-    rho = np.linspace(start = -0.99, stop = 0.99, num = 5)
+    rho = np.linspace(start = -0.99, stop = 0.99, num = 10)
 
     # rate
     rate = np.linspace(start = 0, stop = 0.2, num = 5)
