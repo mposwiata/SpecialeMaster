@@ -1,17 +1,9 @@
 import numpy as np
-from keras.optimizers import Adam
-from keras.models import Sequential
-from keras.callbacks import LearningRateScheduler, EarlyStopping
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from keras import backend as k
-from multiprocess import Pool, cpu_count, Process
-import joblib
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
+from multiprocess import Pool, cpu_count
 
-from Thesis import NeuralNetworkGenerator as nng
-from sklearn.model_selection import train_test_split
 from Thesis.Heston import NNModelGenerator as mg
 from Thesis.Heston import DataGeneration as dg
 
@@ -55,7 +47,7 @@ sobol_set = [
     [sobol_input, sobol_imp, 5, 1000, "sobol_5_1000", False, "normal", "normalize"]
 ]
 
-cpu_cores = cpu_count()
+cpu_cores = min(cpu_count(), len(sobol_set))
 # parallel
 pool = Pool(cpu_cores)
 res_sobol = pool.starmap(mg.NNModel, sobol_set)
