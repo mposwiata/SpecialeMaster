@@ -11,22 +11,22 @@ from Thesis.misc import VanillaOptions as vo
 
 # Model inputs for test
 # Forward
-forward = 100
+forward = 112.5
 
 # vol
-vol = 0.04
+vol = 0.01
 
 # kappa
-kappa = 2
+kappa = 0.1
 
 # theta
-theta = 0.04
+theta = 0.01
 
 # epsilon
-epsilon = 0.5
+epsilon = 2
 
 # rho
-rho = -0.7
+rho = 0.8
 
 # rate
 rate = 0.05
@@ -52,7 +52,7 @@ def find_nth_back(input_string : str, keyword : str, n : int):
         n -= 1
     return start
 
-models = glob.glob("Models/Heston/HestonGrid*.h5")
+models = glob.glob("Models2/Heston/*.h5")
 
 group_by_list = []
 for some_model in models:
