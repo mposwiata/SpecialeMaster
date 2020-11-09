@@ -121,7 +121,7 @@ single_price_set = [
     [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 5, 500, "sobol_single_imp_vol_5_500", False, "normal", "normalize"]
 ]
 
-cpu_cores = cpu_count()
+cpu_cores = min(cpu_count(), single_price_set)
 # parallel
 pool = Pool(cpu_cores)
 #res_sobol = pool.starmap(mg.NNModel, paral_set)
