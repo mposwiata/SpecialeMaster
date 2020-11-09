@@ -54,7 +54,6 @@ sobol2_single_imp_vol_input = sobol2_single_input[sobol2_single_imp_vol_output !
 sobol2_single_imp_vol = np.reshape(sobol2_single_imp_vol, (-1, 1))
 
 paral_set = [
-    [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 1, 500, "sobol_200_1_500", False, "normal", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 1, 1000, "sobol_200_1_1000", False, "normal", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 2, 500, "sobol_200_2_500", False, "normal", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 2, 1000, "sobol_200_2_1000", False, "normal", "normalize"],
