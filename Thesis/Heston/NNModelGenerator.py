@@ -150,7 +150,7 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
     ]
 
     start_time = time.time()
-    model.fit(X_train_norm, Y_train, epochs=100, batch_size=1024, verbose = 1, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    model.fit(X_train_norm, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
     score = model.evaluate(X_test_norm, Y_test, verbose=2)
