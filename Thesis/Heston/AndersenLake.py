@@ -11,7 +11,7 @@ def alpha_min_func(alpha : float, model : HestonModel.HestonClass, option: vo.Va
     return model.logCharFunc(alpha, option.tau) - np.log(alpha * (alpha + 1)) + alpha * model.omega
 
 def optimal_alpha(model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
-    epsilon = np.finfo(float).eps # used for open / closed intervals, as brentq uses closed intervals
+    epsilon = np.sqrt(np.finfo(float).eps) # used for open / closed intervals, as brentq uses closed intervals
     alpha_min, alpha_max = alpha_min_max(model, option)
 
     if model.omega >= 0:
@@ -34,7 +34,7 @@ def k_p_m( x : float, model : HestonModel.HestonClass, option : vo.VanillaOption
     return ((first_term - np.sqrt(sqrt_term)) / denominator, (first_term + np.sqrt(sqrt_term)) / denominator)
 
 def critical_moments(k : float, model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
-    epsilon = np.finfo(float).eps
+    epsilon = np.sqrt(np.finfo(float).eps)
     k_minus, k_plus = k_p_m(0, model, option)
     beta = model.kappa - model.rho * model.epsilon * k
     
@@ -50,7 +50,7 @@ def critical_moments(k : float, model : HestonModel.HestonClass, option : vo.Van
         return np.cosh(D * option.tau / 2) + beta * np.sinh(D * option.tau / 2) / D
 
 def alpha_min_max(model : HestonModel.HestonClass, option : vo.VanillaOption) -> (float, float):
-    epsilon = np.finfo(float).eps # used for open / closed intervals, as brentq uses closed intervals
+    epsilon = np.sqrt(np.finfo(float).eps) # used for open / closed intervals, as brentq uses closed intervals
 
     k_minus, k_plus = k_p_m(0, model, option)
 
@@ -59,8 +59,8 @@ def alpha_min_max(model : HestonModel.HestonClass, option : vo.VanillaOption) ->
     k_minus_2pi, k_plus_2pi = k_p_m(2 * np.pi, model, option)
 
     # Finding k_
-    #k_min = brentq(critical_moments, a=k_minus_2pi + epsilon, b=k_minus - epsilon, args=(model, option))
-    k_min = brentq(critical_moments, a=k_minus_2pi, b=k_minus, args=(model, option))
+    k_min = brentq(critical_moments, a=k_minus_2pi + epsilon, b=k_minus - epsilon, args=(model, option))
+    #k_min = brentq(critical_moments, a=k_minus_2pi, b=k_minus, args=(model, option))
 
     kappa_rho_epsilon = model.kappa - model.rho * model.epsilon
 

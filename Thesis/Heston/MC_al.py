@@ -7,6 +7,7 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras import backend as k
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
+from multiprocess import Pool, cpu_count
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
@@ -45,7 +46,7 @@ def plot_func(x_axis : np.array, easy_output : list, hard_output : list, title :
     hard_ax.set_title("Hard case")
     fig.subplots_adjust(top=0.9, left=0.1, right=0.95, bottom=0.1)
     fig.legend(handles, labels, loc="lower center", ncol = 2, fontsize=15)
-    plt.savefig("al_mc_"+title+".png")
+    plt.savefig("al_mc_"+title.replace(" ", "_").replace(",","")+".png")
     plt.close()
 
 def generate_network(X, Y):
@@ -55,7 +56,7 @@ def generate_network(X, Y):
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
     ]
-    model = nng.NN_generator(2, 25, 1, 1)
+    model = nng.NN_generator(2, 25, np.shape(X)[1], np.shape(Y)[1])
 
     model.compile(
         loss = 'mean_squared_error', #mean squared error
@@ -63,6 +64,24 @@ def generate_network(X, Y):
     )
 
     model.fit(X, Y, epochs=100, batch_size=10, verbose = 2, callbacks = callbacks_list, validation_split = 0.1)
+
+    return model
+
+def generate_multi_network(X, Y):
+    # Modelling
+    adam = Adam()
+
+    callbacks_list = [
+        LearningRateScheduler(lr_schedule, verbose = 0),
+    ]
+    model = nng.NN_generator(4, 20, np.shape(X)[1], np.shape(Y)[1])
+
+    model.compile(
+        loss = 'mean_squared_error', #mean squared error
+        optimizer = adam
+    )
+
+    model.fit(X, Y, epochs=100, batch_size=128, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
 
     return model
 
@@ -81,6 +100,16 @@ def generate_predictions(test_x, model, norm):
     grads2 = tape.gradient(grads, inp_tensor) / ((norm.data_max_ - norm.data_min_) ** 2)
 
     return predict, grads, grads2
+
+def calc_prices(spot : float, epsilon : float):
+    some_model = hm.HestonClass(spot, vol1, kappa1, theta1, epsilon, rho1, rate) # case 1
+    some_model2 = hm.HestonClass(spot, vol2, kappa2, theta2, epsilon, rho2, rate)
+    al1 = al.Andersen_Lake(some_model, some_option)
+    mc1 = mc.Heston_monte_carlo(some_model, some_option, 10000)
+    al2 = al.Andersen_Lake(some_model2, some_option)
+    mc2 = mc.Heston_monte_carlo(some_model2, some_option, 10000)
+
+    return al1, mc1, al2, mc2
 
 ### Generating input data
 spot = np.linspace(start = 50, stop = 150, num = 1000)
@@ -139,23 +168,27 @@ mc_output_multiple_1 = np.zeros(len(input_array))
 al_output_multiple_2 = np.zeros(len(input_array))
 mc_output_multiple_2 = np.zeros(len(input_array))
 
-j = 0
-for some_input in input_array:
-    some_model = hm.HestonClass(some_input[0], vol1, kappa1, theta1, some_input[1], rho1, rate) # case 1
-    some_model2 = hm.HestonClass(some_input[0], vol2, kappa2, theta2, some_input[1], rho2, rate)
-    al_output_multiple_1[j] = al.Andersen_Lake(some_model, some_option)
-    mc_output_multiple_1[j] = mc.Heston_monte_carlo(some_model, some_option, 1000)
-    al_output_multiple_2[j] = al.Andersen_Lake(some_model2, some_option)
-    mc_output_multiple_2[j] = mc.Heston_monte_carlo(some_model2, some_option, 1000)
-    j += 1
+# going parallel
+cpu_cores = cpu_count()
 
-np.savetxt("Data/mc_output_multiple_1.csv", mc_output_multiple_1, delimiter=",")
-np.savetxt("Data/mc_output_multiple_2.csv", mc_output_multiple_2, delimiter=",")
+# parallel
+pool = Pool(cpu_cores)
+res = pool.starmap(calc_prices, input_array)
+al_output_multiple_1 = np.array(res)[:,0]
+mc_output_multiple_1 = np.array(res)[:,1]
+al_output_multiple_2 = np.array(res)[:,2]
+mc_output_multiple_2 = np.array(res)[:,3]
+
 np.savetxt("Data/al_output_multiple_1.csv", al_output_multiple_1, delimiter=",")
+np.savetxt("Data/mc_output_multiple_1.csv", mc_output_multiple_1, delimiter=",")
 np.savetxt("Data/al_output_multiple_2.csv", al_output_multiple_2, delimiter=",")
+np.savetxt("Data/mc_output_multiple_2.csv", mc_output_multiple_2, delimiter=",")
 
+al_output_multiple_1 = np.reshape(al_output_multiple_1, (-1, 1))
+mc_output_multiple_1 = np.reshape(mc_output_multiple_1, (-1, 1))
+al_output_multiple_2 = np.reshape(al_output_multiple_2, (-1, 1))
+mc_output_multiple_2 = np.reshape(mc_output_multiple_2, (-1, 1))
 
-"""
 easy_index = input_array[:,1] == 0.5
 hard_index = input_array[:,1] == 2
 
@@ -174,16 +207,22 @@ mc_model1 = generate_network(X, mc_output1)
 al_model2 = generate_network(X, al_output2)
 mc_model2 = generate_network(X, mc_output2)
 
-al_multi_model1 = generate_network(X_mutli, al_output_multiple_1)
-mc_multi_model1 = generate_network(X_mutli, mc_output_multiple_1)
-al_multi_model2 = generate_network(X_mutli, al_output_multiple_2)
-mc_multi_model2 = generate_network(X_mutli, mc_output_multiple_2)
+al_multi_model1 = generate_multi_network(X_multi, al_output_multiple_1)
+mc_multi_model1 = generate_multi_network(X_multi, mc_output_multiple_1)
+al_multi_model2 = generate_multi_network(X_multi, al_output_multiple_2)
+mc_multi_model2 = generate_multi_network(X_multi, mc_output_multiple_2)
 
 ### Model testing
 spot_plot = np.linspace(start = 75, stop = 125, num = 100)
 spot_plot = np.reshape(spot_plot, (-1, 1))
+eps1_plot = np.reshape(np.repeat(1, len(spot_plot)), (-1, 1))
+eps2_plot = np.reshape(np.repeat(epsilon2, len(spot_plot)), (-1, 1))
+input_multi_easy = np.concatenate([spot_plot, eps1_plot], axis = 1)
+input_multi_hard = np.concatenate([spot_plot, eps2_plot], axis = 1)
 
 test_input = norm_features.transform(spot_plot)
+input_multi_easy = norm_features_multiple.transform(input_multi_easy)
+input_multi_hard = norm_features_multiple.transform(input_multi_hard)
 
 al_predict1, al_grads1, al_grads1_2 = generate_predictions(test_input, al_model1, norm_features)
 mc_predict1, mc_grads1, mc_grads1_2 = generate_predictions(test_input, mc_model1, norm_features)
@@ -194,67 +233,12 @@ plot_func(spot_plot, [al_predict1, mc_predict1], [al_predict2, mc_predict2], "Pr
 plot_func(spot_plot, [al_grads1, mc_grads1], [al_grads2, mc_grads2], "Delta")
 plot_func(spot_plot, [al_grads1_2, mc_grads1_2], [al_grads2_2, mc_grads2_2], "Gamma")
 
+al_multi_predict1, al_multi_grads1, al_multi_grads1_2 = generate_predictions(input_multi_easy, al_multi_model1, norm_features_multiple)
+mc_multi_predict1, mc_multi_grads1, mc_multi_grads1_2 = generate_predictions(input_multi_easy, mc_multi_model1, norm_features_multiple)
+al_multi_predict2, al_multi_grads2, al_multi_grads2_2 = generate_predictions(input_multi_hard, al_multi_model2, norm_features_multiple)
+mc_multi_predict2, mc_multi_grads2, mc_multi_grads2_2 = generate_predictions(input_multi_hard, mc_multi_model2, norm_features_multiple)
 
-al_predictions = al_model.predict(test_input)
-mc_predictions = mc_model.predict(test_input)
+plot_func(spot_plot, [al_multi_predict1, mc_multi_predict1], [al_multi_predict2, mc_multi_predict2], "Predictions, multi")
+plot_func(spot_plot, [al_multi_grads1[:,0], mc_multi_grads1[:,0]], [al_multi_grads2[:,0], mc_multi_grads2[:,0]], "Delta, multi")
+plot_func(spot_plot, [al_multi_grads1_2[:,0], mc_multi_grads1_2[:,0]], [al_multi_grads2_2[:,0], mc_multi_grads2_2[:,0]], "Gamma, multi")
 
-plt.figure(figsize=(10, 10), dpi = 200)
-plt.plot(spot_plot, al_predictions, 'r-', alpha=0.5, label="Andersen Lake")
-plt.plot(spot_plot, mc_predictions, 'g-', alpha=0.5, label="Monte Carlo")
-plt.legend()
-plt.title("Predictions")
-plt.xlabel("Strike")
-plt.savefig("al_mc_predict.png")
-plt.close()
-
-### Derivatives
-inp_tensor = tf.convert_to_tensor(test_input)
-
-### Andersen Lake model
-with tf.GradientTape() as al_tape:
-    al_tape.watch(inp_tensor)
-    with tf.GradientTape() as al_tape2:
-        al_tape2.watch(inp_tensor)
-        al_predict = al_model(inp_tensor)
-    al_grads = al_tape2.gradient(al_predict, inp_tensor) / (norm_features.data_max_ - norm_features.data_min_)
-
-al_grads2 = al_tape.gradient(al_grads, inp_tensor) / ((norm_features.data_max_ - norm_features.data_min_) ** 2)
-
-### Monte Carlo model
-with tf.GradientTape() as mc_tape:
-    mc_tape.watch(inp_tensor)
-    with tf.GradientTape() as mc_tape2:
-        mc_tape2.watch(inp_tensor)
-        mc_predict = mc_model(inp_tensor)
-    mc_grads = mc_tape2.gradient(mc_predict, inp_tensor) / (norm_features.data_max_ - norm_features.data_min_)
-mc_grads2 = mc_tape.gradient(mc_grads, inp_tensor) / ((norm_features.data_max_ - norm_features.data_min_) ** 2)
-
-plt.figure(figsize=(10, 10), dpi = 200)
-plt.plot(spot_plot, al_grads, 'r-', alpha=0.5, label="Andersen Lake")
-plt.plot(spot_plot, mc_grads, 'g-', alpha=0.5, label="Monte Carlo")
-plt.legend()
-plt.title("Delta")
-plt.xlabel("Strike")
-plt.savefig("al_mc_delta.png")
-plt.close()
-
-plt.figure(figsize=(10, 10), dpi = 200)
-plt.plot(spot_plot, al_grads2, 'r-', alpha=0.5, label="Andersen Lake")
-plt.plot(spot_plot, mc_grads2, 'g-', alpha=0.5, label="Monte Carlo")
-plt.legend()
-plt.title("Gamma")
-plt.xlabel("Strike")
-plt.savefig("al_mc_gamma.png")
-plt.close()
-
-
-start = time.time()
-al.Andersen_Lake(test_model2, some_option)
-stop = time.time()
-print("AL: ", stop - start)
-
-start = time.time()
-mc.Heston_monte_carlo(test_model2, some_option, 1000)
-stop = time.time()
-print("MC: ", stop - start)
-"""
