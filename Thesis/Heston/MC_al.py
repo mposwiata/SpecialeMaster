@@ -104,6 +104,7 @@ strike = 100
 
 some_option = vo.EUCall(tau, strike)
 
+print("Calculating single data")
 ### For single input
 al_output1 = np.zeros(len(spot))
 mc_output1 = np.zeros(len(spot))
@@ -131,6 +132,7 @@ np.savetxt("Data/mc_output1.csv", mc_output1, delimiter=",")
 np.savetxt("Data/al_output2.csv", al_output2, delimiter=",")
 np.savetxt("Data/mc_output2.csv", mc_output2, delimiter=",")
 
+print("Calculating multi data")
 ### For multiple input
 al_output_multiple_1 = np.zeros(len(input_array))
 mc_output_multiple_1 = np.zeros(len(input_array))
@@ -147,10 +149,10 @@ for some_input in input_array:
     mc_output_multiple_2[j] = mc.Heston_monte_carlo(some_model2, some_option, 1000)
     j += 1
 
-np.savetxt("Data/al_output_multiple_1.csv", al_output_multiple_1, delimiter=",")
 np.savetxt("Data/mc_output_multiple_1.csv", mc_output_multiple_1, delimiter=",")
-np.savetxt("Data/al_output_multiple_2.csv", al_output_multiple_2, delimiter=",")
 np.savetxt("Data/mc_output_multiple_2.csv", mc_output_multiple_2, delimiter=",")
+np.savetxt("Data/al_output_multiple_1.csv", al_output_multiple_1, delimiter=",")
+np.savetxt("Data/al_output_multiple_2.csv", al_output_multiple_2, delimiter=",")
 
 
 """

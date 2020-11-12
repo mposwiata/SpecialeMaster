@@ -33,7 +33,7 @@ def k_p_m( x : float, model : HestonModel.HestonClass, option : vo.VanillaOption
 
     return ((first_term - np.sqrt(sqrt_term)) / denominator, (first_term + np.sqrt(sqrt_term)) / denominator)
 
-def critical_moments(k :float, model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
+def critical_moments(k : float, model : HestonModel.HestonClass, option : vo.VanillaOption) -> float:
     epsilon = np.finfo(float).eps
     k_minus, k_plus = k_p_m(0, model, option)
     beta = model.kappa - model.rho * model.epsilon * k
@@ -59,7 +59,8 @@ def alpha_min_max(model : HestonModel.HestonClass, option : vo.VanillaOption) ->
     k_minus_2pi, k_plus_2pi = k_p_m(2 * np.pi, model, option)
 
     # Finding k_
-    k_min = brentq(critical_moments, a=k_minus_2pi + epsilon, b=k_minus - epsilon, args=(model, option))
+    #k_min = brentq(critical_moments, a=k_minus_2pi + epsilon, b=k_minus - epsilon, args=(model, option))
+    k_min = brentq(critical_moments, a=k_minus_2pi, b=k_minus, args=(model, option))
 
     kappa_rho_epsilon = model.kappa - model.rho * model.epsilon
 
