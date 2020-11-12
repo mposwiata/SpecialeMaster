@@ -2,5 +2,6 @@ Data/
 **/__pycache__/
 Models/
 Models2/
+! Thesis/Models/
 Plots/
 Plots2/

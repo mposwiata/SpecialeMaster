@@ -72,11 +72,11 @@ paral_set = [
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 3, 500, "sobol_200_3_500", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 3, 1000, "sobol_200_3_1000", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 4, 500, "sobol_200_4_500", False, "tanh", "normalize"],
-    [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 4, 1000, "sobol_200_4_500", False, "tanh", "normalize"],
+    [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 4, 1000, "sobol_200_4_1000", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 5, 50, "sobol_200_5_50", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 5, 100, "sobol_200_5_100", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 5, 500, "sobol_200_5_500", False, "tanh", "normalize"],
-    [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 5, 1000, "sobol_200_5_500", False, "tanh", "normalize"],
+    [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 5, 1000, "sobol_200_5_1000", False, "tanh", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 3, 500, "sobol_200_3_500", False, "mix", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 3, 1000, "sobol_200_3_1000", False, "mix", "normalize"],
     [sobol2_imp_vol_200_input, sobol2_imp_vol_200_output, 4, 500, "sobol_200_4_500", False, "mix", "normalize"],
@@ -120,10 +120,10 @@ single_price_set = [
     [sobol2_single_imp_vol_input, sobol2_single_imp_vol, 5, 500, "sobol_single_imp_vol_5_500", False, "normal", "normalize"]
 ]
 
-cpu_cores = min(cpu_count(), len(single_price_set))
+cpu_cores = cpu_count()
 # parallel
 pool = Pool(cpu_cores)
-#res_sobol = pool.starmap(mg.NNModel, paral_set)
-res_single = pool.starmap(mg.NNModel, single_price_set)
+res_sobol = pool.starmap(mg.NNModel, paral_set)
+#res_single = pool.starmap(mg.NNModel, single_price_set)
 #print(res_sobol)
-print(res_single)
+print(res_sobol)
