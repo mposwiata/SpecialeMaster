@@ -7,6 +7,9 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras import backend as k
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
+import sys
+import os
+sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis.Heston import MonteCarlo as mc, AndersenLake as al, HestonModel as hm, NNModelGenerator as mg
 from Thesis.misc import VanillaOptions as vo
