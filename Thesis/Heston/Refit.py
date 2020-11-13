@@ -138,9 +138,9 @@ price_imp_models_imp = glob.glob("Models2/price_vs_imp/sobol*.h5")
 price_imp_models_price_list = list(zip(price_imp_models_price, repeat(data_set_price)))
 price_imp_models_imp_list = list(zip(price_imp_models_imp, repeat(data_set)))
 
-standard_normal_models = glob.glob("Models2/stardard_vs_normal/*.h5")
-standard_normal_tanh_models = glob.glob("Models2/stardard_vs_normal_tanh/*.h5")
-standard_normal_mix_models = glob.glob("Models2/stardard_vs_normal_mix/*.h5")
+standard_normal_models = glob.glob("Models2/standard_vs_normal/*.h5")
+standard_normal_tanh_models = glob.glob("Models2/standard_vs_normal_tanh/*.h5")
+standard_normal_mix_models = glob.glob("Models2/standard_vs_normal_mix/*.h5")
 
 standard_normal_models_list = list(zip(standard_normal_models, repeat(data_set)))
 standard_normal_tanh_models_list = list(zip(standard_normal_tanh_models, repeat(data_set)))
@@ -167,7 +167,6 @@ paral_list = [
     price_imp_models_imp_list,
     standard_normal_models_list,
     standard_normal_tanh_models_list,
-    standard_normal_mix_models_list,
     grid_list,
     sobol_wide_list,
     output_scaling_models_list,
@@ -179,7 +178,6 @@ name_list = [
     "price_imp_models_imp_list",
     "standard_normal_models_list",
     "standard_normal_tanh_models_list",
-    "standard_normal_mix_models_list",
     "grid_list",
     "sobol_wide_list",
     "output_scaling_models_list",
