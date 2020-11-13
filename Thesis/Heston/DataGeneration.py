@@ -6,7 +6,7 @@ import os
 sys.path.append(os.getcwd()) # added for calc server support
 from multiprocess import Pool, cpu_count
 
-from Thesis.Heston import AndersenLake as al, HestonModel as hm
+from Thesis.Heston import AndersenLake as al, HestonModel as hm, Sobol
 from Thesis.misc import VanillaOptions as vo
 
 def calc_imp_vol(input_array : np.array, option_list : np.array) -> (np.array, np.array):
@@ -117,27 +117,8 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonGridInput_wide.csv", model_input, delimiter=",")
-    np.savetxt("Data/hestonGridPrice_wide.csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonGridImpVol_wide.csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/hestonGridInput2_wide.csv", model_input, delimiter=",")
+    np.savetxt("Data/hestonGridPrice2_wide.csv", price_output, delimiter=",")
+    np.savetxt("Data/hestonGridImpVol2_wide.csv", imp_vol_output, delimiter=",")
 
-    """
-    # Generating single outputs
-    total_comb = np.shape(model_input)[0] * np.shape(option_input)[0]
-    total_cols = np.shape(model_input)[1] + np.shape(option_input)[1]
-    total_options = np.shape(option_input)[0]
-    singleInput = np.empty((total_comb, total_cols))
-    singlePrice_output = np.empty((total_comb, 1))
-    singleImpVol_output = np.empty((total_comb, 1))
-    for i in range(np.shape(model_input)[0]):
-        for j in range(total_options):
-            singleInput[i*total_options+j, 0:np.shape(model_input)[1]] = model_input[i]
-            singleInput[i*total_options+j, (np.shape(model_input)[1]) : total_cols] = option_input[j]
-            singlePrice_output[i*total_options+j] = price_output[i, j]
-            singleImpVol_output[i*total_options+j] = impVol_output[i, j]
-
-    # saving dataset2
-    np.savetxt("Data/hestonSingleInput.csv", singleInput, delimiter=",")
-    np.savetxt("Data/hestonSinglePrice.csv", singlePrice_output, delimiter=",")
-    np.savetxt("Data/hestonSingleImpVol.csv", impVol_output, delimiter=",")
-    """
+    Sobol.generate_sobol_input(len(model_input))

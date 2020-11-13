@@ -25,8 +25,8 @@ sobol_input = np.loadtxt("Data/hestonSobolGridInput2_279936.csv", delimiter = ",
 sobol_imp = np.loadtxt("Data/hestonSobolGridImpVol2_279936.csv", delimiter = ",")
 
 ### Sobol, 200.000
-model_sobol2_input_200000 = np.loadtxt("Data/hestonSobolGridInput2_200000.csv", delimiter = ",")
-sobol2_imp_vol_200000 = np.loadtxt("Data/hestonSobolGridImpVol2_200000.csv", delimiter = ",")
+model_sobol2_input_200000 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
+sobol2_imp_vol_200000 = np.loadtxt("Data/hestonSobolGridImpVol2_compare2_200000.csv", delimiter = ",")
 
 # Grid filtering, rows with 0 in
 wide_imp_filter = np.all(wide_imp != 0, axis = 1)

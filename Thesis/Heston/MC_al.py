@@ -74,7 +74,7 @@ def generate_multi_network(X, Y):
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
     ]
-    model = nng.NN_generator(4, 20, np.shape(X)[1], np.shape(Y)[1])
+    model = nng.NN_generator(2, 25, np.shape(X)[1], np.shape(Y)[1])
 
     model.compile(
         loss = 'mean_squared_error', #mean squared error
@@ -95,9 +95,11 @@ def generate_predictions(test_x, model, norm):
         with tf.GradientTape() as tape2:
             tape2.watch(inp_tensor)
             predict = model(inp_tensor)
-        grads = tape2.gradient(predict, inp_tensor) / (norm.data_max_ - norm.data_min_)
+        grads = tape2.gradient(predict, inp_tensor)
 
     grads2 = tape.gradient(grads, inp_tensor) / ((norm.data_max_ - norm.data_min_) ** 2)
+
+    grads = grads / (norm.data_max_ - norm.data_min_)
 
     return predict, grads, grads2
 
@@ -213,9 +215,9 @@ al_multi_model2 = generate_multi_network(X_multi, al_output_multiple_2)
 mc_multi_model2 = generate_multi_network(X_multi, mc_output_multiple_2)
 
 ### Model testing
-spot_plot = np.linspace(start = 75, stop = 125, num = 100)
+spot_plot = np.linspace(start = 75, stop = 125, num = 200)
 spot_plot = np.reshape(spot_plot, (-1, 1))
-eps1_plot = np.reshape(np.repeat(1, len(spot_plot)), (-1, 1))
+eps1_plot = np.reshape(np.repeat(epsilon1, len(spot_plot)), (-1, 1))
 eps2_plot = np.reshape(np.repeat(epsilon2, len(spot_plot)), (-1, 1))
 input_multi_easy = np.concatenate([spot_plot, eps1_plot], axis = 1)
 input_multi_hard = np.concatenate([spot_plot, eps2_plot], axis = 1)
