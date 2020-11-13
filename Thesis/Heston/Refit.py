@@ -32,6 +32,8 @@ def lr_schedule(epoch, rate):
     return lr
 
 def refit_model(model_string : str, data : list):
+    if os.path.exists(model_string.replace("Models2", "Models3")):
+        return 0
     model = load_model(model_string)
     ending = model_string[-4:-3]
 
@@ -134,7 +136,7 @@ price_imp_models_price = glob.glob("Models2/price_vs_imp/standard_price*.h5")
 price_imp_models_imp = glob.glob("Models2/price_vs_imp/sobol*.h5")
 
 price_imp_models_price_list = list(zip(price_imp_models_price, repeat(data_set_price)))
-price_imp_models_price_list = list(zip(price_imp_models_imp, repeat(data_set)))
+price_imp_models_imp_list = list(zip(price_imp_models_imp, repeat(data_set)))
 
 standard_normal_models = glob.glob("Models2/stardard_vs_normal/*.h5")
 standard_normal_tanh_models = glob.glob("Models2/stardard_vs_normal_tanh/*.h5")
@@ -160,14 +162,40 @@ output_scaling_models = glob.glob("Models2/output_scaling/*/*.h5")
 
 output_scaling_models_list = list(zip(output_scaling_models, repeat(data_set)))
 
-input_list = single_list + grid_list + sobol_wide_list + output_scaling_models_list
+paral_list = [
+    price_imp_models_price_list,
+    price_imp_models_imp_list,
+    standard_normal_models_list,
+    standard_normal_tanh_models_list,
+    standard_normal_mix_models_list,
+    grid_list,
+    sobol_wide_list,
+    output_scaling_models_list,
+    single_list
+]
 
-cpu_cores = min(cpu_count(), len(input_list))
-# parallel
-pool = Pool(cpu_cores)
-res = pool.starmap(refit_model, input_list)
-pool.close()
-print(res)
+name_list = [
+    "price_imp_models_price_list",
+    "price_imp_models_imp_list",
+    "standard_normal_models_list",
+    "standard_normal_tanh_models_list",
+    "standard_normal_mix_models_list",
+    "grid_list",
+    "sobol_wide_list",
+    "output_scaling_models_list",
+    "single_list"
+]
+
+i = 0
+for some_list in paral_list:
+    print("Starting: ", name_list[i])
+    cpu_cores = min(cpu_count(), len(some_list))
+    pool = Pool(cpu_cores)
+    res = pool.starmap(refit_model, some_list)
+    pool.close()
+    print(res)
+    print("Stopping: ", name_list[i])
+    i += 1
 
 """
 norm_folder = "Models3/norms/"
