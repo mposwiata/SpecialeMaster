@@ -66,8 +66,9 @@ def generate_sobol_input(no_sobol : int):
     return 0
 
 if __name__ == "__main__":
+    print("nothing")
     #generate_sobol_input(100000)
     #generate_sobol_input(200000)
     #generate_sobol_input(312500)
-
+    
     #generate_sobol_input(279936) # matching number of inputs for the wide model
