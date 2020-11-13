@@ -123,7 +123,7 @@ single_price_set = [
 cpu_cores = cpu_count()
 # parallel
 pool = Pool(cpu_cores)
-res_sobol = pool.starmap(mg.NNModel, paral_set)
-#res_single = pool.starmap(mg.NNModel, single_price_set)
+#res_sobol = pool.starmap(mg.NNModel, paral_set)
+res_single = pool.starmap(mg.NNModel, single_price_set)
 #print(res_sobol)
-print(res_sobol)
+print(res_single)

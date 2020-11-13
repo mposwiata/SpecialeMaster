@@ -196,6 +196,99 @@ def model_testing_plot(model_list : list, plot_title : str, some_input : np.ndar
     plt.close()
     return mse_list
 
+def model_testing(model_list : list, plot_title : str, some_input : np.ndarray, option : np.ndarray):
+    model_class = hm.HestonClass(some_input[0, 0], some_input[0, 1], some_input[0, 2], some_input[0, 3], some_input[0, 4], some_input[0, 5], some_input[0, 6])
+    ending_list = [some_list[-4:-3] for some_list in model_list]
+    some_option_list = np.array([])
+    for some_option in option:
+        some_option_list = np.append(some_option_list, vo.EUCall(some_option[0], some_option[1]))
+    benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
+
+    benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
+    fig = plt.figure(figsize=(30, 10), dpi = 200)
+    imp_ax = fig.add_subplot(121, projection='3d')
+    error_ax = fig.add_subplot(122, projection='3d')
+
+    no_models = len(model_list)
+    color=iter(plt.cm.rainbow(np.linspace(0,1,no_models)))
+    x = option[:,0]
+    y = option[:,1]
+    mse_list = []
+    j = 0
+    for model_string in model_list:    
+        model = load_model(model_string)
+        model_folder = model_string[:model_string.rfind("/") + 1]
+        norm_folder = "Models3/norms/"
+        ### Check if model includes scaling
+        if (model_string.find("/scaling") != -1):
+            normal_out = True
+            norm_labels = joblib.load(norm_folder+"norm_labels.pkl")
+
+        if (model_string.find("price") != -1):
+            norm_feature = joblib.load(norm_folder+"norm_feature_price.pkl")
+        elif (model_string.find("grid_vs_sobol") != -1):
+            if (model_string.find("sobol") != -1):
+                norm_feature = joblib.load(norm_folder+"norm_feature_wide.pkl")
+            else:
+                norm_feature = joblib.load(norm_folder+"norm_feature_grid.pkl")
+        elif (model_string.find("single") != -1):
+            norm_feature = joblib.load(norm_folder+"norm_feature_single.pkl")
+        else:
+            norm_feature = joblib.load(norm_folder+"norm_feature.pkl")
+
+        if (model_string.find("Single") != -1 or model_string.find("single") != -1): # single output
+            predictions = np.zeros(np.shape(option)[0])
+            for i in range(np.shape(option)[0]):
+                test_single_input = np.concatenate((some_input, option[i]), axis=None)
+                test_single_input = np.reshape(test_single_input, (1, -1))
+                if normal_out:
+                    predictions[i] = norm_labels.inverse_transform(model.predict(norm_feat.transform(test_single_input)))
+                else:
+                    predictions[i] = model.predict(norm_feat.transform(test_single_input))
+        else: # we have a grid
+            if normal_out:
+                predictions = norm_labels.inverse_transform(model.predict(norm_feat.transform(some_input)))[0]
+            else:
+                predictions = model.predict(norm_feat.transform(some_input))[0]
+
+        # if prices, calc imp vol
+        if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
+            imp_vol_predictions = np.zeros(np.shape(predictions))
+            for i in range(np.shape(predictions)[0]):
+                imp_vol_predictions[i] = model_class.impVol(predictions[i], some_option_list[i])
+            predictions = imp_vol_predictions
+        c = next(color)
+
+        z = predictions
+        name = model_string[model_string.find("/")+1:]
+        imp_ax.plot_trisurf(x, y, z, alpha = 0.5, label = name, color = c)
+        mse_list.append((name, mse(predictions, benchmark)))
+        error_ax.plot_trisurf(x, y, z - benchmark, alpha = 0.5, label = name, color = c)
+
+        j += 1
+    
+    imp_ax.plot_trisurf(x, y, benchmark, color = "black", alpha = 0.5, label = "benchmark")
+
+    imp_ax.set_ylabel("Strike")
+    imp_ax.set_xlabel("Time to maturity")
+    imp_ax.set_title("Implied volatility")
+
+    error_ax.set_ylabel("Strike")
+    error_ax.set_xlabel("Time to maturity")
+    error_ax.set_title("Error")
+
+    handles, labels = imp_ax.get_legend_handles_labels()
+    for i in range(len(handles)):
+        handles[i]._facecolors2d = handles[i]._facecolors3d 
+        handles[i]._edgecolors2d = handles[i]._edgecolors3d 
+
+    fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.3)
+    fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
+    fig.suptitle(plot_title)
+    plt.savefig("Plots2/"+plot_title+".png")
+    plt.close()
+    return mse_list
+
 def generate_barh_error(error_list : list, name : str):
     error_list.sort(key = lambda x: x[1])
     bar_fig = plt.figure(figsize=(10, 20), dpi = 200)
@@ -240,36 +333,15 @@ generate_plots(price_vs_imp, "price_vs_imp")
 
 generate_plots(all_vs_filter, "all_vs_filter")
 
+### Using 200k sobol sets
+price_imp_models = glob.glob("Models3/price_vs_imp/*.h5")
+standard_normal_models = glob.glob("Models3/stardard_vs_normal/*.h5")
+standard_normal_tanh_models = glob.glob("Models3/stardard_vs_normal_tanh/*.h5")
+standard_normal_mix_models = glob.glob("Models3/stardard_vs_normal_mix/*.h5")
 
-"""
-### Compare layers and neurons
-heston_layers_easy = model_testing_plot(Heston_non_normal, "activation_function_easy", easy_case(), option_input())
-generate_bar_error(heston_layers_easy, "activation_function_mse_easy")
-heston_layers_hard = model_testing_plot(Heston_non_normal, "activation_function_hard", hard_case(), option_input())
-generate_bar_error(heston_layers_easy, "activation_function_mse_hard")
+### Using single sets, from 200k sobol
+single_models = glob.glob("Models3/single/*.h5")
 
-### Generate Heston vs sobol
-grid_vs_sobol_easy = model_testing_plot(Grid_vs_sobol, "grid_vs_sobol_easy", easy_case(), option_input())
-generate_bar_error(grid_vs_sobol_easy, "grid_sobol_mse_easy")  
-grid_vs_sobol_hard = model_testing_plot(Grid_vs_sobol, "grid_vs_sobol_hard", hard_case(), option_input())
-generate_bar_error(grid_vs_sobol_hard, "grid_sobol_mse_hard")  
-
-### Generate heston grid vs single
-grid_vs_single_easy = model_testing_plot(Heston_single_compare, "single_compare_easy", easy_case(), option_input())
-generate_bar_error(grid_vs_single_easy, "grid_single_mse_easy")
-grid_vs_single_hard = model_testing_plot(Heston_single_compare, "single_compare_hard", hard_case(), option_input())
-generate_bar_error(grid_vs_single_hard, "grid_single_mse_hard")
-
-### Compare normalizing output
-heston_normal_output_easy = model_testing_plot(Heston_normal_compare, "normalize_output_easy", easy_case(), option_input())
-generate_bar_error(heston_normal_output_easy, "normalize_output_mse_easy")
-heston_normal_output_hard = model_testing_plot(Heston_normal_compare, "normalize_output_hard", hard_case(), option_input())
-generate_bar_error(heston_normal_output_hard, "normalize_output_mse_hard")
-
-### Compare activation functions
-heston_activation_function_easy = model_testing_plot(Heston_activation_compare, "activation_function_easy", easy_case(), option_input())
-generate_bar_error(heston_activation_function_easy, "activation_function_mse_easy")
-heston_activation_function_hard = model_testing_plot(Heston_activation_compare, "activation_function_hard", hard_case(), option_input())
-generate_bar_error(heston_activation_function_hard, "activation_function_mse_hard")
-
-"""
+### Using grid set, 279936 sets
+grid_models = glob.glob("Models3/grid_vs_sobol/standard*.h5")
+sobol_grid_models = glob.glob("Models3/grid_vs_sobol/sobol*.h5")
