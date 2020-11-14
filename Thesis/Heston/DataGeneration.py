@@ -4,7 +4,7 @@ import time
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
-from multiprocess import Pool, cpu_count
+from multiprocessing import Pool, cpu_count
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, Sobol
 from Thesis.misc import VanillaOptions as vo

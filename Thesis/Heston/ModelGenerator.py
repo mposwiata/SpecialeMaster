@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.callbacks import LearningRateScheduler, EarlyStopping
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras import backend as k
-from multiprocess import Pool, cpu_count, Process
+from multiprocessing import Pool, cpu_count, Process
 import joblib
 import sys
 import os
