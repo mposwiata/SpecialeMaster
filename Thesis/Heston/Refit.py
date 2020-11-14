@@ -95,7 +95,6 @@ paral_list = [
 i = 0
 for some_list in paral_list:
     if len(some_list) > 0:
-        print("Starting: ", name_list[i])
         if cpu_count() == 4:
             cpu_cores = 4
         elif len(some_list) < 16:
@@ -106,7 +105,6 @@ for some_list in paral_list:
         res = pool.starmap(rf.refit_model, some_list)
         pool.close()
         print(res)
-        print("Stopping: ", name_list[i])
         i += 1
 
 """
