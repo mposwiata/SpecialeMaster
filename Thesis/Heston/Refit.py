@@ -163,8 +163,6 @@ output_scaling_models = glob.glob("Models2/output_scaling/*/*.h5")
 output_scaling_models_list = list(zip(output_scaling_models, repeat(data_set)))
 
 paral_list = [
-    price_imp_models_price_list,
-    price_imp_models_imp_list,
     standard_normal_models_list,
     standard_normal_tanh_models_list,
     grid_list,
@@ -186,14 +184,15 @@ name_list = [
 
 i = 0
 for some_list in paral_list:
-    print("Starting: ", name_list[i])
-    cpu_cores = min(cpu_count(), len(some_list))
-    pool = Pool(cpu_cores)
-    res = pool.starmap(refit_model, some_list)
-    pool.close()
-    print(res)
-    print("Stopping: ", name_list[i])
-    i += 1
+    if len(some_list) > 0:
+        print("Starting: ", name_list[i])
+        cpu_cores = min(cpu_count(), len(some_list))
+        pool = Pool(cpu_cores)
+        res = pool.starmap(refit_model, some_list)
+        pool.close()
+        print(res)
+        print("Stopping: ", name_list[i])
+        i += 1
 
 """
 norm_folder = "Models3/norms/"
