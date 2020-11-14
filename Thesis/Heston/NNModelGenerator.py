@@ -54,11 +54,11 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     X_test = norm_features.transform(X_test)
     
     if nn_type == "normal":
-        model = nng.NN_generator(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+        model = nng.NN_generator(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     elif nn_type == "tanh":
-        model = nng.NN_generator_tanh(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+        model = nng.NN_generator_tanh(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     else:
-        model = nng.NN_generator_mix(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+        model = nng.NN_generator_mix(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
 
     adam = Adam()
 
