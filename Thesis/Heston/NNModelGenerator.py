@@ -69,7 +69,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
 
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
-        ModelCheckpoint(model_path, monitor="val_loss", save_best_only=True)
+        ModelCheckpoint(model_save, monitor="val_loss", save_best_only=True)
     ]
 
     start_time = time.time()
@@ -181,3 +181,6 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
 
     print("Stopping: "+model_name)
     return score
+
+if __name__ == '__main__':
+    print("nothing")
