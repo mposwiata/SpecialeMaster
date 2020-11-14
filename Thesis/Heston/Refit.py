@@ -163,21 +163,15 @@ output_scaling_models = glob.glob("Models2/output_scaling/*/*.h5")
 output_scaling_models_list = list(zip(output_scaling_models, repeat(data_set)))
 
 paral_list = [
-    standard_normal_models_list,
-    standard_normal_tanh_models_list,
-    grid_list,
-    sobol_wide_list,
+    standard_normal_models_list + standard_normal_tanh_models_list,
+    grid_list + sobol_wide_list,
     output_scaling_models_list,
     single_list
 ]
 
 name_list = [
-    "price_imp_models_price_list",
-    "price_imp_models_imp_list",
-    "standard_normal_models_list",
-    "standard_normal_tanh_models_list",
-    "grid_list",
-    "sobol_wide_list",
+    "standard_normal_models_list and standard_normal_tanh_models_list",
+    "grid_list and sobol_wide_list",
     "output_scaling_models_list",
     "single_list"
 ]
