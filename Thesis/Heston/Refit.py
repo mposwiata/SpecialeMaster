@@ -1,7 +1,4 @@
 import numpy as np
-import tensorflow as tf 
-from keras.optimizers import Adam
-from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from multiprocessing import Pool, cpu_count, Process
 from sklearn.model_selection import train_test_split
@@ -82,21 +79,29 @@ output_scaling_models = glob.glob("Models2/output_scaling/*/*.h5")
 
 output_scaling_models_list = list(zip(output_scaling_models, repeat(data_set)))
 
-paral_list = [
-    standard_normal_tanh_models_list + grid_list + sobol_wide_list + output_scaling_models_list,
-    single_list
+overfit_models = [
+    'Models2/output_scaling/scaling/sobol_200_5_500_1.h5',
+    'Models2/output_scaling/scaling/sobol_200_3_1000_1.h5',
+    'Models2/output_scaling/scaling/sobol_200_4_1000_1.h5',
+    'Models2/output_scaling/scaling/sobol_200_5_1000_1.h5'
 ]
 
-name_list = [
-    "all",
-    "single_list"
+overfit_models_list = list(zip(overfit_models, repeat(data_set)))
+
+paral_list = [
+    overfit_models_list + single_list
 ]
 
 i = 0
 for some_list in paral_list:
     if len(some_list) > 0:
         print("Starting: ", name_list[i])
-        cpu_cores = int(min(cpu_count(), len(some_list))/4)
+        if cpu_count() == 4:
+            cpu_cores = 4
+        elif len(some_list) < 16:
+            cpu_cores = min(cpu_count(), len(some_list))
+        else: #server
+            cpu_cores = min(cpu_count(), 16)
         pool = Pool(cpu_cores)
         res = pool.starmap(rf.refit_model, some_list)
         pool.close()

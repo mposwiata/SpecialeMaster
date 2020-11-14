@@ -2,12 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import itertools
+import joblib
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras import backend as k
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
-from multiprocess import Pool, cpu_count
+from keras.models import load_model
+from multiprocessing import Pool, cpu_count
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
@@ -135,67 +137,40 @@ strike = 100
 
 some_option = vo.EUCall(tau, strike)
 
-print("Calculating single data")
-### For single input
-al_output1 = np.zeros(len(spot))
-mc_output1 = np.zeros(len(spot))
-al_output2 = np.zeros(len(spot))
-mc_output2 = np.zeros(len(spot))
-for i in range(len(spot)):
-    some_model = hm.HestonClass(spot[i], vol1, kappa1, theta1, epsilon1, rho1, rate) # case 1
-    some_model2 = hm.HestonClass(spot[i], vol2, kappa2, theta2, epsilon2, rho2, rate)
-    al_output1[i] = al.Andersen_Lake(some_model, some_option)
-    mc_output1[i] = mc.Heston_monte_carlo(some_model, some_option, 10000)
-    al_output2[i] = al.Andersen_Lake(some_model2, some_option)
-    mc_output2[i] = mc.Heston_monte_carlo(some_model2, some_option, 10000)
-
-plot_func(spot, [al_output1, mc_output1], [al_output2, mc_output2], "Training data")
-
-### Reshaping for nn
 spot = np.reshape(spot, (-1, 1))
+
+### Single data
+al_output1 = np.loadtxt("Data/al_output1.csv", delimiter=",")
+mc_output1 = np.loadtxt("Data/mc_output1.csv", delimiter=",")
+al_output2 = np.loadtxt("Data/al_output2.csv", delimiter=",")
+mc_output2 = np.loadtxt("Data/mc_output2.csv", delimiter=",")
+
 al_output1 = np.reshape(al_output1, (-1, 1))
 mc_output1 = np.reshape(mc_output1, (-1, 1))
 al_output2 = np.reshape(al_output2, (-1, 1))
 mc_output2 = np.reshape(mc_output2, (-1, 1))
 
-np.savetxt("Data/al_output1.csv", al_output1, delimiter=",")
-np.savetxt("Data/mc_output1.csv", mc_output1, delimiter=",")
-np.savetxt("Data/al_output2.csv", al_output2, delimiter=",")
-np.savetxt("Data/mc_output2.csv", mc_output2, delimiter=",")
-
-print("Calculating multi data")
-### For multiple input
-al_output_multiple_1 = np.zeros(len(input_array))
-mc_output_multiple_1 = np.zeros(len(input_array))
-al_output_multiple_2 = np.zeros(len(input_array))
-mc_output_multiple_2 = np.zeros(len(input_array))
-
-# going parallel
-cpu_cores = cpu_count()
-
-# parallel
-pool = Pool(cpu_cores)
-res = pool.starmap(calc_prices, input_array)
-al_output_multiple_1 = np.array(res)[:,0]
-mc_output_multiple_1 = np.array(res)[:,1]
-al_output_multiple_2 = np.array(res)[:,2]
-mc_output_multiple_2 = np.array(res)[:,3]
-
-np.savetxt("Data/al_output_multiple_1.csv", al_output_multiple_1, delimiter=",")
-np.savetxt("Data/mc_output_multiple_1.csv", mc_output_multiple_1, delimiter=",")
-np.savetxt("Data/al_output_multiple_2.csv", al_output_multiple_2, delimiter=",")
-np.savetxt("Data/mc_output_multiple_2.csv", mc_output_multiple_2, delimiter=",")
+### Multi data
+al_output_multiple_1 = np.savetxt("Data/al_output_multiple_1.csv", delimiter=",")
+mc_output_multiple_1 = np.savetxt("Data/mc_output_multiple_1.csv", delimiter=",")
+al_output_multiple_2 = np.savetxt("Data/al_output_multiple_2.csv", delimiter=",")
+mc_output_multiple_2 = np.savetxt("Data/mc_output_multiple_2.csv", delimiter=",")
 
 al_output_multiple_1 = np.reshape(al_output_multiple_1, (-1, 1))
 mc_output_multiple_1 = np.reshape(mc_output_multiple_1, (-1, 1))
 al_output_multiple_2 = np.reshape(al_output_multiple_2, (-1, 1))
 mc_output_multiple_2 = np.reshape(mc_output_multiple_2, (-1, 1))
 
-easy_index = input_array[:,1] == 0.5
-hard_index = input_array[:,1] == 2
+### Plotting training data
+plot_func(spot, [al_output1, mc_output1], [al_output2, mc_output2], "Training data")
 
+### Plotting training data, multi
 plot_func(spot, [al_output_multiple_1[easy_index], mc_output_multiple_1[easy_index]], \
     [al_output_multiple_2[hard_index], mc_output_multiple_2[hard_index]], "Training data, multiple")
+
+### Index
+easy_index = input_array[:,1] == 0.5
+hard_index = input_array[:,1] == 2
 
 ### Ready for NN
 norm_features = MinMaxScaler() #MinMaxScaler(feature_range = (-1, 1))
@@ -221,6 +196,24 @@ eps1_plot = np.reshape(np.repeat(epsilon1, len(spot_plot)), (-1, 1))
 eps2_plot = np.reshape(np.repeat(epsilon2, len(spot_plot)), (-1, 1))
 input_multi_easy = np.concatenate([spot_plot, eps1_plot], axis = 1)
 input_multi_hard = np.concatenate([spot_plot, eps2_plot], axis = 1)
+input_good_easy = np.concatenate([
+    spot_plot, 
+    np.reshape(np.repeat(vol1, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(kappa1, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(theta1, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(epsilon1, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(rho1, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(rate, len(spot_plot)), (-1, 1))
+], axis = 1)
+input_good_hard = np.concatenate([
+    spot_plot, 
+    np.reshape(np.repeat(vol2, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(kappa2, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(theta2, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(epsilon2, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(rho2, len(spot_plot)), (-1, 1)),
+    np.reshape(np.repeat(rate, len(spot_plot)), (-1, 1))
+], axis = 1)
 
 test_input = norm_features.transform(spot_plot)
 input_multi_easy = norm_features_multiple.transform(input_multi_easy)
@@ -244,3 +237,56 @@ plot_func(spot_plot, [al_multi_predict1, mc_multi_predict1], [al_multi_predict2,
 plot_func(spot_plot, [al_multi_grads1[:,0], mc_multi_grads1[:,0]], [al_multi_grads2[:,0], mc_multi_grads2[:,0]], "Delta, multi")
 plot_func(spot_plot, [al_multi_grads1_2[:,0], mc_multi_grads1_2[:,0]], [al_multi_grads2_2[:,0], mc_multi_grads2_2[:,0]], "Gamma, multi")
 
+### Testing the thesis model
+#good_model= load_model()
+norm_feature_good = joblib.load(norm_folder+"norm_feature_price.pkl")
+input_good_easy = norm_feature_good.transform(input_good_easy)
+input_good_hard = norm_feature_good.transform(input_good_hard)
+
+good_model_easy_predict, good_model_easy_grads, good_model_easy_grads2 = generate_predictions(input_good_easy, good_model, norm_feature_good)
+good_model_hard_predict, good_model_hard_grads, good_model_hard_grads2 = generate_predictions(input_good_hard, good_model, norm_feature_good)
+
+"""
+print("Calculating single data")
+### For single input
+al_output1 = np.zeros(len(spot))
+mc_output1 = np.zeros(len(spot))
+al_output2 = np.zeros(len(spot))
+mc_output2 = np.zeros(len(spot))
+for i in range(len(spot)):
+    some_model = hm.HestonClass(spot[i], vol1, kappa1, theta1, epsilon1, rho1, rate) # case 1
+    some_model2 = hm.HestonClass(spot[i], vol2, kappa2, theta2, epsilon2, rho2, rate)
+    al_output1[i] = al.Andersen_Lake(some_model, some_option)
+    mc_output1[i] = mc.Heston_monte_carlo(some_model, some_option, 10000)
+    al_output2[i] = al.Andersen_Lake(some_model2, some_option)
+    mc_output2[i] = mc.Heston_monte_carlo(some_model2, some_option, 10000)
+
+np.savetxt("Data/al_output1.csv", al_output1, delimiter=",")
+np.savetxt("Data/mc_output1.csv", mc_output1, delimiter=",")
+np.savetxt("Data/al_output2.csv", al_output2, delimiter=",")
+np.savetxt("Data/mc_output2.csv", mc_output2, delimiter=",")
+
+print("Calculating multi data")
+### For multiple input
+al_output_multiple_1 = np.zeros(len(input_array))
+mc_output_multiple_1 = np.zeros(len(input_array))
+al_output_multiple_2 = np.zeros(len(input_array))
+mc_output_multiple_2 = np.zeros(len(input_array))
+
+# going parallel
+cpu_cores = cpu_count()
+
+# parallel
+pool = Pool(cpu_cores)
+res = pool.starmap(calc_prices, input_array)
+pool.close()
+al_output_multiple_1 = np.array(res)[:,0]
+mc_output_multiple_1 = np.array(res)[:,1]
+al_output_multiple_2 = np.array(res)[:,2]
+mc_output_multiple_2 = np.array(res)[:,3]
+
+np.savetxt("Data/al_output_multiple_1.csv", al_output_multiple_1, delimiter=",")
+np.savetxt("Data/mc_output_multiple_1.csv", mc_output_multiple_1, delimiter=",")
+np.savetxt("Data/al_output_multiple_2.csv", al_output_multiple_2, delimiter=",")
+np.savetxt("Data/mc_output_multiple_2.csv", mc_output_multiple_2, delimiter=",")
+"""

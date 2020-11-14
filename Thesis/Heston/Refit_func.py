@@ -80,6 +80,9 @@ def refit_model(model_string : str, data : list):
 
     score = model.evaluate(X_test, Y_test, verbose=2)
 
+    if score > 0.7: #if overfitting, save that model
+        model.save(model_save)
+
     if not os.path.exists(model_path+"/HestonModels.txt"):
         with open(model_path+"/HestonModels.txt", "w") as output_file:
             pass
@@ -89,4 +92,4 @@ def refit_model(model_string : str, data : list):
         output_file.write("\n")
         output_file.write(model_name+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
 
-    return 0
+    return score
