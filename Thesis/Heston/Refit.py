@@ -128,7 +128,7 @@ X_train_price, X_test_price, Y_train_price, Y_test_price = train_test_split(sobo
 
 norm_feature_standard = MinMaxScaler()
 standard_feature_standard = StandardScaler()
-standard_label_standard = MinMaxScaler()
+standard_label_standard = StandardScaler()
 
 norm_feature_standard.fit(X_train)
 standard_feature_standard.fit(X_train)

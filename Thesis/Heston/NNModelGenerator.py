@@ -27,62 +27,72 @@ def lr_schedule(epoch, rate):
 
     return lr
     
+def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool) -> float:
+    model_save = "Models4/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
+    model_path = "Models4/"+folder+"/"
 
-def NNModelTanh(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str) -> float:
-    print("Starting: "+model_name)
-    X_train, X_test, y_train, y_test = train_test_split(input_array, output_array, test_size=0.3, random_state=42)
+    if not os.path.exists(model_path):
+        os.makedirs(model_path)
 
-    norm_features = StandardScaler() # MinMaxScaler(feature_range = (-1, 1))
-    norm_labels = StandardScaler()
+    X_train = data_set[0] 
+    X_test = data_set[1]
+    Y_train = data_set[2]
+    Y_test = data_set[3]
 
-    X_train_norm = norm_features.fit_transform(X_train)
-    Y_train_norm = norm_labels.fit_transform(y_train)
+    if standardize:
+        norm_features = StandardScaler()
+    else:
+        norm_features = MinMaxScaler()
 
-    X_test_norm = norm_features.transform(X_test)
-    Y_test_norm = norm_labels.transform(y_test)
+    if normal_out:
+        norm_labels = StandardScaler()
+        Y_train = norm_labels.fit_transform(Y_train)
+        Y_test = norm_labels.transform(Y_test)
 
-    model = nng.NN_generator_tanh(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+    X_train = norm_features.fit_transform(X_train)
+    
+    X_test = norm_features.transform(X_test)
+    
+    if nn_type == "normal":
+        model = nng.NN_generator(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+    elif nn_type == "tanh":
+        model = nng.NN_generator_tanh(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
+    else:
+        model = nng.NN_generator_mix(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
 
-    adam = Adam(lr = 0.01)
+    adam = Adam()
 
     model.compile(
         loss = 'mean_squared_error', #mean squared error
         optimizer = adam
-        )
+    )
 
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
-        EarlyStopping(monitor='val_loss', patience=25)
+        ModelCheckpoint(model_path, monitor="val_loss", save_best_only=True)
     ]
 
     start_time = time.time()
-    model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
-    score = model.evaluate(X_test_norm, Y_test_norm, verbose=2)
+    score = model.evaluate(X_test, Y_test, verbose=2)
 
-    # checking file name
-    no = 0
-    for i in range(1,100):
-        saveString = "Models/HestonTanh/"+model_name+"_"+str(i)+".h5"
-        no = i
-        if os.path.isfile(saveString) == False:
-            break
+    if score > 0.7: #if overfitting, save that model
+        model.save(model_save)
 
-    # Saving model
-    model.save("Models/HestonTanh/"+model_name+"_"+str(no)+".h5")
-
-    # Saving normalization parameters
-    joblib.dump(norm_features, "Models/HestonTanh/"+model_name+"_norm_features_"+str(no)+".pkl")
-    joblib.dump(norm_labels, "Models/HestonTanh/"+model_name+"_norm_labels_"+str(no)+".pkl")
+    if not os.path.exists(model_path+"/HestonModels.txt"):
+        with open(model_path+"/HestonModels.txt", "w") as output_file:
+            pass
 
     # Appending test score to file
-    with open("Models/HestonTanh/HestonModels.txt", "a") as output_file:
+    with open(model_path+"/HestonModels.txt", "a") as output_file:
         output_file.write("\n")
-        output_file.write(model_name+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
+        output_file.write(model_save+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
 
-    print("Stopping: "+model_name)
+    print("Done with: ", model_save)
     return score
+
 
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
@@ -166,62 +176,6 @@ def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int,
 
     # Appending test score to file
     with open("Models2/"+folder_name+"/HestonModels.txt", "a") as output_file:
-        output_file.write("\n")
-        output_file.write(model_name+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
-
-    print("Stopping: "+model_name)
-    return score
-
-def NNModelMix(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True) -> float:
-    print("Starting: "+model_name)
-    X_train, X_test, y_train, y_test = train_test_split(input_array, output_array, test_size=0.3, random_state=42)
-
-    norm_features = StandardScaler() # MinMaxScaler(feature_range = (-1, 1))
-    norm_labels = StandardScaler()
-
-    X_train_norm = norm_features.fit_transform(X_train)
-    Y_train_norm = norm_labels.fit_transform(y_train)
-
-    X_test_norm = norm_features.transform(X_test)
-    Y_test_norm = norm_labels.transform(y_test)
-
-    model = nng.NN_generator_mix(n_layers, n_neurons, np.shape(input_array)[1], np.shape(output_array)[1])
-
-    adam = Adam(lr = 0.01)
-
-    model.compile(
-        loss = 'mean_squared_error', #mean squared error
-        optimizer = adam
-        )
-
-    callbacks_list = [
-        LearningRateScheduler(lr_schedule, verbose = 0),
-        EarlyStopping(monitor='val_loss', patience=15)
-    ]
-
-    start_time = time.time()
-    model.fit(X_train_norm, Y_train_norm, epochs=100, batch_size=256, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
-    stop_time = time.time()
-
-    score = model.evaluate(X_test_norm, Y_test_norm, verbose=2)
-
-    # checking file name
-    no = 0
-    for i in range(1,100):
-        saveString = "Models/HestonMix/"+model_name+"_"+str(i)+".h5"
-        no = i
-        if os.path.isfile(saveString) == False:
-            break
-
-    # Saving model
-    model.save("Models/HestonMix/"+model_name+"_"+str(no)+".h5")
-
-    # Saving normalization parameters
-    joblib.dump(norm_features, "Models/HestonMix/"+model_name+"_norm_features_"+str(no)+".pkl")
-    joblib.dump(norm_labels, "Models/HestonMix/"+model_name+"_norm_labels_"+str(no)+".pkl")
-
-    # Appending test score to file
-    with open("Models/HestonMix/HestonModels.txt", "a") as output_file:
         output_file.write("\n")
         output_file.write(model_name+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
 

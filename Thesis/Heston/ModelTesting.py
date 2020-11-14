@@ -86,33 +86,6 @@ def find_nth_back(input_string : str, keyword : str, n : int):
         n -= 1
     return start
 
-Grid_vs_sobol = glob.glob("Models2/grid_vs_sobol/*.h5")
-
-Heston_single = glob.glob("Models2/Heston_single/*.h5")
-
-Heston_non_normal = glob.glob("Models2/Heston_non_normal/sobol_200*.h5")
-
-Heston_single_compare = Heston_single + Heston_non_normal
-
-Heston_normal = glob.glob("Models2/Heston/sobol_200*.h5")
-
-Heston_normal_compare = Heston_non_normal + Heston_normal
-
-Heston_non_normal_tanh = glob.glob("Models2/Heston_non_normal_tanh/sobol_200*.h5")
-
-Heston_non_normal_mix = glob.glob("Models2/Heston_non_normal_mix/sobol_200*.h5")
-
-Heston_activation_compare = Heston_non_normal + Heston_non_normal_tanh + Heston_non_normal_mix
-
-std_vs_nor = glob.glob("Models2/stardard_vs_normal/*.h5")
-std_vs_nor_mix = glob.glob("Models2/standard_vs_normal_mix/*.h5")
-std_vs_nor_tanh = glob.glob("Models2/standard_vs_normal_tanh/*.h5")
-
-price_vs_imp = glob.glob("Models2/price_vs_imp/*.h5")
-
-all_vs_filter = glob.glob("Models2/all_vs_filter/*.h5")
-
-models = glob.glob("Models2/Heston/*.h5")
 
 def model_testing_plot(model_list : list, plot_title : str, some_input : np.ndarray, option : np.ndarray):
     model_class = hm.HestonClass(some_input[0, 0], some_input[0, 1], some_input[0, 2], some_input[0, 3], some_input[0, 4], some_input[0, 5], some_input[0, 6])
@@ -204,7 +177,6 @@ def model_testing(model_list : list, plot_title : str, some_input : np.ndarray, 
         some_option_list = np.append(some_option_list, vo.EUCall(some_option[0], some_option[1]))
     benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
 
-    benchmark_price, benchmark = dg.calc_imp_vol(some_input[0], some_option_list)
     fig = plt.figure(figsize=(30, 10), dpi = 200)
     imp_ax = fig.add_subplot(121, projection='3d')
     error_ax = fig.add_subplot(122, projection='3d')
@@ -223,6 +195,8 @@ def model_testing(model_list : list, plot_title : str, some_input : np.ndarray, 
         if (model_string.find("/scaling") != -1):
             normal_out = True
             norm_labels = joblib.load(norm_folder+"norm_labels.pkl")
+        else:
+            normal_out = False
 
         if (model_string.find("price") != -1):
             norm_feature = joblib.load(norm_folder+"norm_feature_price.pkl")
@@ -242,14 +216,14 @@ def model_testing(model_list : list, plot_title : str, some_input : np.ndarray, 
                 test_single_input = np.concatenate((some_input, option[i]), axis=None)
                 test_single_input = np.reshape(test_single_input, (1, -1))
                 if normal_out:
-                    predictions[i] = norm_labels.inverse_transform(model.predict(norm_feat.transform(test_single_input)))
+                    predictions[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input)))
                 else:
-                    predictions[i] = model.predict(norm_feat.transform(test_single_input))
+                    predictions[i] = model.predict(norm_feature.transform(test_single_input))
         else: # we have a grid
             if normal_out:
-                predictions = norm_labels.inverse_transform(model.predict(norm_feat.transform(some_input)))[0]
+                predictions = norm_labels.inverse_transform(model.predict(norm_feature.transform(some_input)))[0]
             else:
-                predictions = model.predict(norm_feat.transform(some_input))[0]
+                predictions = model.predict(norm_feature.transform(some_input))[0]
 
         # if prices, calc imp vol
         if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
@@ -320,28 +294,23 @@ def generate_bar_error(error_list : list, name : str):
     plt.close()
 
 def generate_plots(model_list : list, plot_title: str):
-    easy_model_mse = model_testing_plot(model_list, plot_title+"_easy", easy_case(), option_input())
+    easy_model_mse = model_testing(model_list, plot_title+"_easy", easy_case(), option_input())
     generate_bar_error(easy_model_mse, plot_title+"_mse_easy")
-    hard_model_mse = model_testing_plot(model_list, plot_title+"_hard", hard_case(), option_input())
+    hard_model_mse = model_testing(model_list, plot_title+"_hard", hard_case(), option_input())
     generate_bar_error(hard_model_mse, plot_title+"_mse_hard")
 
-generate_plots(std_vs_nor, "standard_vs_normal")
-generate_plots(std_vs_nor_mix, "standard_vs_normal_mix")
-generate_plots(std_vs_nor_tanh, "standard_vs_normal_tanh")
+if __name__ == "__main__":
+    grid_vs_sobol = glob.glob("Models3/grid_vs_sobol/*.h5")
+    generate_plots(grid_vs_sobol, "grid_vs_sobol")
 
-generate_plots(price_vs_imp, "price_vs_imp")
+    output_scaling = glob.glob("Models3/output_scaling/*/*.h5")
+    generate_plots(output_scaling, "output_scaling")
 
-generate_plots(all_vs_filter, "all_vs_filter")
+    price_vs_imp = glob.glob("Models3/price_vs_imp/*.h5")
+    generate_plots(price_vs_imp, "price_vs_imp")
 
-### Using 200k sobol sets
-price_imp_models = glob.glob("Models3/price_vs_imp/*.h5")
-standard_normal_models = glob.glob("Models3/stardard_vs_normal/*.h5")
-standard_normal_tanh_models = glob.glob("Models3/stardard_vs_normal_tanh/*.h5")
-standard_normal_mix_models = glob.glob("Models3/stardard_vs_normal_mix/*.h5")
+    standard_vs_normal = glob.glob("Models3/standard_vs_normal/*.h5")
+    generate_plots(standard_vs_normal, "standard_vs_normal")
 
-### Using single sets, from 200k sobol
-single_models = glob.glob("Models3/single/*.h5")
-
-### Using grid set, 279936 sets
-grid_models = glob.glob("Models3/grid_vs_sobol/standard*.h5")
-sobol_grid_models = glob.glob("Models3/grid_vs_sobol/sobol*.h5")
+    standard_vs_normal_tanh = glob.glob("Models3/standard_vs_normal_tanh/*.h5")
+    generate_plots(standard_vs_normal_tanh, "standard_vs_normal_tanh")

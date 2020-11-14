@@ -5,11 +5,9 @@ import itertools
 import joblib
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras.optimizers import Adam
-from keras.models import Sequential
 from keras import backend as k
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
 from keras.models import load_model
-from multiprocessing import Pool, cpu_count
 import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
