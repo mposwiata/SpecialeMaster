@@ -96,7 +96,7 @@ i = 0
 for some_list in paral_list:
     if len(some_list) > 0:
         print("Starting: ", name_list[i])
-        cpu_cores = min(cpu_count(), len(some_list))
+        cpu_cores = int(min(cpu_count(), len(some_list))/4)
         pool = Pool(cpu_cores)
         res = pool.starmap(rf.refit_model, some_list)
         pool.close()
