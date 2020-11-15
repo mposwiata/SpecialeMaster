@@ -18,7 +18,6 @@ if __name__ == '__main__':
     Y_train_price = np.loadtxt("Data/Sobol2_Y_train_price.csv", delimiter = ",")
     Y_test_price = np.loadtxt("Data/Sobol2_Y_test_price.csv", delimiter = ",")
 
-    """
     X_train_single = np.loadtxt("Data/Sobol2_X_train_single.csv", delimiter = ",")
     X_test_single = np.loadtxt("Data/Sobol2_X_test_single.csv", delimiter = ",")
     Y_train_single = np.loadtxt("Data/Sobol2_Y_train_single.csv", delimiter = ",")
@@ -26,7 +25,8 @@ if __name__ == '__main__':
 
     Y_train_single = np.reshape(Y_train_single, (-1, 1))
     Y_test_single = np.reshape(Y_test_single, (-1, 1))
-    """
+
+    data_set_single = [X_train_single, X_test_single, Y_train_single, Y_test_single]
 
     X_train_grid = np.loadtxt("Data/Sobol2_X_train_grid.csv", delimiter = ",")
     X_test_grid = np.loadtxt("Data/Sobol2_X_test_grid.csv", delimiter = ",")
@@ -72,6 +72,9 @@ if __name__ == '__main__':
     tanh_list = list(zip(itertools.repeat(data_set), itertools.repeat("activation_functions"), itertools.repeat("tanh"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("tanh"), itertools.repeat(False), itertools.repeat(False)))
 
+    single_list = list(zip(itertools.repeat(data_set_single), itertools.repeat("single"), itertools.repeat("normal"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False)))
+
     mac_list = sobol_list + grid_list + wide_list + output_list
     server_list = price_list + standard_list + mix_list + tanh_list
 
@@ -81,5 +84,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NNModelNext, server_list, chunksize=1)
+    res = pool.starmap(mg.NNModelNext, single_list, chunksize=1)
     pool.close()
