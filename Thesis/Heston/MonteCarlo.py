@@ -5,7 +5,7 @@ from Thesis.misc import VanillaOptions as vo
 
 def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int, return_paths : bool = False):
     dt = 252
-    time_steps = some_option.tau * dt
+    time_steps = int(some_option.tau * dt)
     forward_log = np.log(some_model.forward)
     vol = some_model.vol
     delta_t = some_option.tau / time_steps

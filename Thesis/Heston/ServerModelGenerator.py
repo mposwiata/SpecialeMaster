@@ -54,16 +54,19 @@ if __name__ == '__main__':
     grid_list = list(zip(itertools.repeat(data_set_grid), itertools.repeat("grid_vs_sobol"), itertools.repeat("grid"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False)))
 
-    wide_list = list(zip(itertools.repeat(data_set_wide), itertools.repeat("grid_vs_sobol"), itertools.repeat("sobol"), \
+    wide_list = list(zip(itertools.repeat(data_set_wide), itertools.repeat("grid_vs_sobol"), itertools.repeat("wide"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False)))
 
-    output_list = list(zip(itertools.repeat(data_set), itertools.repeat("output_scaling"), itertools.repeat("sobol"), \
+    output_list = list(zip(itertools.repeat(data_set), itertools.repeat("output_scaling"), itertools.repeat("scaling"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(True), itertools.repeat(False)))
 
     price_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_vs_imp"), itertools.repeat("price"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False)))
 
-    standard_list = list(zip(itertools.repeat(data_set), itertools.repeat("standard"), itertools.repeat("sobol"), \
+    price_output_standard_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_standard"), itertools.repeat("price"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(True), itertools.repeat(False)))
+
+    standard_list = list(zip(itertools.repeat(data_set), itertools.repeat("standard"), itertools.repeat("standard"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(True)))
 
     mix_list = list(zip(itertools.repeat(data_set), itertools.repeat("activation_functions"), itertools.repeat("mix"), \
@@ -72,10 +75,19 @@ if __name__ == '__main__':
     tanh_list = list(zip(itertools.repeat(data_set), itertools.repeat("activation_functions"), itertools.repeat("tanh"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("tanh"), itertools.repeat(False), itertools.repeat(False)))
 
-    single_list = list(zip(itertools.repeat(data_set_single), itertools.repeat("single"), itertools.repeat("normal"), \
+    single_list = list(zip(itertools.repeat(data_set_single), itertools.repeat("single"), itertools.repeat("single"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False)))
 
-    mac_list = sobol_list + grid_list + wide_list + output_list
+    final_list = list(zip(itertools.repeat(data_set), itertools.repeat("final"), itertools.repeat("final"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True)))
+
+    final_list2 = list(zip(itertools.repeat(data_set), itertools.repeat("final2"), itertools.repeat("final2"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True)))
+
+    final_list3 = list(zip(itertools.repeat(data_set), itertools.repeat("final3"), itertools.repeat("final3"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(False)))
+
+    mac_list = final_list + final_list2 + final_list3
     server_list = price_list + standard_list + mix_list + tanh_list
 
     if cpu_count() == 4:
@@ -84,5 +96,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NNModelNext, single_list, chunksize=1)
+    res = pool.starmap(mg.NNModelNext, price_output_standard_list, chunksize=1)
     pool.close()

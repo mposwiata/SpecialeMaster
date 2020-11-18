@@ -79,6 +79,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     score = model.evaluate(X_test, Y_test, verbose=2)
 
     if score > 0.7: #if overfitting, save that model
+        print("overfit, saving overfit model")
         model.save(model_save)
 
     if not os.path.exists(model_path+"/HestonModels.txt"):
