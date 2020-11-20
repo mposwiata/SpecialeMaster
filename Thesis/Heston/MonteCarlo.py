@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from scipy.stats import norm
 from Thesis.Heston import HestonModel as hm, AndersenLake as al
 from Thesis.misc import VanillaOptions as vo
@@ -24,7 +25,7 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
         var = vol * var_part1 + var_part2
 
         y = np.sqrt(np.log(var / (x * x) + 1))
-        
+
         forward_log = forward_log - 0.5 * vol * delta_t + np.sqrt(vol) * np.sqrt(delta_t) * N_F
 
         vol = x * np.exp(- (y * y) / 2 + y * N_v)
