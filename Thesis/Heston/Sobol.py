@@ -71,7 +71,7 @@ def generate_sobol_data(no_sobol : int):
     return 0
 
 def generate_sobol_mc(no_sobol : int, paths : int):
-    model_input = sobol.i4_sobol_generate(7, no_sobol)
+    model_input = generate_sobol_input(no_sobol)
 
     option_input = dg.option_input_generator() # different option combinations
     some_option_list = np.array([])
@@ -94,12 +94,14 @@ def generate_sobol_mc(no_sobol : int, paths : int):
     price_output = res[0]
     imp_vol_output = res[1]
 
-    np.savetxt("Data/HestonMC_price_"+str(paths)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/HestonMC_imp_vol_"+str(paths)+".csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/MC/HestonMC_price_"+str(paths)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/MC/HestonMC_imp_vol_"+str(paths)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
 if __name__ == "__main__":
+    model_input = generate_sobol_input(200000)
+    np.savetxt("Data/MC/HestonMC_input.csv", price_output, delimiter=",")
     generate_sobol_mc(200000, 1)
     print("Done with 1")
     generate_sobol_mc(200000, 10)
