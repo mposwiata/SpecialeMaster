@@ -109,8 +109,27 @@ if __name__ == "__main__":
     
     #generate_sobol_data(279936) # matching number of inputs for the wide model
 
-    paths = 100 
     starttime = time.time() 
-    generate_sobol_mc(4, paths) 
+    generate_sobol_mc(512, 1) 
     stoptime = time.time() 
     print(stoptime-starttime)  
+
+    starttime = time.time() 
+    generate_sobol_mc(512, 10) 
+    stoptime = time.time() 
+    print(stoptime-starttime)  
+
+    starttime = time.time() 
+    generate_sobol_mc(512, 100) 
+    stoptime = time.time() 
+    print(stoptime-starttime)  
+
+    starttime = time.time() 
+    generate_sobol_mc(512, 1000) 
+    stoptime = time.time() 
+    print(stoptime-starttime)  
+
+    starttime = time.time() 
+    generate_sobol_mc(512, 10000) 
+    stoptime = time.time() 
+    print(stoptime-starttime) 
