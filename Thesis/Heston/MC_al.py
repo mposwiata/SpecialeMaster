@@ -57,20 +57,19 @@ def plot_func_training(x_axis : np.array, easy_output : list, hard_output : list
     plt.savefig("al_mc_"+title.replace(" ", "_").replace(",","")+".png")
     plt.close()
 
-def plot_func(x_axis : np.array, easy_output : list, hard_output : list, title : str):
+def plot_func(x_axis : np.array, plot_data : dict, title : str):
     fig = plt.figure(figsize=(20, 10), dpi = 200)
     easy_ax = plt.subplot(121)
     hard_ax = plt.subplot(122)
-    easy_ax.plot(x_axis, easy_output[0], 'r-', alpha=0.5, label="Andersen Lake")
-    easy_ax.plot(x_axis, easy_output[1], 'g-', alpha=0.5, label="Monte Carlo")
-    easy_ax.plot(x_axis, easy_output[2], 'y-', alpha=0.5, label="Andersen Lake, multi")
-    easy_ax.plot(x_axis, easy_output[3], 'k-', alpha=0.5, label="Monte Carlo, multi")
-    easy_ax.plot(x_axis, easy_output[4], 'm-', alpha=0.5, label="Andersen Lake, FD")
-    hard_ax.plot(x_axis, hard_output[0], 'r-', alpha=0.5, label="Andersen Lake")
-    hard_ax.plot(x_axis, hard_output[1], 'g-', alpha=0.5, label="Monte Carlo")
-    hard_ax.plot(x_axis, hard_output[2], 'y-', alpha=0.5, label="Andersen Lake, multi")
-    hard_ax.plot(x_axis, hard_output[3], 'k-', alpha=0.5, label="Monte Carlo, multi")
-    hard_ax.plot(x_axis, hard_output[4], 'm-', alpha=0.5, label="Andersen Lake, FD")
+    color=iter(plt.cm.tab10(np.linspace(0,1,len(plot_data))))
+    for key in plot_data:
+        if key == "Andersen Lake FD":
+            c = 'black'
+        else:
+            c = next(color)
+        easy_ax.plot(x_axis, plot_data[key][0], color = c, label = key)
+        hard_ax.plot(x_axis, plot_data[key][1], color = c, label = key)
+        
     handles, labels = easy_ax.get_legend_handles_labels()
     fig.suptitle(title,fontsize=20)
     easy_ax.set_xlabel("Spot")
@@ -171,7 +170,7 @@ if __name__ == "__main__":
     kappa1 = 2
     kappa2 = 0.1
     theta1 = 0.04
-    theta2 = 0.01
+    theta2 =  0.01
     epsilon1 = 0.5
     epsilon2 = 2
     epsilon = np.linspace(start = 0.5, stop = 2, num = 10)
@@ -213,9 +212,14 @@ if __name__ == "__main__":
     easy_index = input_array[:,1] == 0.5
     hard_index = input_array[:,1] == 2
 
-    ### Plotting training data, multi
-    plot_func_training(spot, [al_output1, mc_output1, al_output_multiple_1[easy_index], mc_output_multiple_1[easy_index]], \
-        [al_output2, mc_output2, al_output_multiple_2[hard_index], mc_output_multiple_2[hard_index]], "Training data")
+    training_data = {
+        "Andersen Lake" : [al_output1, al_output2],
+        "Monte Carlo" : [mc_output1, mc_output2],
+        "Andersen Lake, multi" : [al_output_multiple_1[easy_index], al_output_multiple_2[hard_index]],
+        "Monte Carlo, multi" : [mc_output_multiple_1[easy_index], mc_output_multiple_2[hard_index]]
+    }
+    
+    plot_func(spot, training_data, "Training data")
 
     ### Ready for NN
     norm_features = MinMaxScaler() #MinMaxScaler(feature_range = (-1, 1))
@@ -284,56 +288,90 @@ if __name__ == "__main__":
     norm_folder = "Models4/norms/"
     norm_feature_good = joblib.load(norm_folder+"norm_feature.pkl")
     model = load_model("Models4/activation_functions/mix_5_1000.h5")
-    imp_vols_easy = model.predict(norm_feature_good.transform(input_good_easy))[:, 12]
-    imp_vols_hard = model.predict(norm_feature_good.transform(input_good_hard))[:, 12]
 
-    price_model = load_model("Models4/price_standard/price_standard_4_500.h5")
-    price_norm_feature = joblib.load(norm_folder+"norm_feature_price.pkl")
-    price_norm_labels = joblib.load(norm_folder+"norm_labels_price.pkl")
-
-    inp_tensor = tf.convert_to_tensor(norm_feature_good.transform(input_good_easy))
-    inp_tensor_price = tf.convert_to_tensor(price_norm_feature.transform(input_good_easy))
-
-    ### Andersen Lake model, price
-    with tf.GradientTape(persistent = True) as tape:
-        tape.watch(inp_tensor_price)
-        with tf.GradientTape(persistent = True) as tape2:
-            tape2.watch(inp_tensor_price)
-            predict_price = price_model(inp_tensor_price)[:,12]
-        grads_price = tape2.gradient(predict_price, inp_tensor_price)
-
-    grads2_price = tape.gradient(grads_price, inp_tensor_price) * np.sqrt(price_norm_labels.var_[12]) / ((price_norm_feature.data_max_ - price_norm_feature.data_min_) ** 2)
-    grads_price = grads_price * np.sqrt(price_norm_labels.var_[12]) / (price_norm_feature.data_max_ - price_norm_feature.data_min_)
-    predict_price = predict_price * np.sqrt(price_norm_labels.var_[12]) + price_norm_labels.mean_[12]
-
-    ### Andersen Lake model
-    with tf.GradientTape(persistent = True) as tape:
-        tape.watch(inp_tensor)
-        with tf.GradientTape(persistent = True) as tape2:
-            tape2.watch(inp_tensor)
-            predict = model(inp_tensor)[:,12]
-        grads = tape2.gradient(predict, inp_tensor)
-
-    delta = np.zeros(200)
-    price = np.zeros(200)
-    gamma = np.zeros(200)
     a = norm_feature_good.data_min_[0]
     b = norm_feature_good.data_max_[0]
 
-    for i in range(200):
-        model_bs = bs.BlackScholesForward(spot_plot[i], predict[i], rate)
-        price[i] = model_bs.BSFormula(some_option)
-        delta[i] = model_bs.delta2(some_option, a, b)
-        gamma[i] = model_bs.gamma2(some_option, a, b)
-        #delta[i] = model_bs.BSVega(some_option) * grads[i,0] / (norm_feature_good.data_max_[0] - norm_feature_good.data_min_[0])
+    inp_tensor_easy = tf.convert_to_tensor(norm_feature_good.transform(input_good_easy))
+    inp_tensor_hard = tf.convert_to_tensor(norm_feature_good.transform(input_good_hard))
 
+    ### Andersen Lake model
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_easy)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_easy)
+            predict_easy = model(inp_tensor_easy)[:,12]
+        grads_easy = tape2.gradient(predict_easy, inp_tensor_easy)[:,0]
+    
+    grads2_easy = tape.gradient(grads_easy, inp_tensor_easy).numpy()
+    grads2_easy = grads2_easy[:,0]
+    grads_easy = grads_easy.numpy()
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_hard)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_hard)
+            predict_hard = model(inp_tensor_hard)[:,12]
+        grads_hard = tape2.gradient(predict_hard, inp_tensor_hard)[:,0]
+    
+    grads2_hard = tape.gradient(grads_hard, inp_tensor_hard).numpy()
+    grads2_hard = grads2_hard[:,0]
+    grads_hard = grads_hard.numpy()
+
+    delta_easy = np.zeros(200)
+    price_easy = np.zeros(200)
+    gamma_easy = np.zeros(200)
+    delta_hard = np.zeros(200)
+    price_hard = np.zeros(200)
+    gamma_hard = np.zeros(200)
+
+    for i in range(200):
+        model_bs_easy = bs.BlackScholesForward(spot_plot[i], predict_easy[i], rate)
+        model_bs_hard = bs.BlackScholesForward(spot_plot[i], predict_hard[i], rate)
+        price_easy[i] = model_bs_easy.BSFormula(some_option)
+        delta_easy[i] = model_bs_easy.delta_grads(some_option, a, b, grads_easy[i])
+        gamma_easy[i] = model_bs_easy.gamma_grads(some_option, a, b, grads_easy[i], grads2_easy[i])
+        
+        price_hard[i] = model_bs_hard.BSFormula(some_option)
+        delta_hard[i] = model_bs_hard.delta_grads(some_option, a, b, grads_hard[i])
+        gamma_hard[i] = model_bs_hard.gamma_grads(some_option, a, b, grads_hard[i], grads2_hard[i])
+
+    prediction_data = {
+        "Andersen Lake" : [al_predict1, al_predict2],
+        "Monte Carlo" : [mc_predict1, mc_predict2],
+        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
+        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
+        "Neural network" : [price_easy, price_hard]
+    }
+
+    delta_data = {
+        "Andersen Lake" : [al_grads1, al_grads2],
+        "Monte Carlo" : [mc_grads1, mc_grads2],
+        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
+        "Neural network" : [delta_easy, delta_hard]
+    }
+
+    gamma_data = {
+        "Andersen Lake" : [al_grads1_2, al_grads2_2],
+        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
+        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
+        "Neural network" : [gamma_easy, gamma_hard]
+    }
+
+    plot_func(spot_plot, prediction_data, "Predictions")
+    plot_func(spot_plot, delta_data, "Delta")
+    plot_func(spot_plot, gamma_data, "Gamma")
+
+"""
     price_easy_al = np.zeros(200)
     price_hard_al = np.zeros(200)
     delta_easy_al = np.zeros(200)
     delta_hard_al = np.zeros(200)
     gamma_easy_al = np.zeros(200)
     gamma_hard_al = np.zeros(200)
-    for i in range(len(imp_vols)):
+    for i in range(len(spot_plot)):
         h = 0.1
         some_spot = spot_plot[i]
         some_spot_low = some_spot - h
@@ -366,9 +404,12 @@ if __name__ == "__main__":
         delta_hard_al[i] = ((al_f_x_p_hard - al_f_x_hard) / h ) 
         gamma_hard_al[i] = (al_f_x_p_hard - 2 * al_f_x_hard + al_f_x_m_hard) / (h * h)
 
-    plot_func(spot_plot, [al_predict1, mc_predict1, al_multi_predict1, mc_multi_predict1, price_easy_al], [al_predict2, mc_predict2, al_multi_predict2, mc_multi_predict2, price_hard_al], "Predictions")
-    plot_func(spot_plot, [al_grads1, mc_grads1, al_multi_grads1[:,0], mc_multi_grads1[:,0], delta_easy_al], [al_grads2, mc_grads2, al_multi_grads2[:,0], mc_multi_grads2[:,0], delta_hard_al], "Delta")
-    plot_func(spot_plot, [al_grads1_2, mc_grads1_2, al_multi_grads1_2[:,0], mc_multi_grads1_2[:,0], gamma_easy_al], [al_grads2_2, mc_grads2_2, al_multi_grads2_2[:,0], mc_multi_grads2_2[:,0], gamma_hard_al], "Gamma")
+    prediction_data["Andersen Lake FD"] = [price_easy_al, price_hard_al]
+    delta_data["Andersen Lake FD"] = [delta_easy_al, delta_hard_al]
+    gamma_data["Andersen Lake FD"] = [gamma_easy_al, gamma_hard_al]
+    plot_func(spot_plot, prediction_data, "Predictions2")
+    plot_func(spot_plot, delta_data, "Delta2")
+    plot_func(spot_plot, gamma_data, "Gamma2")
 
 
-
+"""

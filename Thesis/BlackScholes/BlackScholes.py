@@ -37,35 +37,109 @@ class BlackScholesForward:
         return root(root_func, 2, args = (price, option),tol=10e-6).x
 
     def delta2(self, option : vo.VanillaOption, a : float, b : float) -> float:
-        d1 = (np.log(self.forward / option.strike) + 0.5 * self.vol * self.vol * option.tau) / (self.vol * np.sqrt(option.tau))
-        d2 = d1 - self.vol * np.sqrt(option.tau)
-        d1_2 = (self.vol - 2 * self.forward * np.log(self.forward / option.strike) * self.vol / (b - a)) / (np.sqrt(option.tau) * self.forward * self.vol**3)
-        d2_2 = d1_2 - np.sqrt(option.tau) * self.vol / (b - a)
+        x = self.forward
+        k = option.strike
+        sigma = self.vol
+        t = option.tau
+        d1 = (
+            np.log(x/k) + sigma ** 2 * t / 2
+        ) / (sigma * np.sqrt(t))
+        d1_dx = (
+            2 * np.log(x / k) * x + 2 * (a - b) - sigma ** 2 * t * x
+        ) / (
+            2 * sigma * (a - b) * x * np.sqrt(t)
+        )
+        d2 = d1 - sigma * np.sqrt(t)
+        d2_dx = d1_dx - np.sqrt(t) * sigma / (b - a)
 
-        return np.exp(-self.rate) * (self.forward * d1_2 * norm.pdf(d1) - option.strike * d2_2 * norm.pdf(d2) + ndtr(d1))
+        return np.exp(-self.rate) * (self.forward * d1_dx * norm.pdf(d1) - option.strike * d2_dx * norm.pdf(d2) + ndtr(d1))
+
+    def delta_grads(self, option : vo.VanillaOption, a : float, b : float, grad : float) -> float:
+        x = self.forward
+        k = option.strike
+        sigma = self.vol
+        sigma_dx = grad / (b - a)
+        t = option.tau
+        d1 = (
+            np.log(x/k) + sigma ** 2 * t / 2
+        ) / (sigma * np.sqrt(t))
+        d1_dx = (
+            sigma ** 2 * sigma_dx * t * x - 2 * sigma_dx * np.log(x/k) * x + 2 * sigma
+        ) / (
+            2 * x * sigma ** 2 * np.sqrt(t)
+        )
+        d2 = d1 - sigma * np.sqrt(t)
+        d2_dx = d1_dx - np.sqrt(t) * sigma_dx
+
+        return np.exp(-self.rate) * (self.forward * d1_dx * norm.pdf(d1) - option.strike * d2_dx * norm.pdf(d2) + ndtr(d1))
 
     def gamma2(self, option : vo.VanillaOption, a : float, b : float) -> float:
         def phi(x):
             return - x * np.exp(- x ** 2 / 2) / (2 * np.sqrt(np.pi))
-        d1 = (np.log(self.forward / option.strike) + 0.5 * self.vol * self.vol * option.tau) / (self.vol * np.sqrt(option.tau))
-        d2 = d1 - self.vol * np.sqrt(option.tau)
-        d1_2 = (self.vol - 2 * self.forward * np.log(self.forward / option.strike) * self.vol / (b - a)) / (np.sqrt(option.tau) * self.forward * self.vol**3)
-        d2_2 = d1_2 - np.sqrt(option.tau) * self.vol / (b - a)
-        sx = self.vol
-        sx1 = self.vol / (b - a)
-        sx2 = self.vol / ((b - a) ** 2)
         x = self.forward
         k = option.strike
+        sigma = self.vol
         t = option.tau
-        d1_2_2 = (
-            sx ** 3 * sx2 * t * x ** 2 + 4 * sx1 ** 2 * np.log(x/k) * x**2 - 2 * sx * sx2 * np.log(x/k)*x**2 - 4 * sx1 * x * sx - 2 * sx ** 2
-        ) / (2 * np.sqrt(option.tau) * self.forward ** 2 * sx ** 3)
-        d2_2_2 = d1_2_2 - np.sqrt(t) * sx2
+        d1 = (
+            np.log(x/k) + sigma ** 2 * t / 2
+        ) / (sigma * np.sqrt(t))
+        d1_dx = (
+            2 * np.log(x / k) * x + 2 * (a - b) - sigma ** 2 * t * x
+        ) / (
+            2 * sigma * (a - b) * x * np.sqrt(t)
+        )
+        d2 = d1 - sigma * np.sqrt(t)
+        d2_dx = d1_dx - np.sqrt(t) * sigma / (b - a)
+
+        d1_dx2 = - (
+            np.log(x/k) * x ** 2 * sigma / (b - a) + x * (
+                sigma **2 / 2 * t * x + a - b
+            ) * sigma / (b - a) + sigma * (a - b - x)
+        ) / (np.sqrt(t) * sigma ** 2 * (a - b) * x**2)
+
+        d2_dx2 = d1_dx2 - np.sqrt(t) * sigma / ((b - a) ** 2)
 
         return np.exp(-self.rate * t) * (
             (
-                2 * d1_2 * norm.pdf(d1) + self.forward * (d1_2 ** 2 * phi(d1) + d1_2_2 * norm.pdf(d1))
+                2 * d1_dx * norm.pdf(d1) + self.forward * (d1_dx ** 2 * phi(d1) + d1_dx2 * norm.pdf(d1))
             ) - option.strike * (
-                d2_2 ** 2 * phi(d2) + d2_2_2 * norm.pdf(d2)
+                d2_dx ** 2 * phi(d2) + d2_dx2 * norm.pdf(d2)
+            )
+        )
+
+    def gamma_grads(self, option : vo.VanillaOption, a : float, b : float, grad : float, grad2 : float) -> float:
+        def phi(x):
+            return - x * np.exp(- x ** 2 / 2) / (2 * np.sqrt(np.pi))
+        x = self.forward
+        k = option.strike
+        sigma = self.vol
+        sigma_dx = grad / (b - a)
+        sigma_dx2 = grad2 / ((b - a) ** 2)
+        t = option.tau
+        d1 = (
+            np.log(x/k) + sigma ** 2 * t / 2
+        ) / (sigma * np.sqrt(t))
+        d1_dx = (
+            sigma ** 2 * sigma_dx * t * x - 2 * sigma_dx * np.log(x/k) * x + 2 * sigma
+        ) / (
+            2 * x * sigma ** 2 * np.sqrt(t)
+        )
+        d2 = d1 - sigma * np.sqrt(t)
+        d2_dx = d1_dx - np.sqrt(t) * sigma_dx
+
+        d1_dx2 = (
+            sigma ** 3 * sigma_dx2 * t * x**2 - 2 * sigma * np.log(x/k) * sigma_dx2 * x**2 + \
+                4 * sigma_dx ** 2 * np.log(x/k) * x**2 - 4 * sigma * sigma_dx * x - 2 * sigma ** 2
+        ) / (
+            2 * x**2 * sigma**3 * np.sqrt(t)
+        )
+
+        d2_dx2 = d1_dx2 - np.sqrt(t) * sigma_dx2
+
+        return np.exp(-self.rate * t) * (
+            (
+                2 * d1_dx * norm.pdf(d1) + self.forward * (d1_dx ** 2 * phi(d1) + d1_dx2 * norm.pdf(d1))
+            ) - option.strike * (
+                d2_dx ** 2 * phi(d2) + d2_dx2 * norm.pdf(d2)
             )
         )
