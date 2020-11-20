@@ -13,10 +13,11 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
     x_part = some_model.theta * (1 - exp_part)
     var_part1 = some_model.epsilon * some_model.epsilon / some_model.kappa * (exp_part - np.exp(-2 * some_model.kappa * delta_t))
     var_part2 = some_model.theta * some_model.epsilon * some_model.epsilon / (2 * some_model.kappa) * (1 - exp_part) ** 2
-    
+    corr_part = np.sqrt(1 - some_model.rho * some_model.rho)
+
     for i in range(time_steps):
         N_F = np.random.standard_normal(paths)
-        N_v = some_model.rho * N_F + np.sqrt(1 - some_model.rho * some_model.rho) * np.random.standard_normal(paths)
+        N_v = some_model.rho * N_F + corr_part * np.random.standard_normal(paths)
 
         x = vol * exp_part + x_part
 
@@ -24,7 +25,7 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
 
         y = np.sqrt(np.log(var / (x * x) + 1))
         
-        forward_log = forward_log - 0.5 * vol * delta_t + np.sqrt(np.maximum(vol, 0)) * np.sqrt(delta_t) * N_F
+        forward_log = forward_log - 0.5 * vol * delta_t + np.sqrt(vol) * np.sqrt(delta_t) * N_F
 
         vol = x * np.exp(- (y * y) / 2 + y * N_v)
     

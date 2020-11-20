@@ -132,4 +132,4 @@ if __name__ == "__main__":
     starttime = time.time() 
     generate_sobol_mc(512, 10000) 
     stoptime = time.time() 
-    print(stoptime-starttime) 
+    print(stoptime-starttime)
