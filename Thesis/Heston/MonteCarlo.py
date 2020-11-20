@@ -3,7 +3,7 @@ from scipy.stats import norm
 from Thesis.Heston import HestonModel as hm, AndersenLake as al
 from Thesis.misc import VanillaOptions as vo
 
-def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int, return_paths : bool = False):
+def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int):
     dt = 252
     time_steps = int(some_option.tau * dt)
     forward_log = np.log(some_model.forward)
@@ -25,14 +25,10 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
 
         y = np.sqrt(np.log(var / (x * x) + 1))
         
-
         forward_log = forward_log - 0.5 * vol * delta_t + np.sqrt(np.maximum(vol, 0)) * np.sqrt(delta_t) * N_F
 
         vol = x * np.exp(- (y * y) / 2 + y * N_v)
     
     forward = np.exp(forward_log)
 
-    if return_paths:
-        return np.exp(-some_model.rate * some_option.tau) * some_option(forward)
-    else:
-        return np.exp(-some_model.rate * some_option.tau) * (np.average(some_option(forward)))
+    return np.exp(-some_model.rate * some_option.tau) * (np.average(some_option(forward)))

@@ -9,58 +9,6 @@ from multiprocessing import Pool, cpu_count
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, Sobol, MonteCarlo as mc
 from Thesis.misc import VanillaOptions as vo
 
-def calc_imp_vol(input_array : np.array, option_list : np.array) -> (np.array, np.array):
-    some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
-    output_lenght = np.shape(option_list)[0]
-    output_price = np.empty(output_lenght, dtype=np.float64)
-    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
-    
-    for i in range(output_lenght):
-        try:
-            output_price[i] = al.Andersen_Lake(some_model, option_list[i])
-            output_imp_vol[i] = some_model.impVol(output_price[i], option_list[i])
-        except: #overflow in char function, set impvol to 0
-            output_price[i] = 0
-            output_imp_vol[i] = 0
-
-    return output_price, output_imp_vol
-
-def calc_mc_data(input_array : np.array, option_list : np.array, paths : int) -> (np.array, np.array):
-    some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
-    output_lenght = np.shape(option_list)[0]
-    output_price = np.empty(output_lenght, dtype=np.float64)
-    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
-    
-    for i in range(output_lenght):
-        try:
-            output_price[i] = mc.Heston_monte_carlo(some_model, option_list[i], paths)
-            output_imp_vol[i] = some_model.impVol(output_price[i], option_list[i])
-        except: #overflow in char function, set impvol to 0
-            output_price[i] = 0
-            output_imp_vol[i] = 0
-
-    return output_price, output_imp_vol
-
-def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.ndarray, np.ndarray):
-    output_price_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
-    output_imp_vol_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
-    i = 0
-    for someInput in input_array:
-        output_price_matrix[i, :], output_imp_vol_matrix[i, :] = calc_imp_vol(someInput, option_list)
-        i += 1
-    
-    return output_price_matrix, output_imp_vol_matrix
-
-def monte_carlo_generator(input_array : np.ndarray, option_list : np.array, paths : int):
-    output_price_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
-    output_imp_vol_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
-    i = 0
-    for someInput in input_array:
-        output_price_matrix[i, :], output_imp_vol_matrix[i, :] = calc_imp_vol(someInput, option_list)
-        i += 1
-    
-    return output_price_matrix, output_imp_vol_matrix
-
 def model_input_generator() -> np.ndarray:
     # Forward
     forward = np.linspace(start = 50, stop = 150, num = 6)
@@ -117,6 +65,62 @@ def option_input_generator() -> np.ndarray:
     strike = np.linspace(start = 75, stop = 125, num = 5)
 
     return np.array(list(itertools.product(maturity, strike)))
+
+def calc_mc_data(input_array : np.array, paths : int) -> (np.array, np.array):
+    option_array = option_input_generator()
+    some_option_list = np.array([])
+    for option in option_array:
+        some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
+
+    some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
+    output_lenght = np.shape(some_option_list)[0]
+    output_price = np.empty(output_lenght, dtype=np.float64)
+    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
+    for i in range(output_lenght):
+        output_price[i] = mc.Heston_monte_carlo(some_model, some_option_list[i], paths)
+        output_imp_vol[i] = some_model.impVol(output_price[i], some_option_list[i])
+
+    return output_price, output_imp_vol
+
+def monte_carlo_generator(input_array : np.ndarray, paths : int):
+    option_input = option_input_generator()
+    some_option_list = np.array([])
+    for option in option_input:
+        some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
+    output_price_matrix = np.empty([np.shape(input_array)[0], 25])
+    output_imp_vol_matrix = np.empty([np.shape(input_array)[0], 25])
+    i = 0
+    for someInput in input_array:
+        output_price_matrix[i, :], output_imp_vol_matrix[i, :] = calc_mc_data(someInput, paths)
+        i += 1
+    
+    return output_price_matrix, output_imp_vol_matrix
+
+def calc_imp_vol(input_array : np.array, option_list : np.array) -> (np.array, np.array):
+    some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
+    output_lenght = np.shape(option_list)[0]
+    output_price = np.empty(output_lenght, dtype=np.float64)
+    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
+    
+    for i in range(output_lenght):
+        try:
+            output_price[i] = al.Andersen_Lake(some_model, option_list[i])
+            output_imp_vol[i] = some_model.impVol(output_price[i], option_list[i])
+        except: #overflow in char function, set impvol to 0
+            output_price[i] = 0
+            output_imp_vol[i] = 0
+
+    return output_price, output_imp_vol
+
+def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.ndarray, np.ndarray):
+    output_price_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
+    output_imp_vol_matrix = np.empty([np.shape(input_array)[0], np.shape(option_list)[0]])
+    i = 0
+    for someInput in input_array:
+        output_price_matrix[i, :], output_imp_vol_matrix[i, :] = calc_imp_vol(someInput, option_list)
+        i += 1
+    
+    return output_price_matrix, output_imp_vol_matrix
 
 if __name__ == "__main__":
     """
