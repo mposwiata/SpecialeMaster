@@ -93,6 +93,7 @@ def generate_sobol_mc(no_sobol : int, paths : int):
 if __name__ == "__main__":
     #model_input_save = generate_sobol_input(200000)
     #np.savetxt("Data/MC/HestonMC_input.csv", model_input_save, delimiter=",")
+    """
     generate_sobol_mc(200000, 1)
     print("Done with 1")
     generate_sobol_mc(200000, 10)
@@ -102,9 +103,9 @@ if __name__ == "__main__":
     """
     generate_sobol_mc(200000, 1000)
     print("Done with 1000")
-    generate_sobol_mc(200000, 10000)
-    print("Done with 10000")
-    """
+
+    #generate_sobol_mc(200000, 10000)
+    #print("Done with 10000")
     #generate_sobol_data(100000)
     #generate_sobol_data(200000)
     #generate_sobol_data(312500)
