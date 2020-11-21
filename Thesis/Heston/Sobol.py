@@ -100,12 +100,12 @@ if __name__ == "__main__":
     print("Done with 10")
     generate_sobol_mc(200000, 100)
     print("Done with 100")
-    """
     generate_sobol_mc(200000, 1000)
     print("Done with 1000")
+    """
 
-    #generate_sobol_mc(200000, 10000)
-    #print("Done with 10000")
+    generate_sobol_mc(200000, 10000)
+    print("Done with 10000")
     #generate_sobol_data(100000)
     #generate_sobol_data(200000)
     #generate_sobol_data(312500)
