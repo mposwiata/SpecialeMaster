@@ -183,5 +183,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NNModelNext, imp_list, chunksize=1)
+    res = pool.starmap(mg.NNModelNext, price_list, chunksize=1)
     pool.close()
