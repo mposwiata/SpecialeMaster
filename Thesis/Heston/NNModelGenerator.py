@@ -94,7 +94,6 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     print("Done with: ", model_save)
     return score
 
-
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
     if normal_out:
