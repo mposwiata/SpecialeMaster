@@ -243,6 +243,27 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray) 
     
     return mse_list
 
+def monte_carlo_testing(model_list : list, X_test : np.ndarray, Y_test : np.ndarray):
+    norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
+    mse_list = []
+    for model_string in model_list:
+        x_test_loop = X_test
+        y_test_loop = Y_test
+        model = load_model(model_string)
+        ### Check if model includes scaling
+        if (model_string.find("price") != -1):
+            norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
+            y_test_loop = norm_labels.transform(y_test_loop)
+
+        x_test_loop = norm_feature.transform(x_test_loop)
+
+        name = model_string[model_string.find("/")+1:]
+        score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
+
+        mse_list.append((name, score))
+    
+    return mse_list
+
 def generate_bar_error(error_list : list, name : str):
     error_list.sort(key = lambda x: x[1])
     bar_fig = plt.figure(figsize=(20, 10), dpi = 200)
@@ -315,6 +336,40 @@ if __name__ == "__main__":
 
     ### Generate surfaces
     generate_plots(["Models4/" + s for s in top_models], "Top models")
+
+
+    ### Testing simulation models
+    mc_1 = glob.glob("Models4/mc_1/*.h5")
+    mc_10 = glob.glob("Models4/mc_10/*.h5")
+    mc_100 = glob.glob("Models4/mc_100/*.h5")
+    mc_1000 = glob.glob("Models4/mc_1000/*.h5")
+    mc_10000 = glob.glob("Models4/mc_10000/*.h5")
+    mc_1_price = glob.glob("Models4/mc_1/price/*.h5")
+    mc_10_price = glob.glob("Models4/mc_10/price/*.h5")
+    mc_100_price = glob.glob("Models4/mc_100/price/*.h5")
+    mc_1000_price = glob.glob("Models4/mc_1000/price/*.h5")
+    mc_10000_price = glob.glob("Models4/mc_10000/price/*.h5")
+
+    mc_input = np.loadtxt("Data/MC/HestonMC_input.csv", delimiter=",")
+
+    al_imp = np.loadtxt("Data/hestonSobolGridImpVol2_200000.csv", delimiter=",")
+    al_price = np.loadtxt("Data/hestonSobolGridPrice2_200000.csv", delimiter=",")
+
+    test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
+
+    y_test_mc = al_imp[test_index, :]
+    y_test_price_mc = al_price[test_index, :]
+
+    x_test_mc = mc_input[test_index, :]
+
+    imp_monte_carlo = mc_1 + mc_10 + mc_100 + mc_1000 + mc_10000
+    price_monte_carlo = mc_1_price + mc_10_price + mc_100_price + mc_1000_price + mc_10000_price
+
+    mc_mse = monte_carlo_testing(imp_monte_carlo, x_test_mc, y_test_mc)
+    mc_mse.sort(key = lambda x: x[1])
+
+    mc_mse_price = monte_carlo_testing(price_monte_carlo, x_test_mc, y_test_price_mc)
+    mc_mse_price.sort(key = lambda x: x[1])
 
 
 """

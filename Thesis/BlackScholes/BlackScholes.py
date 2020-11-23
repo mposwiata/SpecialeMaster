@@ -54,11 +54,11 @@ class BlackScholesForward:
 
         return np.exp(-self.rate) * (self.forward * d1_dx * norm.pdf(d1) - option.strike * d2_dx * norm.pdf(d2) + ndtr(d1))
 
-    def delta_grads(self, option : vo.VanillaOption, a : float, b : float, grad : float) -> float:
+    def delta_grads(self, option : vo.VanillaOption, sigma_dx) -> float:
         x = self.forward
         k = option.strike
         sigma = self.vol
-        sigma_dx = grad / (b - a)
+        #sigma_dx = grad / (b - a)
         t = option.tau
         d1 = (
             np.log(x/k) + sigma ** 2 * t / 2
@@ -107,14 +107,14 @@ class BlackScholesForward:
             )
         )
 
-    def gamma_grads(self, option : vo.VanillaOption, a : float, b : float, grad : float, grad2 : float) -> float:
+    def gamma_grads(self, option : vo.VanillaOption, sigma_dx : float, sigma_dx2 : float) -> float:
         def phi(x):
             return - x * np.exp(- x ** 2 / 2) / (2 * np.sqrt(np.pi))
         x = self.forward
         k = option.strike
         sigma = self.vol
-        sigma_dx = grad / (b - a)
-        sigma_dx2 = grad2 / ((b - a) ** 2)
+        #sigma_dx = grad / (b - a)
+        #sigma_dx2 = grad2 / ((b - a) ** 2)
         t = option.tau
         d1 = (
             np.log(x/k) + sigma ** 2 * t / 2

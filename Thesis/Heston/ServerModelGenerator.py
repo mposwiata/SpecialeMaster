@@ -87,6 +87,9 @@ if __name__ == '__main__':
     final_list3 = list(zip(itertools.repeat(data_set), itertools.repeat("final3"), itertools.repeat("final3"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(False)))
 
+    noise_list = list(zip(itertools.repeat(data_set), itertools.repeat("noise"), itertools.repeat("noise"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("noise"), itertools.repeat(False), itertools.repeat(True)))
+
     mac_list = final_list + final_list2 + final_list3
     server_list = price_list + standard_list + mix_list + tanh_list
 
@@ -96,5 +99,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NNModelNext, price_output_standard_list, chunksize=1)
+    res = pool.starmap(mg.NNModelNext, noise_list, chunksize=1)
     pool.close()

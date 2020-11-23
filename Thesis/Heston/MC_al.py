@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import itertools
 import joblib
+import glob
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras.optimizers import Adam
 from keras import backend as k
@@ -162,6 +163,136 @@ def calc_prices(spot : float, epsilon : float):
 
     return al1, mc1, al2, mc2
 
+def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption) -> dict:
+    model = load_model(model_string)
+    if (model_string.find("mc") != -1):
+        norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
+        if (model_string.find("price") != -1):
+            norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
+    else:
+        norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
+
+    if isinstance(norm_feature, MinMaxScaler):
+        grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
+        grads2_scale = 1 / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
+    else:
+        try:
+            grads_scale = np.sqrt(norm_labels.var_[12]) / np.sqrt(norm_feature.var_[0])
+            grads2_scale = np.sqrt(norm_labels.var_[12]) / (np.sqrt(norm_feature.var_[0]) ** 2)
+        except:
+            grads_scale = 1 / np.sqrt(norm_feature.var_[0])
+            grads2_scale = 1 / (np.sqrt(norm_feature.var_[0]) ** 2)
+
+    inp_tensor_easy = tf.convert_to_tensor(norm_feature.transform(easy_case))
+    inp_tensor_hard = tf.convert_to_tensor(norm_feature.transform(hard_case))
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_easy)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_easy)
+            predict_easy = model(inp_tensor_easy)[:,12]
+        grads_easy = tape2.gradient(predict_easy, inp_tensor_easy)[:,0]
+    
+    grads2_easy = tape.gradient(grads_easy, inp_tensor_easy).numpy() 
+    grads2_easy = grads2_easy[:,0] * grads2_scale
+    grads_easy = grads_easy.numpy() * grads_scale
+    try:
+        price_predictions_easy = norm_labels.inverse_transform(model(inp_tensor_easy))[:,12]
+    except:
+        price_predictions_easy = model(inp_tensor_easy)[:,12]
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_hard)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_hard)
+            predict_hard = model(inp_tensor_hard)[:,12]
+        grads_hard = tape2.gradient(predict_hard, inp_tensor_hard)[:,0]
+    
+    grads2_hard = tape.gradient(grads_hard, inp_tensor_hard).numpy()
+    grads2_hard = grads2_hard[:,0] * grads2_scale
+    grads_hard = grads_hard.numpy() * grads_scale
+    try:
+        price_predictions_hard = norm_labels.inverse_transform(model(inp_tensor_hard))[:,12]
+    except:
+        price_predictions_hard = model(inp_tensor_hard)[:,12]
+
+    if (model_string.find("price") == -1): # we are modelling implied vol
+        spot_plot = easy_case[:,0]
+        rate = easy_case[0,6]
+        delta_easy = np.zeros(len(spot_plot))
+        price_easy = np.zeros(len(spot_plot))
+        gamma_easy = np.zeros(len(spot_plot))
+        delta_hard = np.zeros(len(spot_plot))
+        price_hard = np.zeros(len(spot_plot))
+        gamma_hard = np.zeros(len(spot_plot))
+
+        for i in range(len(spot_plot)):
+            model_bs_easy = bs.BlackScholesForward(spot_plot[i], predict_easy[i], rate)
+            model_bs_hard = bs.BlackScholesForward(spot_plot[i], predict_hard[i], rate)
+            price_easy[i] = model_bs_easy.BSFormula(option)
+            delta_easy[i] = model_bs_easy.delta_grads(option, grads_easy[i])
+            gamma_easy[i] = model_bs_easy.gamma_grads(option, grads_easy[i], grads2_easy[i])
+            
+            price_hard[i] = model_bs_hard.BSFormula(option)
+            delta_hard[i] = model_bs_hard.delta_grads(option, grads_hard[i])
+            gamma_hard[i] = model_bs_hard.gamma_grads(option, grads_hard[i], grads2_hard[i])
+    else:
+        price_easy = price_predictions_easy
+        delta_easy = grads_easy
+        gamma_easy = grads2_easy
+        
+        price_hard = price_predictions_hard
+        delta_hard = grads_hard
+        gamma_hard = grads2_hard
+
+    return_dict = {
+        "pred" : [price_easy, price_hard],
+        "delta" : [delta_easy, delta_hard],
+        "gamma" : [gamma_easy, gamma_hard]
+    }
+
+    return return_dict
+
+def mc_price_grads(model : str, easy_case : np.ndarray, hard_case : np.ndarray) -> dict:
+    mc_price_model = load_model(model)
+    mc_norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
+    mc_norm_labels_price = joblib.load(model[:model.rfind("/")+1]+"price_scale.pkl")
+
+    inp_tensor_easy_mc = tf.convert_to_tensor(mc_norm_feature.transform(easy_case))
+    inp_tensor_hard_mc = tf.convert_to_tensor(mc_norm_feature.transform(hard_case))
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_easy_mc)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_easy_mc)
+            predict_easy_mc = mc_price_model(inp_tensor_easy_mc)[:,12]
+        grads_easy_mc = tape2.gradient(predict_easy_mc, inp_tensor_easy_mc)[:,0]
+    
+    grads2_easy_mc = tape.gradient(grads_easy_mc, inp_tensor_easy_mc).numpy() 
+    grads2_easy_mc = grads2_easy_mc[:,0] * np.sqrt(mc_norm_labels_price.var_[12]) / (np.sqrt(mc_norm_feature.var_[0]) ** 2)
+    grads_easy_mc = grads_easy_mc.numpy() * np.sqrt(mc_norm_labels_price.var_[12]) / np.sqrt(mc_norm_feature.var_[0])
+    price_predictions_easy_mc = mc_norm_labels_price.inverse_transform(mc_price_model(inp_tensor_easy_mc))[:,12]
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_hard_mc)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_hard_mc)
+            predict_hard_mc = mc_price_model(inp_tensor_hard_mc)[:,12]
+        grads_hard_mc = tape2.gradient(predict_hard_mc, inp_tensor_hard_mc)[:,0]
+    
+    grads2_hard_mc = tape.gradient(grads_hard_mc, inp_tensor_hard_mc).numpy()
+    grads2_hard_mc = grads2_hard_mc[:,0] * np.sqrt(mc_norm_labels_price.var_[12]) / (np.sqrt(mc_norm_feature.var_[0]) ** 2)
+    grads_hard_mc = grads_hard_mc.numpy() * np.sqrt(mc_norm_labels_price.var_[12]) / np.sqrt(mc_norm_feature.var_[0])
+    price_predictions_hard_mc = mc_norm_labels_price.inverse_transform(mc_price_model(inp_tensor_hard_mc))[:,12]
+
+    return_dict = {
+        "pred" : [price_predictions_easy_mc, price_predictions_hard_mc],
+        "delta" : [grads_easy_mc, grads_hard_mc],
+        "gamma" : [grads2_easy_mc, grads2_hard_mc]
+    }
+
+    return return_dict
+
 if __name__ == "__main__":
     ### Generating input data
     spot = np.linspace(start = 50, stop = 150, num = 1000)
@@ -289,6 +420,8 @@ if __name__ == "__main__":
     norm_feature_good = joblib.load(norm_folder+"norm_feature.pkl")
     model = load_model("Models4/activation_functions/mix_5_1000.h5")
 
+    model_grads("Models4/activation_functions/mix_5_1000.h5", input_good_easy, input_good_hard, some_option)
+
     a = norm_feature_good.data_min_[0]
     b = norm_feature_good.data_max_[0]
 
@@ -304,8 +437,8 @@ if __name__ == "__main__":
         grads_easy = tape2.gradient(predict_easy, inp_tensor_easy)[:,0]
     
     grads2_easy = tape.gradient(grads_easy, inp_tensor_easy).numpy()
-    grads2_easy = grads2_easy[:,0]
-    grads_easy = grads_easy.numpy()
+    grads2_easy = grads2_easy[:,0] / ((b - a) ** 2
+    grads_easy = grads_easy.numpy() / (b - a)
 
     with tf.GradientTape(persistent = True) as tape:
         tape.watch(inp_tensor_hard)
@@ -315,8 +448,8 @@ if __name__ == "__main__":
         grads_hard = tape2.gradient(predict_hard, inp_tensor_hard)[:,0]
     
     grads2_hard = tape.gradient(grads_hard, inp_tensor_hard).numpy()
-    grads2_hard = grads2_hard[:,0]
-    grads_hard = grads_hard.numpy()
+    grads2_hard = grads2_hard[:,0] / ((b - a) ** 2
+    grads_hard = grads_hard.numpy() / (b - a)
 
     delta_easy = np.zeros(200)
     price_easy = np.zeros(200)
@@ -336,12 +469,81 @@ if __name__ == "__main__":
         delta_hard[i] = model_bs_hard.delta_grads(some_option, a, b, grads_hard[i])
         gamma_hard[i] = model_bs_hard.gamma_grads(some_option, a, b, grads_hard[i], grads2_hard[i])
 
+    ### Monte Carlo models
+    # Price
+    mc_1 = glob.glob("Models4/mc_1/*.h5")
+    mc_10 = glob.glob("Models4/mc_10/*.h5")
+    mc_100 = glob.glob("Models4/mc_100/*.h5")
+    mc_1000 = glob.glob("Models4/mc_1000/*.h5")
+    mc_10000 = glob.glob("Models4/mc_10000/*.h5")
+    mc_1_price = glob.glob("Models4/mc_1/price/*.h5")
+    mc_10_price = glob.glob("Models4/mc_10/price/*.h5")
+    mc_100_price = glob.glob("Models4/mc_100/price/*.h5")
+    mc_1000_price = glob.glob("Models4/mc_1000/price/*.h5")
+    mc_10000_price = glob.glob("Models4/mc_10000/price/*.h5")
+
+    imp_monte_carlo = mc_1 + mc_10 + mc_100 + mc_1000 + mc_10000
+    price_monte_carlo = mc_1_price + mc_10_price + mc_100_price + mc_1000_price + mc_10000_price
+
+    model_grads("Models4/mc_10000/price/mc_10000_price_4_100.h5", input_good_easy, input_good_hard, some_option)
+
+    plot_mc_dict = {}
+    delta_mc_dict = {}
+    gamma_mc_dict = {}
+
+    for some_model in mc_1_price:
+        name = some_model[some_model.rfind("/")+1:]
+        tmp_dict = mc_price_grads(some_model, input_good_easy, input_good_hard)
+        plot_mc_dict[name] = tmp_dict["pred"]
+        delta_mc_dict[name] = tmp_dict["delta"]
+        gamma_mc_dict[name] = tmp_dict["gamma"]
+
+    plot_func(spot_plot, plot_mc_dict, "Predictions MC")
+    plot_func(spot_plot, delta_mc_dict, "Delta MC")
+    plot_func(spot_plot, gamma_mc_dict, "Gamma MC")
+
+    mc_price_model = load_model("Models4/mc_10000/price/mc_10000_price_4_100.h5")
+    some_string = "Models4/mc_10000/price/mc_10000_price_4_100.h5"
+    model_dict = mc_price_grads(some_string, input_good_easy, input_good_hard)
+
+    mc_norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
+    mc_norm_labels_price = joblib.load("Models4/mc_10000/price/price_scale.pkl")
+
+    inp_tensor_easy_mc = tf.convert_to_tensor(mc_norm_feature.transform(input_good_easy))
+    inp_tensor_hard_mc = tf.convert_to_tensor(mc_norm_feature.transform(input_good_hard))
+
+    ### Andersen Lake model
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_easy_mc)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_easy_mc)
+            predict_easy_mc = mc_price_model(inp_tensor_easy_mc)[:,12]
+        grads_easy_mc = tape2.gradient(predict_easy_mc, inp_tensor_easy_mc)[:,0]
+    
+    grads2_easy_mc = tape.gradient(grads_easy_mc, inp_tensor_easy_mc).numpy() 
+    grads2_easy_mc = grads2_easy_mc[:,0] * np.sqrt(mc_norm_labels_price.var_[12]) / (np.sqrt(mc_norm_feature.var_[0]) ** 2)
+    grads_easy_mc = grads_easy_mc.numpy() * np.sqrt(mc_norm_labels_price.var_[12]) / np.sqrt(mc_norm_feature.var_[0])
+    price_predictions_easy_mc = mc_norm_labels_price.inverse_transform(mc_price_model(inp_tensor_easy_mc))[:,12]
+
+    with tf.GradientTape(persistent = True) as tape:
+        tape.watch(inp_tensor_hard_mc)
+        with tf.GradientTape(persistent = True) as tape2:
+            tape2.watch(inp_tensor_hard_mc)
+            predict_hard_mc = mc_price_model(inp_tensor_hard_mc)[:,12]
+        grads_hard_mc = tape2.gradient(predict_hard_mc, inp_tensor_hard_mc)[:,0]
+    
+    grads2_hard_mc = tape.gradient(grads_hard_mc, inp_tensor_hard_mc).numpy()
+    grads2_hard_mc = grads2_hard_mc[:,0] * np.sqrt(mc_norm_labels_price.var_[12]) / (np.sqrt(mc_norm_feature.var_[0]) ** 2)
+    grads_hard_mc = grads_hard_mc.numpy() * np.sqrt(mc_norm_labels_price.var_[12]) / np.sqrt(mc_norm_feature.var_[0])
+    price_predictions_hard_mc = mc_norm_labels_price.inverse_transform(mc_price_model(inp_tensor_hard_mc))[:,12]
+
     prediction_data = {
         "Andersen Lake" : [al_predict1, al_predict2],
         "Monte Carlo" : [mc_predict1, mc_predict2],
         "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
         "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
-        "Neural network" : [price_easy, price_hard]
+        "Full NN, AL" : [price_easy, price_hard],
+        "Full NN, MC" : [price_predictions_easy_mc, price_predictions_hard_mc]
     }
 
     delta_data = {
@@ -349,7 +551,8 @@ if __name__ == "__main__":
         "Monte Carlo" : [mc_grads1, mc_grads2],
         "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
         "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
-        "Neural network" : [delta_easy, delta_hard]
+        "Neural network" : [delta_easy, delta_hard],
+        "Full NN, MC" : [grads_easy_mc, grads_hard_mc]
     }
 
     gamma_data = {
@@ -357,12 +560,14 @@ if __name__ == "__main__":
         "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
         "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
         "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
-        "Neural network" : [gamma_easy, gamma_hard]
+        "Neural network" : [gamma_easy, gamma_hard],
+        "Full NN, MC" : [grads2_easy_mc, grads2_hard_mc]
     }
 
     plot_func(spot_plot, prediction_data, "Predictions")
     plot_func(spot_plot, delta_data, "Delta")
     plot_func(spot_plot, gamma_data, "Gamma")
+
 
 """
     price_easy_al = np.zeros(200)

@@ -3,6 +3,8 @@ import time
 from scipy.stats import norm
 from multiprocessing import Pool, cpu_count, Process
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import joblib
 import os
 import itertools
 import sys
@@ -185,3 +187,42 @@ if __name__ == '__main__':
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NNModelNext, price_list, chunksize=1)
     pool.close()
+
+    mc_1_scale = StandardScaler()
+    mc_1_scale.fit(mc_imp_vol_1[train_index, :])
+    joblib.dump(mc_1_scale, "Models4/mc_1/imp_scale.pkl")
+    mc_1_price_scale = StandardScaler()
+    mc_1_price_scale.fit(mc_price_1[train_index, :])
+    joblib.dump(mc_1_price_scale, "Models4/mc_1/Price/price_scale.pkl")
+
+    mc_10_scale = StandardScaler()
+    mc_10_scale.fit(mc_imp_vol_10[train_index, :])
+    joblib.dump(mc_10_scale, "Models4/mc_10/imp_scale.pkl")
+    mc_10_price_scale = StandardScaler()
+    mc_10_price_scale.fit(mc_price_10[train_index, :])
+    joblib.dump(mc_10_price_scale, "Models4/mc_10/Price/price_scale.pkl")
+
+    mc_100_scale = StandardScaler()
+    mc_100_scale.fit(mc_imp_vol_100[train_index, :])
+    joblib.dump(mc_100_scale, "Models4/mc_100/imp_scale.pkl")
+    mc_100_price_scale = StandardScaler()
+    mc_100_price_scale.fit(mc_price_100[train_index, :])
+    joblib.dump(mc_100_price_scale, "Models4/mc_100/Price/price_scale.pkl")
+
+    mc_1000_scale = StandardScaler()
+    mc_1000_scale.fit(mc_imp_vol_1000[train_index, :])
+    joblib.dump(mc_1000_scale, "Models4/mc_1000/imp_scale.pkl")
+    mc_1000_price_scale = StandardScaler()
+    mc_1000_price_scale.fit(mc_price_1000[train_index, :])
+    joblib.dump(mc_1000_price_scale, "Models4/mc_1000/Price/price_scale.pkl")
+
+    mc_10000_scale = StandardScaler()
+    mc_10000_scale.fit(mc_imp_vol_10000[train_index, :])
+    joblib.dump(mc_10000_scale, "Models4/mc_10000/imp_scale.pkl")
+    mc_10000_price_scale = StandardScaler()
+    mc_10000_price_scale.fit(mc_price_10000[train_index, :])
+    joblib.dump(mc_10000_price_scale, "Models4/mc_10000/Price/price_scale.pkl")
+
+    model_scale = StandardScaler()
+    model_scale.fit(model_input[train_index, :])
+    joblib.dump(model_scale, "Models4/Heston_input_scale.pkl")
