@@ -376,7 +376,7 @@ if __name__ == "__main__":
     eps2_plot = np.reshape(np.repeat(epsilon2, len(spot_plot)), (-1, 1))
     input_multi_easy = np.concatenate([spot_plot, eps1_plot], axis = 1)
     input_multi_hard = np.concatenate([spot_plot, eps2_plot], axis = 1)
-    h = 0.1
+    h = 0.01
     input_good_easy = np.concatenate([
         spot_plot, 
         np.reshape(np.repeat(vol1, len(spot_plot)), (-1, 1)),
@@ -570,6 +570,7 @@ if __name__ == "__main__":
 
 
 """
+    h = 0.001
     price_easy_al = np.zeros(200)
     price_hard_al = np.zeros(200)
     delta_easy_al = np.zeros(200)
@@ -579,8 +580,8 @@ if __name__ == "__main__":
     for i in range(len(spot_plot)):
         h = 0.1
         some_spot = spot_plot[i]
-        some_spot_low = some_spot - h
-        some_spot_high = some_spot + h
+        some_spot_low = some_spot - 0.5 * h
+        some_spot_high = some_spot + 0.5 * h
 
         ### Andersen Lake FD
         ### Easy
@@ -593,7 +594,7 @@ if __name__ == "__main__":
         al_f_x_m = al.Andersen_Lake(hm_low, some_option)
 
         price_easy_al[i] = al_f_x
-        delta_easy_al[i] = ((al_f_x_p - al_f_x) / h ) 
+        delta_easy_al[i] = ((al_f_x_p - al_f_x_m) / h ) 
         gamma_easy_al[i] = (al_f_x_p - 2 * al_f_x + al_f_x_m) / (h * h)
 
         ### Hard
@@ -615,6 +616,5 @@ if __name__ == "__main__":
     plot_func(spot_plot, prediction_data, "Predictions2")
     plot_func(spot_plot, delta_data, "Delta2")
     plot_func(spot_plot, gamma_data, "Gamma2")
-
-
+    
 """

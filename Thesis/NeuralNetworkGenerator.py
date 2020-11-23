@@ -75,7 +75,7 @@ def NN_generator_mix(n_layers : int, n_nodes : int, input_dim : int, output_dim 
 def NN_generator_mix_noise(n_layers : int, n_nodes : int, input_dim : int, output_dim : int) -> Sequential:
     model = Sequential()
 
-    model.add(GaussianNoise(0.01, input_shape = (input_dim,)))
+    model.add(GaussianNoise(0.1, input_shape = (input_dim,)))
 
     # Layer 1, input
     layer1 = Dense(n_nodes, activation = 'tanh',

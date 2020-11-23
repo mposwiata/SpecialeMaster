@@ -87,7 +87,7 @@ if __name__ == '__main__':
     final_list3 = list(zip(itertools.repeat(data_set), itertools.repeat("final3"), itertools.repeat("final3"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(False)))
 
-    noise_list = list(zip(itertools.repeat(data_set), itertools.repeat("noise"), itertools.repeat("noise"), \
+    noise_list = list(zip(itertools.repeat(data_set), itertools.repeat("noise2"), itertools.repeat("noise"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("noise"), itertools.repeat(False), itertools.repeat(True)))
 
     mac_list = final_list + final_list2 + final_list3
