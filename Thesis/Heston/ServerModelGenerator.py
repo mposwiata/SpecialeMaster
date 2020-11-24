@@ -45,7 +45,7 @@ if __name__ == '__main__':
     X_train_mc = mc_input[mc_train_index, :]
     X_test_mc = mc_input[mc_test_index, :]
     Y_train_mc = mc_output[mc_train_index, :]
-    Y_test_mc = mc_output[mc_test_index, :]np.
+    Y_test_mc = mc_output[mc_test_index, :]
 
     data_set = [X_train, X_test, Y_train, Y_test]
     data_set_price = [X_train_price, X_test_price, Y_train_price, Y_test_price]
