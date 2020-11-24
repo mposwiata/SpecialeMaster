@@ -230,7 +230,7 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray) 
                 norm_feature = joblib.load(norm_folder+"norm_feature_grid.pkl")
         elif (model_string.find("single") != -1):
             norm_feature = joblib.load(norm_folder+"norm_feature_single.pkl")
-        elif (model_string.find("standard") != -1 or ((model_string.find("final") != -1 and model_string.find("final3") == -1 ))):
+        elif (model_string.find("standard") != -1 or ((model_string.find("final") != -1 and model_string.find("final3") == -1 )) or (model_string.find("noise") != -1)):
             norm_feature = joblib.load(norm_folder+"standard_features.pkl")
         else:
             norm_feature = joblib.load(norm_folder+"norm_feature.pkl")
@@ -311,6 +311,9 @@ if __name__ == "__main__":
     final3 = glob.glob("Models4/final3/*.h5")
     #generate_plots(final3, "final3")
 
+    noise1 = glob.glob("Models4/noise/*.h5")
+    noise2 = glob.glob("Models4/noise2/*.h5")
+
     price_standard = glob.glob("Models4/price_standard/*.h5")
     ### Removing overfitting
     price_standard.remove("Models4/price_standard/price_standard_3_1000.h5")
@@ -329,6 +332,9 @@ if __name__ == "__main__":
     mse_list[:15]
     generate_bar_error(mse_list[:15], "Top models test set")
 
+    noise_mse = model_test_set(noise1+noise2, X_test, Y_test)
+    noise_mse.sort(key = lambda x: x[1])
+
     ### To look at the best models
     top_models = []
     for i in range(15):
@@ -336,7 +342,6 @@ if __name__ == "__main__":
 
     ### Generate surfaces
     generate_plots(["Models4/" + s for s in top_models], "Top models")
-
 
     ### Testing simulation models
     mc_1 = glob.glob("Models4/mc_1/*.h5")

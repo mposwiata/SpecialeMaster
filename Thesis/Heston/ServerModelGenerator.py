@@ -38,10 +38,25 @@ if __name__ == '__main__':
     Y_train_wide = np.loadtxt("Data/Sobol2_Y_train.csv", delimiter = ",")
     Y_test_wide = np.loadtxt("Data/Sobol2_Y_test.csv", delimiter = ",")
 
+    mc_train_index = np.loadtxt("Data/MC/train_index.csv", delimiter = ",").astype(int)
+    mc_test_index = np.loadtxt("Data/MC/test_index.csv", delimiter = ",").astype(int)
+    mc_input = np.loadtxt("Data/MC/HestonMC_input.csv", delimiter = ",")
+    mc_output = np.loadtxt("Data/MC/HestonMC_imp_vol_10000.csv", delimiter = ",")
+    X_train_mc = mc_input[mc_train_index, :]
+    X_test_mc = mc_input[mc_test_index, :]
+    Y_train_mc = mc_output[mc_train_index, :]
+    Y_test_mc = mc_output[mc_test_index, :]np.
+
     data_set = [X_train, X_test, Y_train, Y_test]
     data_set_price = [X_train_price, X_test_price, Y_train_price, Y_test_price]
     data_set_grid = [X_train_grid, X_test_grid, Y_train_grid, Y_test_grid]
     data_set_wide = [X_train_wide, X_test_wide, Y_train_wide, Y_test_wide]
+    data_set_mix = [
+        np.concatenate((X_train, X_train_mc)),
+        np.concatenate((X_test, X_test_mc)),
+        np.concatenate((Y_train, Y_train_mc)),
+        np.concatenate((Y_test, Y_test_mc))
+    ]
 
     layers = [1, 2, 3, 4, 5]
     neurons = [50, 100, 500, 1000]
@@ -90,6 +105,10 @@ if __name__ == '__main__':
     noise_list = list(zip(itertools.repeat(data_set), itertools.repeat("noise2"), itertools.repeat("noise"), \
         layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("noise"), itertools.repeat(False), itertools.repeat(True)))
 
+    final_mix_data = list(zip(itertools.repeat(data_set_mix), itertools.repeat("mix_data"), itertools.repeat("mix_data"), \
+        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True)))
+
+
     mac_list = final_list + final_list2 + final_list3
     server_list = price_list + standard_list + mix_list + tanh_list
 
@@ -99,5 +118,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NNModelNext, noise_list, chunksize=1)
+    res = pool.starmap(mg.NNModelNext, final_mix_data, chunksize=1)
     pool.close()

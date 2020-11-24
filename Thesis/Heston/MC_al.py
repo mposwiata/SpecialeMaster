@@ -170,7 +170,7 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         if (model_string.find("price") != -1):
             norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
     else:
-        norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
+        norm_feature = joblib.load("Models4/norms/standard_features.pkl")
 
     if isinstance(norm_feature, MinMaxScaler):
         grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
@@ -197,9 +197,9 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
     grads2_easy = grads2_easy[:,0] * grads2_scale
     grads_easy = grads_easy.numpy() * grads_scale
     try:
-        price_predictions_easy = norm_labels.inverse_transform(model(inp_tensor_easy))[:,12]
+        predict_easy = norm_labels.inverse_transform(model(inp_tensor_easy))[:,12]
     except:
-        price_predictions_easy = model(inp_tensor_easy)[:,12]
+        predict_easy = model(inp_tensor_easy)[:,12]
 
     with tf.GradientTape(persistent = True) as tape:
         tape.watch(inp_tensor_hard)
@@ -212,9 +212,9 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
     grads2_hard = grads2_hard[:,0] * grads2_scale
     grads_hard = grads_hard.numpy() * grads_scale
     try:
-        price_predictions_hard = norm_labels.inverse_transform(model(inp_tensor_hard))[:,12]
+        predict_hard = norm_labels.inverse_transform(model(inp_tensor_hard))[:,12]
     except:
-        price_predictions_hard = model(inp_tensor_hard)[:,12]
+        predict_hard = model(inp_tensor_hard)[:,12]
 
     if (model_string.find("price") == -1): # we are modelling implied vol
         spot_plot = easy_case[:,0]
@@ -437,7 +437,7 @@ if __name__ == "__main__":
         grads_easy = tape2.gradient(predict_easy, inp_tensor_easy)[:,0]
     
     grads2_easy = tape.gradient(grads_easy, inp_tensor_easy).numpy()
-    grads2_easy = grads2_easy[:,0] / ((b - a) ** 2
+    grads2_easy = grads2_easy[:,0] / ((b - a) ** 2)
     grads_easy = grads_easy.numpy() / (b - a)
 
     with tf.GradientTape(persistent = True) as tape:
@@ -448,7 +448,7 @@ if __name__ == "__main__":
         grads_hard = tape2.gradient(predict_hard, inp_tensor_hard)[:,0]
     
     grads2_hard = tape.gradient(grads_hard, inp_tensor_hard).numpy()
-    grads2_hard = grads2_hard[:,0] / ((b - a) ** 2
+    grads2_hard = grads2_hard[:,0] / ((b - a) ** 2)
     grads_hard = grads_hard.numpy() / (b - a)
 
     delta_easy = np.zeros(200)
@@ -462,29 +462,46 @@ if __name__ == "__main__":
         model_bs_easy = bs.BlackScholesForward(spot_plot[i], predict_easy[i], rate)
         model_bs_hard = bs.BlackScholesForward(spot_plot[i], predict_hard[i], rate)
         price_easy[i] = model_bs_easy.BSFormula(some_option)
-        delta_easy[i] = model_bs_easy.delta_grads(some_option, a, b, grads_easy[i])
-        gamma_easy[i] = model_bs_easy.gamma_grads(some_option, a, b, grads_easy[i], grads2_easy[i])
+        delta_easy[i] = model_bs_easy.delta_grads(some_option, grads_easy[i])
+        gamma_easy[i] = model_bs_easy.gamma_grads(some_option, grads_easy[i], grads2_easy[i])
         
         price_hard[i] = model_bs_hard.BSFormula(some_option)
-        delta_hard[i] = model_bs_hard.delta_grads(some_option, a, b, grads_hard[i])
-        gamma_hard[i] = model_bs_hard.gamma_grads(some_option, a, b, grads_hard[i], grads2_hard[i])
+        delta_hard[i] = model_bs_hard.delta_grads(some_option, grads_hard[i])
+        gamma_hard[i] = model_bs_hard.gamma_grads(some_option, grads_hard[i], grads2_hard[i])
+
+    ### Noise
+    noise_model = "Models4/noise/noise_5_500.h5"
+    noise_dict = model_grads(noise_model, input_good_easy, input_good_hard, some_option)
+
+    prediction_data = {
+        "Andersen Lake" : [al_predict1, al_predict2],
+        "Monte Carlo" : [mc_predict1, mc_predict2],
+        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
+        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
+        "Noise model" : [noise_dict["pred"][0], noise_dict["pred"][1]]
+    }
+
+    delta_data = {
+        "Andersen Lake" : [al_grads1, al_grads2],
+        "Monte Carlo" : [mc_grads1, mc_grads2],
+        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
+        "Noise model" : [noise_dict["delta"][0], noise_dict["delta"][1]]
+    }
+
+    gamma_data = {
+        "Andersen Lake" : [al_grads1_2, al_grads2_2],
+        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
+        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
+        "Noise model" : [noise_dict["gamma"][0], noise_dict["gamma"][1]]
+    }
+
+    plot_func(spot_plot, prediction_data, "Predictions")
+    plot_func(spot_plot, delta_data, "Delta")
+    plot_func(spot_plot, gamma_data, "Gamma")
 
     ### Monte Carlo models
-    # Price
-    mc_1 = glob.glob("Models4/mc_1/*.h5")
-    mc_10 = glob.glob("Models4/mc_10/*.h5")
-    mc_100 = glob.glob("Models4/mc_100/*.h5")
-    mc_1000 = glob.glob("Models4/mc_1000/*.h5")
-    mc_10000 = glob.glob("Models4/mc_10000/*.h5")
-    mc_1_price = glob.glob("Models4/mc_1/price/*.h5")
-    mc_10_price = glob.glob("Models4/mc_10/price/*.h5")
-    mc_100_price = glob.glob("Models4/mc_100/price/*.h5")
-    mc_1000_price = glob.glob("Models4/mc_1000/price/*.h5")
-    mc_10000_price = glob.glob("Models4/mc_10000/price/*.h5")
-
-    imp_monte_carlo = mc_1 + mc_10 + mc_100 + mc_1000 + mc_10000
-    price_monte_carlo = mc_1_price + mc_10_price + mc_100_price + mc_1000_price + mc_10000_price
-
     model_grads("Models4/mc_10000/price/mc_10000_price_4_100.h5", input_good_easy, input_good_hard, some_option)
 
     plot_mc_dict = {}
@@ -570,7 +587,7 @@ if __name__ == "__main__":
 
 
 """
-    h = 0.001
+    h = 0.01
     price_easy_al = np.zeros(200)
     price_hard_al = np.zeros(200)
     delta_easy_al = np.zeros(200)
@@ -580,34 +597,46 @@ if __name__ == "__main__":
     for i in range(len(spot_plot)):
         h = 0.1
         some_spot = spot_plot[i]
-        some_spot_low = some_spot - 0.5 * h
-        some_spot_high = some_spot + 0.5 * h
+        some_spot_low = some_spot - h
+        some_spot_low2 = some_spot - 0.5 * h
+        some_spot_high = some_spot + h
+        some_spot_high2 = some_spot + 0.5 * h
 
         ### Andersen Lake FD
         ### Easy
         hm_c = hm.HestonClass(some_spot, vol1, kappa1, theta1, epsilon1, rho1, rate)
         hm_low = hm.HestonClass(some_spot_low, vol1, kappa1, theta1, epsilon1, rho1, rate)
+        hm_low2 = hm.HestonClass(some_spot_low2, vol1, kappa1, theta1, epsilon1, rho1, rate)
+
         hm_high = hm.HestonClass(some_spot_high, vol1, kappa1, theta1, epsilon1, rho1, rate)
+        hm_high2 = hm.HestonClass(some_spot_high2, vol1, kappa1, theta1, epsilon1, rho1, rate)
+
 
         al_f_x = al.Andersen_Lake(hm_c, some_option)
         al_f_x_p = al.Andersen_Lake(hm_high, some_option)
+        al_f_x_p2 = al.Andersen_Lake(hm_high2, some_option)
         al_f_x_m = al.Andersen_Lake(hm_low, some_option)
+        al_f_x_m2 = al.Andersen_Lake(hm_low2, some_option)
 
         price_easy_al[i] = al_f_x
-        delta_easy_al[i] = ((al_f_x_p - al_f_x_m) / h ) 
+        delta_easy_al[i] = ((al_f_x_p2 - al_f_x_m2) / h ) 
         gamma_easy_al[i] = (al_f_x_p - 2 * al_f_x + al_f_x_m) / (h * h)
 
         ### Hard
         hm_c_hard = hm.HestonClass(some_spot, vol2, kappa2, theta2, epsilon2, rho2, rate)
         hm_low_hard = hm.HestonClass(some_spot_low, vol2, kappa2, theta2, epsilon2, rho2, rate)
         hm_high_hard = hm.HestonClass(some_spot_high, vol2, kappa2, theta2, epsilon2, rho2, rate)
+        hm_low_hard2 = hm.HestonClass(some_spot_low2, vol2, kappa2, theta2, epsilon2, rho2, rate)
+        hm_high_hard2 = hm.HestonClass(some_spot_high2, vol2, kappa2, theta2, epsilon2, rho2, rate)
 
         al_f_x_hard = al.Andersen_Lake(hm_c_hard, some_option)
         al_f_x_p_hard = al.Andersen_Lake(hm_high_hard, some_option)
         al_f_x_m_hard = al.Andersen_Lake(hm_low_hard, some_option)
+        al_f_x_p_hard2 = al.Andersen_Lake(hm_high_hard2, some_option)
+        al_f_x_m_hard2 = al.Andersen_Lake(hm_low_hard2, some_option)
 
         price_hard_al[i] = al_f_x_hard
-        delta_hard_al[i] = ((al_f_x_p_hard - al_f_x_hard) / h ) 
+        delta_hard_al[i] = ((al_f_x_p_hard2 - al_f_x_m_hard2) / h ) 
         gamma_hard_al[i] = (al_f_x_p_hard - 2 * al_f_x_hard + al_f_x_m_hard) / (h * h)
 
     prediction_data["Andersen Lake FD"] = [price_easy_al, price_hard_al]
@@ -616,5 +645,5 @@ if __name__ == "__main__":
     plot_func(spot_plot, prediction_data, "Predictions2")
     plot_func(spot_plot, delta_data, "Delta2")
     plot_func(spot_plot, gamma_data, "Gamma2")
-    
+
 """
