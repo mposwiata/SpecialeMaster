@@ -64,7 +64,7 @@ if __name__ == '__main__':
     if cpu_count() == 4:
         cpu_cores = 4
     else:
-        cpu_cores = int(min(cpu_count()/2, 32))
+        cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NN_mc_model_1, server_list, chunksize=1)
