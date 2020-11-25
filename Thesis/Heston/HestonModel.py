@@ -97,5 +97,6 @@ class HestonClass:
     
     def impVol(self, price : float, option : vo.VanillaOption):
         tempBS = bs.BlackScholesForward(self.forward, self.vol, self.rate)
+        imp_vol = tempBS.impVol(price, option)
 
-        return tempBS.impVol(price, option)
+        return imp_vol

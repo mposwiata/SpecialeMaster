@@ -96,11 +96,11 @@ def monte_carlo_generator(input_array : np.ndarray, paths : int):
     
     return output_price_matrix, output_imp_vol_matrix
 
-def calc_imp_vol(input_array : np.array, option_list : np.array) -> (np.array, np.array):
+def calc_imp_vol(input_array : np.array, option_list : list) -> (np.array, np.array):
     some_model = hm.HestonClass(input_array[0], input_array[1], input_array[2], input_array[3], input_array[4], input_array[5], input_array[6])
     output_lenght = np.shape(option_list)[0]
-    output_price = np.empty(output_lenght, dtype=np.float64)
-    output_imp_vol = np.empty(output_lenght, dtype=np.float64)
+    output_price = np.zeros(output_lenght, dtype=np.float64)
+    output_imp_vol = np.zeros(output_lenght, dtype=np.float64)
     
     for i in range(output_lenght):
         try:
