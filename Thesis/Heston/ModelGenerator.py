@@ -26,8 +26,8 @@ if __name__ == '__main__':
     Y_train = imp_vol_1[train_index, :]
     Y_test = imp_vol_1[test_index, :]
 
-    model_input_2 = np.loadtxt("Data/sobol_second_set_input_200000.csv", delimiter = ",")
-    imp_vol_2 = np.loadtxt("Data/sobol_second_set_imp_vol_200000.csv", delimiter=",")
+    model_input_2 = np.loadtxt("Data/sobol_second_set_input200000.csv", delimiter = ",")
+    imp_vol_2 = np.loadtxt("Data/sobol_second_set_imp_vol200000.csv", delimiter=",")
 
     X_train_2 = model_input_1[train_index, :]
     X_test_2 = model_input_1[test_index, :]
