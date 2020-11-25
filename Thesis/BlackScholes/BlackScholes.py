@@ -3,7 +3,7 @@ import time
 from scipy.stats import norm
 from Thesis.misc import VanillaOptions as vo
 from scipy.special import ndtr
-from scipy.optimize import root
+from scipy.optimize import root, brentq
 
 class BlackScholesForward:
     def __init__(self, forward : float, vol : float, rate : float):
@@ -32,9 +32,14 @@ class BlackScholesForward:
     def impVol(self, price : float, option : vo.VanillaOption): 
         def root_func(vol : float, price : float, option : vo.VanillaOption) -> float:
             self.vol = vol
+            if vol < 0:
+                return -999
             return self.BSFormula(option) - price
-
-        return root(root_func, 2, args = (price, option),tol=10e-6).x
+        root_result = root(root_func, 8, args = (price, option),tol=10e-6)
+        if root_result.success == True:
+            return root_result.x
+        else:
+            return -1
 
     def delta2(self, option : vo.VanillaOption, a : float, b : float) -> float:
         x = self.forward

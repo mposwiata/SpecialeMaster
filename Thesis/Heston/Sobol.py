@@ -64,9 +64,9 @@ def generate_sobol_data(no_sobol : int):
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonSobolGridInput2_compare_"+str(no_sobol)+".csv", gridInput, delimiter=",")
-    np.savetxt("Data/hestonSobolGridPrice2_compare_"+str(no_sobol)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonSobolGridImpVol2_compare_"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
+    #np.savetxt("Data/sobol_compare_input"+str(no_sobol)+".csv", gridInput, delimiter=",")
+    #np.savetxt("Data/hestonSobolGridPrice2_compare_"+str(no_sobol)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/sobol_imp_compare"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
@@ -102,12 +102,11 @@ if __name__ == "__main__":
     print("Done with 100")
     generate_sobol_mc(200000, 1000)
     print("Done with 1000")
-    """
-
     generate_sobol_mc(200000, 10000)
     print("Done with 10000")
+    """
     #generate_sobol_data(100000)
-    #generate_sobol_data(200000)
+    generate_sobol_data(200000)
     #generate_sobol_data(312500)
     
     #generate_sobol_data(279936) # matching number of inputs for the wide model
