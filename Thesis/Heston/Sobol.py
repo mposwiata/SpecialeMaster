@@ -64,9 +64,9 @@ def generate_sobol_data(no_sobol : int):
     imp_vol_output = res[1]
 
     # saving grid datasets
-    #np.savetxt("Data/sobol_compare_input"+str(no_sobol)+".csv", gridInput, delimiter=",")
-    #np.savetxt("Data/hestonSobolGridPrice2_compare_"+str(no_sobol)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/sobol_imp_compare"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/sobol_second_set_input"+str(no_sobol)+".csv", gridInput, delimiter=",")
+    np.savetxt("Data/sobol_second_set_price"+str(no_sobol)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/sobol_second_set_imp_vol"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
