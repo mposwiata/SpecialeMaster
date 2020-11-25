@@ -11,11 +11,9 @@ class BlackScholesForward:
         self.vol = vol
         self.rate = rate
 
-    def BSFormula(self, option : vo.VanillaOption, some_vol : float = None) -> float:
-        if some_vol == None:
-            some_vol = self.vol
-        d1 = (np.log(self.forward / option.strike) + 0.5 * some_vol * some_vol * option.tau) / (some_vol * np.sqrt(option.tau))
-        d2 = d1 - some_vol * np.sqrt(option.tau)
+    def BSFormula(self, option : vo.VanillaOption) -> float:
+        d1 = (np.log(self.forward / option.strike) + 0.5 * self.vol * self.vol * option.tau) / (self.vol * np.sqrt(option.tau))
+        d2 = d1 - self.vol * np.sqrt(option.tau)
 
         return np.exp(-self.rate * option.tau) * (self.forward * ndtr(d1) - option.strike * ndtr(d2))
     
@@ -37,7 +35,7 @@ class BlackScholesForward:
             if some_vol < -1:
                 return -1
             return self.BSFormula(option) - price
-        root_result = root(root_func, 2, args = (price, option), tol=10e-5)
+        root_result = root(root_func, 0.4, args = (price, option), tol=10e-5)
         if root_result.success:
             return root_result.x
         else:
