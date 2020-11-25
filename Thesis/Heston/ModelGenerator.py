@@ -50,11 +50,11 @@ if __name__ == '__main__':
         itertools.repeat("new_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
 
-    model_list_3 = list(zip(itertools.repeat(data_set_1), itertools.repeat("new_option_indluce"), \
+    model_list_3 = list(zip(itertools.repeat(data_set_2), itertools.repeat("new_option_indluce"), \
         itertools.repeat("include_zero"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(True)))
 
-    model_list_4 = list(zip(itertools.repeat(data_set_1), itertools.repeat("new_option"), \
+    model_list_4 = list(zip(itertools.repeat(data_set_2), itertools.repeat("new_option"), \
         itertools.repeat("new_option"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
 
