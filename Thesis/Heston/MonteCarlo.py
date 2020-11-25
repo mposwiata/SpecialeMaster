@@ -187,6 +187,7 @@ if __name__ == '__main__':
     res = pool.starmap(mg.NN_mc_model_1, imp_list, chunksize=1)
     pool.close()
 
+    """
     mc_1_scale = StandardScaler()
     mc_1_scale.fit(mc_imp_vol_1[train_index, :])
     joblib.dump(mc_1_scale, "Models4/mc_1/imp_scale.pkl")
@@ -225,3 +226,4 @@ if __name__ == '__main__':
     model_scale = StandardScaler()
     model_scale.fit(model_input[train_index, :])
     joblib.dump(model_scale, "Models4/Heston_input_scale.pkl")
+    """
