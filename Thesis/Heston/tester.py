@@ -1,5 +1,9 @@
 import numpy as np
 import time
+import sys
+import os
+sys.path.append(os.getcwd()) # added for calc server support
+
 from Thesis.misc import VanillaOptions as vo 
 from Thesis.Heston import NNModelGenerator as mg, HestonModel as hm, AndersenLake as al, DataGeneration as dg
 from Thesis.BlackScholes import BlackScholes as bs
