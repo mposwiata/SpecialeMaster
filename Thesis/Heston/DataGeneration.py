@@ -59,7 +59,7 @@ def model_input_generator_old() -> np.ndarray:
 
 def option_input_generator() -> np.ndarray:
     # Maturity
-    maturity = np.linspace(start = 0.1, stop = 2, num = 5)
+    maturity = np.linspace(start = 0.01, stop = 2, num = 5)
 
     # strike
     strike = np.linspace(start = 75, stop = 125, num = 5)

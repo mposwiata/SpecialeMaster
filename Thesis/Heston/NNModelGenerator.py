@@ -96,13 +96,27 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     print("Done with: ", model_save)
     return score
 
-def NN_mc_Model(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool) -> float:
+def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool, include_zero : bool) -> float:
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
     Y_test = data_set[3]
 
-    
+    if include_zero:
+        train_index = np.all(X_train != -1, axis = 1)
+        test_index = np.all(X_test != -1, axis = 1)
+    else:
+        train_index = np.all(X_train > 0, axis = 1)
+        test_index = np.all(X_test > 0, axis = 1)
+    X_train = X_train[train_index, :]
+    Y_train = Y_train[train_index, :]
+    X_test = X_test[test_index, :]
+    Y_test = Y_test[test_index, :]
+
+    data_set = [X_train, X_test, Y_train, Y_test]
+    score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
+
+    return score
     
 
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
