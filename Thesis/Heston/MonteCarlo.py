@@ -47,15 +47,15 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
 if __name__ == '__main__':
     model_input = np.loadtxt("Data/MC/HestonMC_input.csv", delimiter=",")
 
-    mc_imp_vol_1 = np.loadtxt("Data/MC/HestonMC_imp_vol_1.csv", delimiter=",")
+    mc_imp_vol_1 = np.loadtxt("Data/MC/Heston_mc_imp_vol_1.csv", delimiter=",")
     mc_price_1 = np.loadtxt("Data/MC/HestonMC_price_1.csv", delimiter=",")
-    mc_imp_vol_10 = np.loadtxt("Data/MC/HestonMC_imp_vol_10.csv", delimiter=",")
+    mc_imp_vol_10 = np.loadtxt("Data/MC/Heston_mc_imp_vol_10.csv", delimiter=",")
     mc_price_10 = np.loadtxt("Data/MC/HestonMC_price_10.csv", delimiter=",")
-    mc_imp_vol_100 = np.loadtxt("Data/MC/HestonMC_imp_vol_100.csv", delimiter=",")
+    mc_imp_vol_100 = np.loadtxt("Data/MC/Heston_mc_imp_vol_100.csv", delimiter=",")
     mc_price_100 = np.loadtxt("Data/MC/HestonMC_price_100.csv", delimiter=",")
-    mc_imp_vol_1000 = np.loadtxt("Data/MC/HestonMC_imp_vol_1000.csv", delimiter=",")
+    mc_imp_vol_1000 = np.loadtxt("Data/MC/Heston_mc_imp_vol_1000.csv", delimiter=",")
     mc_price_1000 = np.loadtxt("Data/MC/HestonMC_price_1000.csv", delimiter=",")
-    mc_imp_vol_10000 = np.loadtxt("Data/MC/HestonMC_imp_vol_10000.csv", delimiter=",")
+    mc_imp_vol_10000 = np.loadtxt("Data/MC/Heston_mc_imp_vol_10000.csv", delimiter=",")
     mc_price_10000 = np.loadtxt("Data/MC/HestonMC_price_10000.csv", delimiter=",")
 
     if not (os.path.exists("Data/MC/train_index.csv") and os.path.exists("Data/MC/test_index.csv")):
