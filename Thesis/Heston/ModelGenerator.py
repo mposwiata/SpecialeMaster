@@ -20,11 +20,14 @@ if __name__ == '__main__':
     
     model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
     imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
+    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
 
     X_train = model_input_1[train_index, :]
     X_test = model_input_1[test_index, :]
     Y_train = imp_vol_1[train_index, :]
     Y_test = imp_vol_1[test_index, :]
+    Y_train_price = price_1[train_index, :]
+    Y_test_price = price_1[test_index, :]
 
     model_input_2 = np.loadtxt("Data/sobol_second_set_input200000.csv", delimiter = ",")
     imp_vol_2 = np.loadtxt("Data/sobol_second_set_imp_vol200000.csv", delimiter=",")
@@ -36,6 +39,7 @@ if __name__ == '__main__':
 
     data_set_1 = [X_train, X_test, Y_train, Y_test]
     data_set_2 = [X_train_2, X_test_2, Y_train_2, Y_test_2]
+    data_set_price = [X_train, X_test, Y_train_price, Y_test_price]
 
     layers = [1, 2, 3, 4, 5]
     neurons = [50, 100, 500, 1000]
@@ -58,8 +62,44 @@ if __name__ == '__main__':
         itertools.repeat("new_option"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
 
+    benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
+        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(False)))
 
-    server_list = model_list_1 + model_list_2 + model_list_3 + model_list_4
+    benchmark_include_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark_include"), \
+        itertools.repeat("benchmark_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(True)))
+
+    output_scaling_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("output_scaling"), \
+        itertools.repeat("output_scaling"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(True), itertools.repeat(False), itertools.repeat(False)))
+
+    tanh_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh"), \
+        itertools.repeat("tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("tanh"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(False)))
+
+    mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("mix"), \
+        itertools.repeat("mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(False)))
+
+    price_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price"), \
+        itertools.repeat("price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(False)))
+
+    price_output_scaling_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("output_scaling_price"), \
+        itertools.repeat("output_scaling_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(True), itertools.repeat(False), itertools.repeat(False)))
+
+    standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize"), \
+        itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
+
+    noise_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise"), \
+        itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
+
+    compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
+    compute12_list = mix_list + price_list + standardize_list + noise_list
 
     if cpu_count() == 4:
         cpu_cores = 4
@@ -67,5 +107,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, server_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, compute10_list, chunksize=1)
     pool.close()

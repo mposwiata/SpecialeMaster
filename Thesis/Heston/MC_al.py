@@ -166,22 +166,23 @@ def calc_prices(spot : float, epsilon : float):
 def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption, standardize : bool) -> dict:
     model = load_model(model_string)
     model_folder = model_string[:model_string.rfind("/") + 1]
-    norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+    if os.path.exists(model_folder+"norm_feature.pkl"):
+        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+    else:
+        if (model_string.find("mc") != -1):
+            norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
+            if (model_string.find("price") != -1):
+                norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
+        elif standardize:
+            norm_feature = joblib.load("Models4/norms/standard_features.pkl")
+        else:
+            norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
+
     if os.path.exists(model_folder+"/norm_labels.pkl"):
         norm_labels = joblib.load(model_folder+"norm_labels.pkl")
         normal_out = True
     else:
         normal_out = False
-    """
-    if (model_string.find("mc") != -1):
-        norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
-        if (model_string.find("price") != -1):
-            norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
-    elif standardize:
-        norm_feature = joblib.load("Models4/norms/standard_features.pkl")
-    else:
-        norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
-    """
 
     if isinstance(norm_feature, MinMaxScaler):
         grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
@@ -429,10 +430,10 @@ if __name__ == "__main__":
     noise_model = "Models4/noise/noise_5_500.h5"
     noise_dict = model_grads(noise_model, input_good_easy, input_good_hard, some_option, True)
 
-    mc_price_model = "Models4/mc_10000/price/mc_10000_price_4_100.h5"
-    mc_price_dict = model_grads(mc_price_model, input_good_easy, input_good_hard, some_option, True)
+    #mc_price_model = "Models4/mc_10000/price/mc_10000_price_4_100.h5"
+    #mc_price_dict = model_grads(mc_price_model, input_good_easy, input_good_hard, some_option, True)
 
-    mc_imp_model = "Models4/mc_10000/mc_10000_4_1000.h5"
+    mc_imp_model = "Models4/mc_10000_include/mc_10000_2_50.h5"
     mc_imp_dict = model_grads(mc_imp_model, input_good_easy, input_good_hard, some_option, True)
 
     final2_model = "Models4/final2/final2_5_1000.h5"
@@ -441,16 +442,24 @@ if __name__ == "__main__":
     mix_model = "Models4/activation_functions/mix_5_1000.h5"
     mix_dict = model_grads(mix_model, input_good_easy, input_good_hard, some_option, False)
 
+    new_data_model = "Models4/new_data/new_data_4_500.h5"
+    new_data_model_dict = model_grads(new_data_model, input_good_easy, input_good_hard, some_option, False)
+
+    new_data_include = "Models4/new_data_include_zero/include_zero_3_1000.h5"
+    new_data_include_dict = model_grads(new_data_include, input_good_easy, input_good_hard, some_option, False)
+
     prediction_data = {
         "Andersen Lake" : [al_predict1, al_predict2],
         "Monte Carlo" : [mc_predict1, mc_predict2],
         "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
         "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
         "Noise model" : [noise_dict["pred"][0], noise_dict["pred"][1]],
-        "MC Price" : [mc_price_dict["pred"][0], mc_price_dict["pred"][1]],
+        #"MC Price" : [mc_price_dict["pred"][0], mc_price_dict["pred"][1]],
         "MC Imp" : [mc_imp_dict["pred"][0], mc_imp_dict["pred"][1]],
         "Final model" : [final2_dict["pred"][0], final2_dict["pred"][1]],
-        "Mix model" : [mix_dict["pred"][0], mix_dict["pred"][1]]
+        "Mix model" : [mix_dict["pred"][0], mix_dict["pred"][1]],
+        "New data" : [new_data_model_dict["pred"][0], new_data_model_dict["pred"][1]],
+        "New data, include" : [new_data_include_dict["pred"][0], new_data_include_dict["pred"][1]]
     }
 
     delta_data = {
@@ -459,10 +468,12 @@ if __name__ == "__main__":
         "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
         "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
         "Noise model" : [noise_dict["delta"][0], noise_dict["delta"][1]],
-        "MC Price" : [mc_price_dict["delta"][0], mc_price_dict["delta"][1]],
+        #"MC Price" : [mc_price_dict["delta"][0], mc_price_dict["delta"][1]],
         "MC Imp" : [mc_imp_dict["delta"][0], mc_imp_dict["delta"][1]],
         "Final model" : [final2_dict["delta"][0], final2_dict["delta"][1]],
-        "Mix model" : [mix_dict["delta"][0], mix_dict["delta"][1]]
+        "Mix model" : [mix_dict["delta"][0], mix_dict["delta"][1]],
+        "New data" : [new_data_model_dict["delta"][0], new_data_model_dict["delta"][1]],
+        "New data, include" : [new_data_include_dict["delta"][0], new_data_include_dict["delta"][1]]
     }
 
     gamma_data = {
@@ -471,10 +482,12 @@ if __name__ == "__main__":
         "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
         "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
         "Noise model" : [noise_dict["gamma"][0], noise_dict["gamma"][1]],
-        "MC Price" : [mc_price_dict["gamma"][0], mc_price_dict["gamma"][1]],
+        #"MC Price" : [mc_price_dict["gamma"][0], mc_price_dict["gamma"][1]],
         "MC Imp" : [mc_imp_dict["gamma"][0], mc_imp_dict["gamma"][1]],
         "Final model" : [final2_dict["gamma"][0], final2_dict["gamma"][1]],
-        "Mix model" : [mix_dict["gamma"][0], mix_dict["gamma"][1]]
+        "Mix model" : [mix_dict["gamma"][0], mix_dict["gamma"][1]],
+        "New data" : [new_data_model_dict["gamma"][0], new_data_model_dict["gamma"][1]],
+        "New data, include" : [new_data_include_dict["gamma"][0], new_data_include_dict["gamma"][1]]
     }
 
     plot_func(spot_plot, prediction_data, "Predictions")
@@ -502,16 +515,16 @@ if __name__ == "__main__":
 
     ### Different MC models
     # 1 path
-    mc_price_list = [
-        "Models4/mc_1/price/mc_1_price_2_100.h5",
-        "Models4/mc_10/price/mc_10_price_3_50.h5",
-        "Models4/mc_100/price/mc_100_price_5_500.h5",
-        "Models4/mc_1000/price/mc_1000_price_4_100.h5",
-        "Models4/mc_10000/price/mc_10000_price_4_100.h5",
+    mc_list= [
+        #"Models4/mc_1/price/mc_1_price_2_100.h5",
+        #"Models4/mc_10/price/mc_10_price_3_50.h5",
+        #"Models4/mc_100/price/mc_100_price_5_500.h5",
+        #"Models4/mc_1000/price/mc_1000_price_4_100.h5",
+        #"Models4/mc_10000/price/mc_10000_price_4_100.h5",
         "Models4/mc_10000/mc_10000_4_1000.h5",
         "Models4/mc_1000/mc_1000_4_1000.h5",
         "Models4/mc_100/mc_100_4_50.h5",
-        "Models4/mc_10/mc_10_1_50.h5",
+        #"Models4/mc_10/mc_10_1_50.h5",
         "Models4/mc_10000_include/mc_10000_2_50.h5",
         "Models4/mc_1000_include/mc_1000_5_500.h5",
         "Models4/mc_100_include/mc_100_5_500.h5",
@@ -523,15 +536,15 @@ if __name__ == "__main__":
     mc_delta = {}
     mc_gamma = {}
     for model in mc_list:
-        name = model[model.rfind("/")+1:]
+        name = model[model.find("/")+1:]
         some_dict = model_grads(model, input_good_easy, input_good_hard, some_option, False)
         mc_pred[name] = [some_dict["pred"][0], some_dict["pred"][1]]
         mc_delta[name] = [some_dict["delta"][0], some_dict["delta"][1]]
         mc_gamma[name] = [some_dict["gamma"][0], some_dict["gamma"][1]]
 
-    plot_func(spot_plot, mc_pred, "MC price Predictions")
-    plot_func(spot_plot, mc_delta, "MC price Delta")
-    plot_func(spot_plot, mc_gamma, "MC price Gamma")
+    plot_func(spot_plot, mc_pred, "MC Predictions")
+    plot_func(spot_plot, mc_delta, "MC Delta")
+    plot_func(spot_plot, mc_gamma, "MC Gamma")
 
 """
     h = 0.01

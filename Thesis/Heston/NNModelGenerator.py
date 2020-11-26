@@ -28,8 +28,8 @@ def lr_schedule(epoch, rate):
     return lr
 
 def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool) -> float:
-    model_save = "Models4/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
-    model_path = "Models4/"+folder+"/"
+    model_save = "Models5/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
+    model_path = "Models5/"+folder+"/"
 
     if not os.path.exists(model_path):
         os.makedirs(model_path)

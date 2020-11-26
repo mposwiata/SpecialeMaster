@@ -429,8 +429,11 @@ if __name__ == "__main__":
     price_standard.remove("Models4/price_standard/price_standard_5_1000.h5")
     price_standard.remove("Models4/price_standard/price_standard_5_500.h5")
     #generate_plots(price_standard, "price_standard")
-    test_models = glob.glob("Models4/test_models/*.h5")
-    test_models_mse = model_testing2(test_models, "test_models", easy_case(), hard_case(), option_input())
+    new_data = glob.glob("Models4/new_data/*.h5")
+    new_data_mse = model_testing2(new_data, "new_data", easy_case(), hard_case(), option_input())
+
+    new_data_include_zero = glob.glob("Models4/new_data_include_zero/*.h5")
+    new_data_include_zero_mse = model_testing2(new_data_include_zero, "net_data_include_zero", easy_case(), hard_case(), option_input())
 
     mc_models = glob.glob("Models4/mc_*/*.h5", recursive=True)
     mc_models_mse = model_testing2(mc_models, "test_models", easy_case(), hard_case(), option_input())
