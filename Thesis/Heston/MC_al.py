@@ -165,6 +165,14 @@ def calc_prices(spot : float, epsilon : float):
 
 def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption, standardize : bool) -> dict:
     model = load_model(model_string)
+    model_folder = model_string[:model_string.rfind("/") + 1]
+    norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+    if os.path.exists(model_folder+"/norm_labels.pkl"):
+        norm_labels = joblib.load(model_folder+"norm_labels.pkl")
+        normal_out = True
+    else:
+        normal_out = False
+    """
     if (model_string.find("mc") != -1):
         norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
         if (model_string.find("price") != -1):
@@ -173,6 +181,7 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         norm_feature = joblib.load("Models4/norms/standard_features.pkl")
     else:
         norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
+    """
 
     if isinstance(norm_feature, MinMaxScaler):
         grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
@@ -431,6 +440,9 @@ if __name__ == "__main__":
 
     mix_model = "Models4/activation_functions/mix_5_1000.h5"
     mix_dict = model_grads(mix_model, input_good_easy, input_good_hard, some_option, False)
+
+    test_model = "Models4/test_models/include_zero_4_50.h5"
+    test_model_dict = model_grads(test_model, input_good_easy, input_good_hard, some_option, False)
 
     prediction_data = {
         "Andersen Lake" : [al_predict1, al_predict2],

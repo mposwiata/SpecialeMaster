@@ -6,6 +6,7 @@ from keras.models import load_model
 import glob
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import os
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
 from Thesis.misc import VanillaOptions as vo
@@ -205,6 +206,113 @@ def model_testing(model_list : list, plot_title : str, easy_case : np.ndarray, h
     plt.close()
     return mse_list
 
+def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, hard_case : np.ndarray, option : np.ndarray) -> list:
+    model_class_easy = hm.HestonClass(easy_case[0, 0], easy_case[0, 1], easy_case[0, 2], easy_case[0, 3], easy_case[0, 4], easy_case[0, 5], easy_case[0, 6])
+    model_class_hard = hm.HestonClass(hard_case[0, 0], hard_case[0, 1], hard_case[0, 2], hard_case[0, 3], hard_case[0, 4], hard_case[0, 5], hard_case[0, 6])
+    some_option_list = np.array([])
+    for some_option in option:
+        some_option_list = np.append(some_option_list, vo.EUCall(some_option[0], some_option[1]))
+    benchmark_price_easy, benchmark_easy = dg.calc_imp_vol(easy_case[0], some_option_list)
+    benchmark_price_hard, benchmark_hard = dg.calc_imp_vol(hard_case[0], some_option_list)
+
+    fig = plt.figure(figsize=(30, 20), dpi = 200)
+    imp_ax_easy = fig.add_subplot(221, projection='3d')
+    error_ax_easy = fig.add_subplot(222, projection='3d')
+    imp_ax_hard = fig.add_subplot(223, projection='3d')
+    error_ax_hard = fig.add_subplot(224, projection='3d')
+
+    no_models = len(model_list)
+    color=iter(plt.cm.gist_rainbow(np.linspace(0,1,no_models)))
+    x = option[:,0]
+    y = option[:,1]
+    mse_list = []
+    for model_string in model_list:
+        model = load_model(model_string)
+        model_folder = model_string[:model_string.rfind("/") + 1]
+        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+        if os.path.exists(model_folder+"/norm_labels.pkl"):
+            norm_labels = joblib.load(model_folder+"norm_labels.pkl")
+            normal_out = True
+        else:
+            normal_out = False
+
+        if (model_string.find("Single") != -1 or model_string.find("single") != -1): # single output
+            predictions_easy = np.zeros(np.shape(option)[0])
+            predictions_hard = np.zeros(np.shape(option)[0])
+            for i in range(np.shape(option)[0]):
+                test_single_input_easy = np.concatenate((easy_case, option[i]), axis=None)
+                test_single_input_easy = np.reshape(test_single_input_easy, (1, -1))
+                test_single_input_hard = np.concatenate((hard_case, option[i]), axis=None)
+                test_single_input_hard = np.reshape(test_single_input_hard, (1, -1))
+                if normal_out:
+                    predictions_easy[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input_easy)))
+                    predictions_hard[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input_hard)))
+                else:
+                    predictions_easy[i] = model.predict(norm_feature.transform(test_single_input_easy))
+                    predictions_hard[i] = model.predict(norm_feature.transform(test_single_input_hard))
+        else: # we have a grid
+            if normal_out:
+                predictions_easy = norm_labels.inverse_transform(model.predict(norm_feature.transform(easy_case)))[0]
+                predictions_hard = norm_labels.inverse_transform(model.predict(norm_feature.transform(hard_case)))[0]
+            else:
+                predictions_easy = model.predict(norm_feature.transform(easy_case))[0]
+                predictions_hard = model.predict(norm_feature.transform(hard_case))[0]
+
+        # if prices, calc imp vol
+        if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
+            imp_vol_predictions_easy = np.zeros(np.shape(predictions_easy))
+            imp_vol_predictions_hard = np.zeros(np.shape(predictions_hard))
+            for i in range(np.shape(predictions_easy)[0]):
+                imp_vol_predictions_easy[i] = model_class_easy.impVol(predictions_easy[i], some_option_list[i])
+                imp_vol_predictions_hard[i] = model_class_hard.impVol(predictions_hard[i], some_option_list[i])
+            predictions_easy = imp_vol_predictions_easy
+            predictions_hard = imp_vol_predictions_hard
+        
+        c = next(color)
+
+        z_easy = predictions_easy
+        z_hard = predictions_hard
+        name = model_string[model_string.rfind("/")+1:]
+        imp_ax_easy.plot_trisurf(x, y, z_easy, alpha = 0.5, label = name, color = c)
+        imp_ax_hard.plot_trisurf(x, y, z_hard, alpha = 0.5, label = name, color = c)
+        predictions = np.concatenate((predictions_easy, predictions_hard))
+        benchmark = np.concatenate((benchmark_easy, benchmark_hard))
+        mse_list.append((name, mse(predictions, benchmark)))
+        error_ax_easy.plot_trisurf(x, y, z_easy - benchmark_easy, alpha = 0.5, label = name, color = c)
+        error_ax_hard.plot_trisurf(x, y, z_hard - benchmark_hard, alpha = 0.5, label = name, color = c)
+    
+    imp_ax_easy.plot_trisurf(x, y, benchmark_easy, color = "black", alpha = 0.5, label = "benchmark")
+
+    imp_ax_easy.set_ylabel("Strike")
+    imp_ax_easy.set_xlabel("Time to maturity")
+    imp_ax_easy.set_title("Implied volatility, easy case")
+
+    error_ax_easy.set_ylabel("Strike")
+    error_ax_easy.set_xlabel("Time to maturity")
+    error_ax_easy.set_title("Error")
+
+    imp_ax_hard.plot_trisurf(x, y, benchmark_hard, color = "black", alpha = 0.5, label = "benchmark")
+
+    imp_ax_hard.set_ylabel("Strike")
+    imp_ax_hard.set_xlabel("Time to maturity")
+    imp_ax_hard.set_title("Implied volatility, hard case")
+
+    error_ax_hard.set_ylabel("Strike")
+    error_ax_hard.set_xlabel("Time to maturity")
+    error_ax_hard.set_title("Error")
+
+    handles, labels = imp_ax_easy.get_legend_handles_labels()
+    for i in range(len(handles)):
+        handles[i]._facecolors2d = handles[i]._facecolors3d 
+        handles[i]._edgecolors2d = handles[i]._edgecolors3d 
+
+    fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.2)
+    fig.legend(handles, labels, loc="lower center", ncol = 5, fontsize=15)
+    fig.suptitle(plot_title, fontsize=20)
+    plt.savefig("Plots2/"+plot_title.replace(" ", "_")+".png")
+    plt.close()
+    return mse_list
+
 def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray) -> list:
     mse_list = []
     for model_string in model_list:
@@ -322,7 +430,7 @@ if __name__ == "__main__":
     price_standard.remove("Models4/price_standard/price_standard_5_500.h5")
     #generate_plots(price_standard, "price_standard")
     test_models = glob.glob("Models4/test_models/*.h5")
-    
+    test_models_mse = model_testing2(test_models, "test_models", easy_case(), hard_case(), option_input())
 
 
     ### With test set
