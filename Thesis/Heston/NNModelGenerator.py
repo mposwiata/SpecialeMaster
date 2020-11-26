@@ -103,11 +103,11 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     Y_test = data_set[3]
 
     if include_zero:
-        train_index = np.all(X_train != -1, axis = 1)
-        test_index = np.all(X_test != -1, axis = 1)
+        train_index = np.all(Y_train != -1, axis = 1)
+        test_index = np.all(Y_test != -1, axis = 1)
     else:
-        train_index = np.all(X_train > 0, axis = 1)
-        test_index = np.all(X_test > 0, axis = 1)
+        train_index = np.all(Y_train > 0, axis = 1)
+        test_index = np.all(Y_test > 0, axis = 1)
     X_train = X_train[train_index, :]
     Y_train = Y_train[train_index, :]
     X_test = X_test[test_index, :]
@@ -117,7 +117,6 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
 
     return score
-    
 
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
