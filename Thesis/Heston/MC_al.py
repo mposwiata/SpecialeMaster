@@ -163,20 +163,10 @@ def calc_prices(spot : float, epsilon : float):
 
     return al1, mc1, al2, mc2
 
-def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption, standardize : bool) -> dict:
+def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption) -> dict:
     model = load_model(model_string)
     model_folder = model_string[:model_string.rfind("/") + 1]
-    if os.path.exists(model_folder+"norm_feature.pkl"):
-        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
-    else:
-        if (model_string.find("mc") != -1):
-            norm_feature = joblib.load("Models4/Heston_input_scale.pkl")
-            if (model_string.find("price") != -1):
-                norm_labels = joblib.load(model_string[:model_string.rfind("/")+1]+"price_scale.pkl")
-        elif standardize:
-            norm_feature = joblib.load("Models4/norms/standard_features.pkl")
-        else:
-            norm_feature = joblib.load("Models4/norms/norm_feature.pkl")
+    norm_feature = joblib.load(model_folder+"norm_feature.pkl")
 
     if os.path.exists(model_folder+"/norm_labels.pkl"):
         norm_labels = joblib.load(model_folder+"norm_labels.pkl")
@@ -185,13 +175,17 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         normal_out = False
 
     if isinstance(norm_feature, MinMaxScaler):
-        grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
-        grads2_scale = 1 / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
+        if normal_out:
+            grads_scale = np.sqrt(norm_labels.var_[12]) / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
+            grads2_scale = np.sqrt(norm_labels.var_[12]) / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
+        else:
+            grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
+            grads2_scale = 1 / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
     else:
-        try:
+        if normal_out:
             grads_scale = np.sqrt(norm_labels.var_[12]) / np.sqrt(norm_feature.var_[0])
             grads2_scale = np.sqrt(norm_labels.var_[12]) / (np.sqrt(norm_feature.var_[0]) ** 2)
-        except:
+        else:
             grads_scale = 1 / np.sqrt(norm_feature.var_[0])
             grads2_scale = 1 / (np.sqrt(norm_feature.var_[0]) ** 2)
 
@@ -425,6 +419,81 @@ if __name__ == "__main__":
     mc_multi_predict1, mc_multi_grads1, mc_multi_grads1_2 = generate_predictions(input_multi_easy, mc_multi_model1, norm_features_multiple)
     al_multi_predict2, al_multi_grads2, al_multi_grads2_2 = generate_predictions(input_multi_hard, al_multi_model2, norm_features_multiple)
     mc_multi_predict2, mc_multi_grads2, mc_multi_grads2_2 = generate_predictions(input_multi_hard, mc_multi_model2, norm_features_multiple)
+
+    ### Plotting grads for best models
+    benchmark = "Models5/benchmark/benchmark_5_1000.h5"
+    benchmark_dict = model_grads(benchmark, input_good_easy, input_good_hard, some_option)
+
+    benchmark_include = "Models5/benchmark_include/benchmark_include_5_1000.h5"
+    benchmark_include_dict = model_grads(benchmark_include, input_good_easy, input_good_hard, some_option)
+
+    output_scaling = "Models5/output_scaling/output_scaling_4_500.h5"
+    output_scaling_dict = model_grads(output_scaling, input_good_easy, input_good_hard, some_option)
+
+    tanh = "Models5/tanh/tanh_4_50.h5"
+    tanh_dict = model_grads(tanh, input_good_easy, input_good_hard, some_option)
+
+    mix = "Models5/mix/mix_5_1000.h5"
+    mix_dict = model_grads(mix, input_good_easy, input_good_hard, some_option)
+
+    price = "Models5/price/price_2_1000.h5"
+    price_dict = model_grads(price, input_good_easy, input_good_hard, some_option)
+
+    standardize = "Models5/standardize/standardize_5_1000.h5"
+    standardize_dict = model_grads(standardize, input_good_easy, input_good_hard, some_option)
+
+    noise = "Models5/benchmark/benchmark_5_1000.h5"
+    noise_dict = model_grads(noise, input_good_easy, input_good_hard, some_option)
+
+    prediction_data = {
+        "Andersen Lake" : [al_predict1, al_predict2],
+        "Monte Carlo" : [mc_predict1, mc_predict2],
+        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
+        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
+        "Benchmark" : [benchmark_dict["pred"][0], benchmark_dict["pred"][1]],
+        "Benchmark, include" : [benchmark_include_dict["pred"][0], benchmark_include_dict["pred"][1]],
+        "Output scaling" : [output_scaling_dict["pred"][0], output_scaling_dict["pred"][1]],
+        "Tanh" : [tanh_dict["pred"][0], tanh_dict["pred"][1]],
+        "Mix model" : [mix_dict["pred"][0], mix_dict["pred"][1]],
+        "Price" : [price_dict["pred"][0], price_dict["pred"][1]],
+        "Standardize" : [standardize_dict["pred"][0], standardize_dict["pred"][1]],
+        "Noise" : [noise_dict["pred"][0], noise_dict["pred"][1]]
+    }
+
+    delta_data = {
+        "Andersen Lake" : [al_grads1, al_grads2],
+        "Monte Carlo" : [mc_grads1, mc_grads2],
+        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
+        "Benchmark" : [benchmark_dict["delta"][0], benchmark_dict["delta"][1]],
+        "Benchmark, include" : [benchmark_include_dict["delta"][0], benchmark_include_dict["delta"][1]],
+        "Output scaling" : [output_scaling_dict["delta"][0], output_scaling_dict["delta"][1]],
+        "Tanh" : [tanh_dict["delta"][0], tanh_dict["delta"][1]],
+        "Mix model" : [mix_dict["delta"][0], mix_dict["delta"][1]],
+        "Price" : [price_dict["delta"][0], price_dict["delta"][1]],
+        "Standardize" : [standardize_dict["delta"][0], standardize_dict["delta"][1]],
+        "Noise" : [noise_dict["delta"][0], noise_dict["delta"][1]]
+    }
+
+    gamma_data = {
+        "Andersen Lake" : [al_grads1_2, al_grads2_2],
+        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
+        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
+        "Benchmark" : [benchmark_dict["gamma"][0], benchmark_dict["gamma"][1]],
+        "Benchmark, include" : [benchmark_include_dict["gamma"][0], benchmark_include_dict["gamma"][1]],
+        "Output scaling" : [output_scaling_dict["gamma"][0], output_scaling_dict["gamma"][1]],
+        "Tanh" : [tanh_dict["gamma"][0], tanh_dict["gamma"][1]],
+        "Mix model" : [mix_dict["gamma"][0], mix_dict["gamma"][1]],
+        "Price" : [price_dict["gamma"][0], price_dict["gamma"][1]],
+        "Standardize" : [standardize_dict["gamma"][0], standardize_dict["gamma"][1]],
+        "Noise" : [noise_dict["gamma"][0], noise_dict["gamma"][1]]
+    }
+
+    plot_func(spot_plot, prediction_data, "Predictions")
+    plot_func(spot_plot, delta_data, "Delta")
+    plot_func(spot_plot, gamma_data, "Gamma")
+
 
     ### Noise
     noise_model = "Models4/noise/noise_5_500.h5"

@@ -74,6 +74,10 @@ if __name__ == '__main__':
         itertools.repeat("output_scaling"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat(True), itertools.repeat(False), itertools.repeat(False)))
 
+    output_scaling_mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("output_scaling_mix"), \
+        itertools.repeat("output_scaling_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(False), itertools.repeat(False)))
+
     tanh_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh"), \
         itertools.repeat("tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("tanh"), itertools.repeat(False), itertools.repeat(False), itertools.repeat(False)))
@@ -94,12 +98,21 @@ if __name__ == '__main__':
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
 
+    standardize_mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_mix"), \
+        itertools.repeat("standardize_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
+
     noise_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise"), \
         itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat(False), itertools.repeat(True), itertools.repeat(False)))
 
+    combined_best_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("combined"), \
+        itertools.repeat("combined"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
+
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
+    next_list = price_output_scaling_list + combined_best_list + output_scaling_mix_list + standardize_mix_list
 
     if cpu_count() == 4:
         cpu_cores = 4
@@ -107,5 +120,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, compute10_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, next_list, chunksize=1)
     pool.close()

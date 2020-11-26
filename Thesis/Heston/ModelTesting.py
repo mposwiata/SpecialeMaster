@@ -309,43 +309,27 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
     fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.2)
     fig.legend(handles, labels, loc="lower center", ncol = 5, fontsize=15)
     fig.suptitle(plot_title, fontsize=20)
-    plt.savefig("Plots2/"+plot_title.replace(" ", "_")+".png")
+    plt.savefig("Final_plots/"+plot_title.replace(" ", "_")+".png")
     plt.close()
     return mse_list
 
-def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray) -> list:
+def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, Y_test_price : np.ndarray) -> list:
     mse_list = []
     for model_string in model_list:
+        if (model_string.find("price") != -1):
+            y_test_loop = Y_test_price
         x_test_loop = X_test
         y_test_loop = Y_test
         model = load_model(model_string)
         model_folder = model_string[:model_string.rfind("/") + 1]
-        norm_folder = "Models4/norms/"
-        ### Check if model includes scaling
-        if ((model_string.find("output_scaling") != -1) or ((model_string.find("final") != -1 and model_string.find("final2") == -1 ))):
-            normal_out = True
-            norm_labels = joblib.load(norm_folder+"norm_labels.pkl")
+        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+        if os.path.exists(model_folder+"/norm_labels.pkl"):
+            norm_labels = joblib.load(model_folder+"norm_labels.pkl")
             y_test_loop = norm_labels.transform(y_test_loop)
-        else:
-            normal_out = False
-
-        if (model_string.find("price") != -1):
-            norm_feature = joblib.load(norm_folder+"norm_feature_price.pkl")
-        elif (model_string.find("grid_vs_sobol") != -1):
-            if (model_string.find("sobol") != -1):
-                norm_feature = joblib.load(norm_folder+"norm_feature_wide.pkl")
-            else:
-                norm_feature = joblib.load(norm_folder+"norm_feature_grid.pkl")
-        elif (model_string.find("single") != -1):
-            norm_feature = joblib.load(norm_folder+"norm_feature_single.pkl")
-        elif (model_string.find("standard") != -1 or ((model_string.find("final") != -1 and model_string.find("final3") == -1 )) or (model_string.find("noise") != -1)):
-            norm_feature = joblib.load(norm_folder+"standard_features.pkl")
-        else:
-            norm_feature = joblib.load(norm_folder+"norm_feature.pkl")
 
         x_test_loop = norm_feature.transform(x_test_loop)
 
-        name = model_string[model_string.find("/")+1:]
+        name = model_string[model_string.rfind("/")+1:]
         score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
         mse_list.append((name, score))
     
@@ -391,6 +375,56 @@ def generate_plots(model_list : list, plot_title: str):
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
+    ### Models 5
+    benchmark = glob.glob("Models5/benchmark/*.h5")
+    benchmark_mse = model_testing2(benchmark, "benchmark", easy_case(), hard_case(), option_input())
+    benchmark_mse.sort(key = lambda x: -x[1])
+
+    benchmark_include = glob.glob("Models5/benchmark_include/*.h5")
+    benchmark_include_mse = model_testing2(benchmark_include, "benchmark_include", easy_case(), hard_case(), option_input())
+    benchmark_include_mse.sort(key = lambda x: -x[1])
+
+    output_scaling = glob.glob("Models5/output_scaling/*.h5")
+    output_scaling_mse = model_testing2(output_scaling, "output_scaling", easy_case(), hard_case(), option_input())
+    output_scaling_mse.sort(key = lambda x: -x[1])
+
+    tanh = glob.glob("Models5/tanh/*.h5")
+    tanh_mse = model_testing2(tanh, "tanh", easy_case(), hard_case(), option_input())
+    tanh_mse.sort(key = lambda x: -x[1])
+
+    mix = glob.glob("Models5/mix/*.h5")
+    mix_mse = model_testing2(mix, "mix", easy_case(), hard_case(), option_input())
+    mix_mse.sort(key = lambda x: -x[1])
+
+    price = glob.glob("Models5/price/*.h5")
+    price_mse = model_testing2(price, "price", easy_case(), hard_case(), option_input())
+    price_mse.sort(key = lambda x: -x[1])
+
+    standardize = glob.glob("Models5/standardize/*.h5")
+    standardize_mse = model_testing2(standardize, "standardize", easy_case(), hard_case(), option_input())
+    standardize_mse.sort(key = lambda x: -x[1])
+
+    noise = glob.glob("Models5/noise/*.h5")
+    noise_mse = model_testing2(noise, "noise", easy_case(), hard_case(), option_input())
+    noise_mse.sort(key = lambda x: -x[1])
+
+    best_mse = [benchmark_mse[-1]] + [benchmark_include_mse[-1]] + [output_scaling_mse[-1]] + [tanh_mse[-1]] + \
+        [mix_mse[-1]] + [price_mse[-1]] + [standardize_mse[-1]] + [noise_mse[-1]]
+
+    combined_list = glob.glob("Models5/*/*.h5")
+
+    test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
+    model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
+    imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
+    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
+
+    X_test = model_input_1[test_index, :]
+    Y_test = imp_vol_1[test_index, :]
+    Y_test_price = price_1[test_index, :]
+
+    combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+
+    """
     ### New models
     base = glob.glob("Models4/benchmark/*.h5")
     #generate_plots(base, "base")
@@ -491,6 +525,7 @@ if __name__ == "__main__":
 
     mc_mse_price = monte_carlo_testing(price_monte_carlo, x_test_mc, y_test_price_mc)
     mc_mse_price.sort(key = lambda x: x[1])
+    """
 
 
 """
