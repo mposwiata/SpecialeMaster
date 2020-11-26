@@ -321,13 +321,9 @@ if __name__ == "__main__":
     price_standard.remove("Models4/price_standard/price_standard_5_1000.h5")
     price_standard.remove("Models4/price_standard/price_standard_5_500.h5")
     #generate_plots(price_standard, "price_standard")
+    test_models = glob.glob("Models4/test_models/*.h5")
+    
 
-
-    ### Lets goooooo
-    new_data = glob.glob("Models4/new_data/.h5")
-    new_data_include = glob.glob("Models4/new_data_include_zero/.h5")
-
-    model_list = new_data + new_data_include
 
     ### With test set
     X_test = np.loadtxt("Data/Sobol2_X_test.csv", delimiter = ",")
