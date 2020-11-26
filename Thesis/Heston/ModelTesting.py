@@ -272,7 +272,7 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
 
         z_easy = predictions_easy
         z_hard = predictions_hard
-        name = model_string[model_string.rfind("/")+1:]
+        name = model_string[model_string.find("/")+1:]
         imp_ax_easy.plot_trisurf(x, y, z_easy, alpha = 0.5, label = name, color = c)
         imp_ax_hard.plot_trisurf(x, y, z_hard, alpha = 0.5, label = name, color = c)
         predictions = np.concatenate((predictions_easy, predictions_hard))
@@ -431,6 +431,9 @@ if __name__ == "__main__":
     #generate_plots(price_standard, "price_standard")
     test_models = glob.glob("Models4/test_models/*.h5")
     test_models_mse = model_testing2(test_models, "test_models", easy_case(), hard_case(), option_input())
+
+    mc_models = glob.glob("Models4/mc_*/*.h5", recursive=True)
+    mc_models_mse = model_testing2(mc_models, "test_models", easy_case(), hard_case(), option_input())
 
     ### With test set
     X_test = np.loadtxt("Data/Sobol2_X_test.csv", delimiter = ",")

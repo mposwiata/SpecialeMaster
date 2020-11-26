@@ -26,7 +26,7 @@ def lr_schedule(epoch, rate):
         lr = lower_lr * (1 - (epoch - 2 * peak_epoch) / (no_epochs - 2 * peak_epoch)) * (1 - 1 / 10)
 
     return lr
-    
+
 def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool) -> float:
     model_save = "Models4/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
     model_path = "Models4/"+folder+"/"
@@ -128,7 +128,6 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     except:
         return 0
     
-
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
     if normal_out:

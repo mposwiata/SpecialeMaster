@@ -189,22 +189,49 @@ if __name__ == '__main__':
     imp_list_include = mc_1_set_include + mc_10_set_include + mc_100_set_include + mc_1000_set_include + mc_10000_set_include
 
     ### Prices
-    mc_1_price_set = list(zip(itertools.repeat(mc_1_price), itertools.repeat("mc_1"), itertools.repeat("mc_1_price"), \
-        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+    mc_1_price_set = list(zip(itertools.repeat(mc_1_price), itertools.repeat("mc_1_price"), \
+        itertools.repeat("mc_1_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
 
-    mc_10_price_set = list(zip(itertools.repeat(mc_10_price), itertools.repeat("mc_10"), itertools.repeat("mc_10_price"), \
-        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+    mc_10_price_set = list(zip(itertools.repeat(mc_10_price), itertools.repeat("mc_10_price"), \
+        itertools.repeat("mc_10_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
 
-    mc_100_price_set = list(zip(itertools.repeat(mc_100_price), itertools.repeat("mc_100"), itertools.repeat("mc_100_price"), \
-        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+    mc_100_price_set = list(zip(itertools.repeat(mc_100_price), itertools.repeat("mc_100_price"), \
+        itertools.repeat("mc_100_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
 
-    mc_1000_price_set = list(zip(itertools.repeat(mc_1000_price), itertools.repeat("mc_1000"), itertools.repeat("mc_1000_price"), \
-        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+    mc_1000_price_set = list(zip(itertools.repeat(mc_1000_price), itertools.repeat("mc_1000_price"), \
+        itertools.repeat("mc_1000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
 
-    mc_10000_price_set = list(zip(itertools.repeat(mc_10000_price), itertools.repeat("mc_10000"), itertools.repeat("mc_10000_price"), \
-        layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+    mc_10000_price_set = list(zip(itertools.repeat(mc_10000_price), itertools.repeat("mc_10000_price"), \
+        itertools.repeat("mc_10000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(False)))
+
+    mc_1_price_set_include = list(zip(itertools.repeat(mc_1_price), itertools.repeat("mc_1_price_include"), \
+        itertools.repeat("mc_1_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+
+    mc_10_price_set_include = list(zip(itertools.repeat(mc_10_price), itertools.repeat("mc_10_price_include"), \
+        itertools.repeat("mc_10_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+
+    mc_100_price_set_include = list(zip(itertools.repeat(mc_100_price), itertools.repeat("mc_100_price_include"), \
+        itertools.repeat("mc_100_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+
+    mc_1000_price_set_include = list(zip(itertools.repeat(mc_1000_price), itertools.repeat("mc_1000_price_include"), \
+        itertools.repeat("mc_1000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
+
+    mc_10000_price_set_include = list(zip(itertools.repeat(mc_10000_price), itertools.repeat("mc_10000_price_include"), \
+        itertools.repeat("mc_10000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat(True), itertools.repeat(True), itertools.repeat(True)))
 
     price_list = mc_1_price_set + mc_10_price_set + mc_100_price_set + mc_1000_price_set + mc_10000_price_set
+
+    price_list_include = mc_1_price_set_include + mc_10_price_set_include + mc_100_price_set_include + mc_1000_price_set_include + mc_10000_price_set_include
 
     if cpu_count() == 4:
         cpu_cores = 4
@@ -212,7 +239,7 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, imp_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, price_list, chunksize=1)
     pool.close()
 
     """

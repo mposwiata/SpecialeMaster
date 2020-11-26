@@ -441,9 +441,6 @@ if __name__ == "__main__":
     mix_model = "Models4/activation_functions/mix_5_1000.h5"
     mix_dict = model_grads(mix_model, input_good_easy, input_good_hard, some_option, False)
 
-    test_model = "Models4/test_models/include_zero_4_50.h5"
-    test_model_dict = model_grads(test_model, input_good_easy, input_good_hard, some_option, False)
-
     prediction_data = {
         "Andersen Lake" : [al_predict1, al_predict2],
         "Monte Carlo" : [mc_predict1, mc_predict2],
@@ -484,19 +481,42 @@ if __name__ == "__main__":
     plot_func(spot_plot, delta_data, "Delta")
     plot_func(spot_plot, gamma_data, "Gamma")
 
+    ### MC
+    mc_10000_include = "Models4/mc_10000_include/mc_10000_2_50.h5"
+
+    mc_1000_include = "Models4/mc_1000_include/mc_1000_5_500.h5"
+
+    mc_100_include = "Models4/mc_100_include/mc_100_5_500.h5"
+
+    mc_10_include = "Models4/mc_10_include/mc_10_3_1000.h5"
+
+    mc_1_include = "Models4/mc_1_include/mc_1_4_1000.h5"
+
+    mc_10000 = "Models4/mc_10000/mc_10000_4_1000.h5"
+
+    mc_1000 = "Models4/mc_1000/mc_1000_4_1000.h5"
+
+    mc_100 = "Models4/mc_100/mc_100_4_50.h5"
+
+    mc_10 = "Models4/mc_10/mc_10_1_50.h5"
+
     ### Different MC models
     # 1 path
-    mc_list = [
+    mc_price_list = [
         "Models4/mc_1/price/mc_1_price_2_100.h5",
         "Models4/mc_10/price/mc_10_price_3_50.h5",
         "Models4/mc_100/price/mc_100_price_5_500.h5",
         "Models4/mc_1000/price/mc_1000_price_4_100.h5",
-        "Models4/mc_10000/price/mc_10000_price_4_100.h5"#,
-        #"Models4/mc_1/mc_1_1_50.h5",
-        #"Models4/mc_10/mc_10_1_1000.h5",
-        #"Models4/mc_100/mc_100_3_100.h5",
-        #"Models4/mc_1000/mc_1000_4_100.h5",
-        #"Models4/mc_10000/mc_10000_5_1000.h5"
+        "Models4/mc_10000/price/mc_10000_price_4_100.h5",
+        "Models4/mc_10000/mc_10000_4_1000.h5",
+        "Models4/mc_1000/mc_1000_4_1000.h5",
+        "Models4/mc_100/mc_100_4_50.h5",
+        "Models4/mc_10/mc_10_1_50.h5",
+        "Models4/mc_10000_include/mc_10000_2_50.h5",
+        "Models4/mc_1000_include/mc_1000_5_500.h5",
+        "Models4/mc_100_include/mc_100_5_500.h5",
+        "Models4/mc_10_include/mc_10_3_1000.h5",
+        "Models4/mc_1_include/mc_1_4_1000.h5"
     ]
     
     mc_pred = {}
