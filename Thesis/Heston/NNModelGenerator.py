@@ -119,11 +119,15 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     Y_train = Y_train[train_index, :]
     X_test = X_test[test_index, :]
     Y_test = Y_test[test_index, :]
+    
+    if (len(train_index) > 1 and len(test_index) > 1):
+        data_set = [X_train, X_test, Y_train, Y_test]
+        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
 
-    data_set = [X_train, X_test, Y_train, Y_test]
-    score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
-
-    return score
+        return score
+    else:
+        return 0
+    
 
 def NNModel(input_array : np.ndarray, output_array : np.ndarray, n_layers : int, n_neurons : int, model_name : str, normal_out : bool = True, nn_type : str = "normal", scalar : str = "stardardize") -> float:
     print("Starting: "+model_name)
