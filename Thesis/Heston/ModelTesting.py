@@ -318,8 +318,20 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
     for model_string in model_list:
         if (model_string.find("price") != -1):
             y_test_loop = Y_test_price
+        else:
+            y_test_loop = Y_test
+       
         x_test_loop = X_test
-        y_test_loop = Y_test
+        
+
+        if (model_string.find("benchmark_include") != -1):
+            index = np.all(y_test_loop != -1, axis = 1)
+        else:
+            index = np.all(y_test_loop > -1, axis = 1)
+
+        x_test_loop = x_test_loop[index, :]
+        y_test_loop = y_test_loop[index, :]
+
         model = load_model(model_string)
         model_folder = model_string[:model_string.rfind("/") + 1]
         norm_feature = joblib.load(model_folder+"norm_feature.pkl")
@@ -423,6 +435,7 @@ if __name__ == "__main__":
     Y_test_price = price_1[test_index, :]
 
     combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+    combined_mse.sort(key = lambda x: -x[1])
 
     """
     ### New models

@@ -424,25 +424,25 @@ if __name__ == "__main__":
     benchmark = "Models5/benchmark/benchmark_5_1000.h5"
     benchmark_dict = model_grads(benchmark, input_good_easy, input_good_hard, some_option)
 
-    benchmark_include = "Models5/benchmark_include/benchmark_include_5_1000.h5"
+    benchmark_include = "Models5/benchmark_include/benchmark_include_5_500.h5"
     benchmark_include_dict = model_grads(benchmark_include, input_good_easy, input_good_hard, some_option)
 
-    output_scaling = "Models5/output_scaling/output_scaling_4_500.h5"
+    output_scaling = "Models5/output_scaling/output_scaling_5_500.h5"
     output_scaling_dict = model_grads(output_scaling, input_good_easy, input_good_hard, some_option)
 
-    tanh = "Models5/tanh/tanh_4_50.h5"
+    tanh = "Models5/tanh/tanh_4_100.h5"
     tanh_dict = model_grads(tanh, input_good_easy, input_good_hard, some_option)
 
     mix = "Models5/mix/mix_5_1000.h5"
     mix_dict = model_grads(mix, input_good_easy, input_good_hard, some_option)
 
-    price = "Models5/price/price_2_1000.h5"
+    price = "Models5/price/price_3_1000.h5"
     price_dict = model_grads(price, input_good_easy, input_good_hard, some_option)
 
     standardize = "Models5/standardize/standardize_5_1000.h5"
     standardize_dict = model_grads(standardize, input_good_easy, input_good_hard, some_option)
 
-    noise = "Models5/benchmark/benchmark_5_1000.h5"
+    noise = "Models5/noise/noise_4_1000.h5"
     noise_dict = model_grads(noise, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
