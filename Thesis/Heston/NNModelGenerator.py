@@ -120,7 +120,7 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     X_test = X_test[test_index, :]
     Y_test = Y_test[test_index, :]
     
-    if (len(train_index) > 1 and len(test_index) > 1):
+    if (np.shape(train_index)[0] > 1 and np.shape(test_index)[0] > 1):
         data_set = [X_train, X_test, Y_train, Y_test]
         score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
 

@@ -432,7 +432,6 @@ if __name__ == "__main__":
     test_models = glob.glob("Models4/test_models/*.h5")
     test_models_mse = model_testing2(test_models, "test_models", easy_case(), hard_case(), option_input())
 
-
     ### With test set
     X_test = np.loadtxt("Data/Sobol2_X_test.csv", delimiter = ",")
     Y_test = np.loadtxt("Data/Sobol2_Y_test.csv", delimiter = ",")
