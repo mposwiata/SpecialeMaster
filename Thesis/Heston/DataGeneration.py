@@ -131,7 +131,10 @@ if __name__ == "__main__":
         some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
 
     # going parallel
-    cpu_cores = cpu_count()
+    if cpu_count() == 4:
+        cpu_cores = 4
+    else:
+        cpu_cores = int(min(cpu_count()/4, 16))
     parallel_set = np.array_split(model_input, cpu_cores, axis=0)
     parallel_list = []
 

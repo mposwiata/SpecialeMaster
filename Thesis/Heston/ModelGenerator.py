@@ -43,10 +43,10 @@ if __name__ == '__main__':
     train_index_1, test_index_1 = load_index(100000)
     model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
     imp_vol_1 = np.loadtxt("Data/100000_imp.csv", delimiter=",")
-    X_train_1 = model_input_2[train_index_1, :]
-    X_test_1 = model_input_2[test_index_1, :]
-    Y_train_1 = imp_vol_2[train_index_1, :]
-    Y_test_1 = imp_vol_2[test_index, :]
+    X_train_1 = model_input_1[train_index_1, :]
+    X_test_1 = model_input_1[test_index_1, :]
+    Y_train_1 = imp_vol_1[train_index_1, :]
+    Y_test_1 = imp_vol_1[test_index, :]
 
     data_set_100000 = [X_train_1, X_test_1, Y_train_1, Y_test_1]
 
