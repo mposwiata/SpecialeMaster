@@ -7,6 +7,7 @@ import glob
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import os
+import itertools
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
 from Thesis.misc import VanillaOptions as vo
@@ -327,7 +328,7 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
         if (model_string.find("benchmark_include") != -1):
             index = np.all(y_test_loop != -1, axis = 1)
         else:
-            index = np.all(y_test_loop > -1, axis = 1)
+            index = np.all(y_test_loop > 0, axis = 1)
 
         x_test_loop = x_test_loop[index, :]
         y_test_loop = y_test_loop[index, :]
@@ -387,6 +388,62 @@ def generate_plots(model_list : list, plot_title: str):
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
+    combined_list = glob.glob("Models5/*/*.h5")
+
+    test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
+    model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
+    imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
+    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
+
+    X_test = model_input_1[test_index, :]
+    Y_test = imp_vol_1[test_index, :]
+    Y_test_price = price_1[test_index, :]
+
+    combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+    combined_mse.sort(key = lambda x: -x[1])
+
+    first_run_keys = [
+        "benchmark",
+        "benchmark_include",
+        "output_scaling",
+        "mix",
+        "price",
+        "tanh",
+        "standardize"
+    ]
+
+    evaluation_first_list = []
+    for some_list in combined_mse:
+        if first_run_keys.count(some_list[0][:some_list[0].rfind("_")-2]) > 0:
+            evaluation_first_list.append(
+                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
+            )
+    
+    ### Finding best models per group
+    evaluation_first_list.sort(key = lambda x: x[0])
+    group_by_model = itertools.groupby(evaluation_first_list, key = lambda x: x[0])
+
+    top_first_models_list = []
+    for key, group in group_by_model:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_models_list.append(some_list[0])
+
+    ### Finding best models per setup
+    evaluation_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_list, key = lambda x: x[1])
+
+    top_first_network_list = []
+    for key, group in group_by_network:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_network_list.append(some_list[0])
+
+    top_network_list.sort(key = lambda x: x[1])
+
+
+
+
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")
     benchmark_mse = model_testing2(benchmark, "benchmark", easy_case(), hard_case(), option_input())
@@ -420,22 +477,34 @@ if __name__ == "__main__":
     noise_mse = model_testing2(noise, "noise", easy_case(), hard_case(), option_input())
     noise_mse.sort(key = lambda x: -x[1])
 
-    best_mse = [benchmark_mse[-1]] + [benchmark_include_mse[-1]] + [output_scaling_mse[-1]] + [tanh_mse[-1]] + \
-        [mix_mse[-1]] + [price_mse[-1]] + [standardize_mse[-1]] + [noise_mse[-1]]
+    output_scaling_price = glob.glob("Models5/output_scaling_price/*.h5")
+    output_scaling_price_mse = model_testing2(output_scaling_price, "noise", easy_case(), hard_case(), option_input())
+    output_scaling_price_mse.sort(key = lambda x: -x[1])
 
-    combined_list = glob.glob("Models5/*/*.h5")
-
-    test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
-    model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
-    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
-
-    X_test = model_input_1[test_index, :]
-    Y_test = imp_vol_1[test_index, :]
-    Y_test_price = price_1[test_index, :]
-
-    combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+    combined = glob.glob("Models5/output_scaling_price/*.h5")
+    combined_mse = model_testing2(combined, "noise", easy_case(), hard_case(), option_input())
     combined_mse.sort(key = lambda x: -x[1])
+
+    output_scaling_mix = glob.glob("Models5/output_scaling_price/*.h5")
+    output_scaling_mix_mse = model_testing2(output_scaling_mix, "noise", easy_case(), hard_case(), option_input())
+    output_scaling_mix_mse.sort(key = lambda x: -x[1])
+
+    noise_included_standard = glob.glob("Models5/output_scaling_price/*.h5")
+    noise_included_standard_mse = model_testing2(noise_included_standard, "noise", easy_case(), hard_case(), option_input())
+    noise_included_standard_mse.sort(key = lambda x: -x[1])
+
+    noise_included = glob.glob("Models5/output_scaling_price/*.h5")
+    noise_included_mse = model_testing2(noise_included, "noise", easy_case(), hard_case(), option_input())
+    noise_included_mse.sort(key = lambda x: -x[1])
+
+    standardize_mix = glob.glob("Models5/output_scaling_price/*.h5")
+    standardize_mix_mse = model_testing2(standardize_mix, "noise", easy_case(), hard_case(), option_input())
+    standardize_mix_mse.sort(key = lambda x: -x[1])
+
+    best_mse = [benchmark_mse[-1]] + [benchmark_include_mse[-1]] + [output_scaling_mse[-1]] + [tanh_mse[-1]] + \
+        [mix_mse[-1]] + [price_mse[-1]] + [standardize_mse[-1]] + [noise_mse[-1]] + [output_scaling_price_mse[-1]] + \
+        [combined_mse[-1]] + [output_scaling_mix_mse[-1]] + [noise_included_standard_mse[-1]] + \
+        [noise_included_mse[-1]] + [standardize_mix_mse[-1]]
 
     """
     ### New models

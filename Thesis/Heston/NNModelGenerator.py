@@ -27,7 +27,7 @@ def lr_schedule(epoch, rate):
 
     return lr
 
-def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool) -> float:
+def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : str, standardize : bool) -> float:
     model_save = "Models5/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
     model_path = "Models5/"+folder+"/"
 
@@ -44,8 +44,15 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     else:
         norm_features = MinMaxScaler()
 
-    if normal_out:
+    if normal_out == "standardize":
         norm_labels = StandardScaler()
+        Y_train = norm_labels.fit_transform(Y_train)
+        Y_test = norm_labels.transform(Y_test)
+        ### saving label normalization if it doesn't exists.
+        if not os.path.exists(model_path+"/norm_labels.pkl"):
+            joblib.dump(norm_labels, model_path+"norm_labels.pkl")
+    elif normal_out == "normalize":
+        norm_labels = MinMaxScaler()
         Y_train = norm_labels.fit_transform(Y_train)
         Y_test = norm_labels.transform(Y_test)
         ### saving label normalization if it doesn't exists.
@@ -103,7 +110,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     print("Done with: ", model_save)
     return score
 
-def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : bool, standardize : bool, include_zero : bool) -> float:
+def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : str, standardize : bool, include_zero : bool) -> float:
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
