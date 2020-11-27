@@ -60,18 +60,43 @@ if __name__ == '__main__':
 
     data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
 
+    train_grid_compare_index, test_grid_compare_index  = load_index(279936)
+    grid_compare_sobol_input = np.loadtxt("Data/279936_input.csv")
+    grid_compare_sobol_imp = np.loadtxt("Data/279936_imp.csv")
+    grid_compare_input = np.loadtxt("Data/grid_input.csv")
+    grid_compare_imp = np.loadtxt("Data/grid_imp.csv")
+    X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
+    X_test_grid_sobol = grid_compare_sobol_input[test_grid_compare_index, :]
+    Y_train_grid_sobol = grid_compare_sobol_imp[train_grid_compare_index, :]
+    Y_test_grid_sobol = grid_compare_sobol_imp[test_grid_compare_index, :]
+
+    X_train_grid = grid_compare_input[train_grid_compare_index, :]
+    X_test_grid = grid_compare_input[test_grid_compare_index, :]
+    Y_train_grid = grid_compare_imp[train_grid_compare_index, :]
+    Y_test_grid = grid_compare_imp[test_grid_compare_index, :]
+
+    data_set_grid_sobol = [X_train_grid_sobol, X_test_grid_sobol, Y_train_grid_sobol, Y_test_grid_sobol]
+    data_set_grid = [X_train_grid, X_test_grid, Y_train_grid, Y_test_grid]
 
     layer_neuron_combs = np.array(list(itertools.product(layers, neurons)))
     benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
         itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
-    low_data_list = list(zip(itertools.repeat(data_set_100000), itertools.repeat("benchmark"), \
-        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    low_data_list = list(zip(itertools.repeat(data_set_100000), itertools.repeat("low_data"), \
+        itertools.repeat("low_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
-    high_data_list = list(zip(itertools.repeat(data_set_300000), itertools.repeat("benchmark"), \
-        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    high_data_list = list(zip(itertools.repeat(data_set_300000), itertools.repeat("high_data"), \
+        itertools.repeat("high_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    grid_sobol_list = list(zip(itertools.repeat(data_set_grid_sobol), itertools.repeat("grid_sobol"), \
+        itertools.repeat("grid_sobol"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    grid_list = list(zip(itertools.repeat(data_set_grid), itertools.repeat("grid"), \
+        itertools.repeat("grid"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
     benchmark_include_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark_include"), \
@@ -102,9 +127,21 @@ if __name__ == '__main__':
         itertools.repeat("price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
-    price_output_scaling_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("output_scaling_price"), \
-        itertools.repeat("output_scaling_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    price_include_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_include"), \
+        itertools.repeat("price_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
+
+    price_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("price_standardize"), \
+        itertools.repeat("price_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+
+    price_output_standardize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_output_standardize"), \
+        itertools.repeat("price_output_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat(False)))
+
+    price_output_normalize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_output_normalize"), \
+        itertools.repeat("price_output_normalize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat(False), itertools.repeat(False)))
 
     standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize"), \
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
@@ -132,9 +169,8 @@ if __name__ == '__main__':
 
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
-    next_list = price_output_scaling_list + combined_best_list + output_scaling_mix_list + standardize_mix_list
 
-    next_list_2 = low_data_list + high_data_list
+    next_list_2 = low_data_list + high_data_list + price_include_list + grid_list + grid_sobol_list + price_standardize_list
 
     if cpu_count() == 4:
         cpu_cores = 4

@@ -207,14 +207,18 @@ def model_testing(model_list : list, plot_title : str, easy_case : np.ndarray, h
     plt.close()
     return mse_list
 
-def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, hard_case : np.ndarray, option : np.ndarray) -> list:
-    model_class_easy = hm.HestonClass(easy_case[0, 0], easy_case[0, 1], easy_case[0, 2], easy_case[0, 3], easy_case[0, 4], easy_case[0, 5], easy_case[0, 6])
-    model_class_hard = hm.HestonClass(hard_case[0, 0], hard_case[0, 1], hard_case[0, 2], hard_case[0, 3], hard_case[0, 4], hard_case[0, 5], hard_case[0, 6])
+def model_testing2(model_list : list, plot_title : str) -> list:
+    some_easy_case = easy_case()
+    some_hard_case = hard_case()
+    option = option_input()
+    
+    model_class_easy = hm.HestonClass(some_easy_case[0, 0], some_easy_case[0, 1], some_easy_case[0, 2], some_easy_case[0, 3], some_easy_case[0, 4], some_easy_case[0, 5], some_easy_case[0, 6])
+    model_class_hard = hm.HestonClass(some_hard_case[0, 0], some_hard_case[0, 1], some_hard_case[0, 2], some_hard_case[0, 3], some_hard_case[0, 4], some_hard_case[0, 5], some_hard_case[0, 6])
     some_option_list = np.array([])
     for some_option in option:
         some_option_list = np.append(some_option_list, vo.EUCall(some_option[0], some_option[1]))
-    benchmark_price_easy, benchmark_easy = dg.calc_imp_vol(easy_case[0], some_option_list)
-    benchmark_price_hard, benchmark_hard = dg.calc_imp_vol(hard_case[0], some_option_list)
+    benchmark_price_easy, benchmark_easy = dg.calc_imp_vol(some_easy_case[0], some_option_list)
+    benchmark_price_hard, benchmark_hard = dg.calc_imp_vol(some_hard_case[0], some_option_list)
 
     fig = plt.figure(figsize=(30, 20), dpi = 200)
     imp_ax_easy = fig.add_subplot(221, projection='3d')
@@ -228,6 +232,7 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
     y = option[:,1]
     mse_list = []
     for model_string in model_list:
+        model_string = ' '.join(glob.glob("Models5/*/"+model_string))
         model = load_model(model_string)
         model_folder = model_string[:model_string.rfind("/") + 1]
         norm_feature = joblib.load(model_folder+"norm_feature.pkl")
@@ -241,9 +246,9 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
             predictions_easy = np.zeros(np.shape(option)[0])
             predictions_hard = np.zeros(np.shape(option)[0])
             for i in range(np.shape(option)[0]):
-                test_single_input_easy = np.concatenate((easy_case, option[i]), axis=None)
+                test_single_input_easy = np.concatenate((some_easy_case, option[i]), axis=None)
                 test_single_input_easy = np.reshape(test_single_input_easy, (1, -1))
-                test_single_input_hard = np.concatenate((hard_case, option[i]), axis=None)
+                test_single_input_hard = np.concatenate((some_hard_case, option[i]), axis=None)
                 test_single_input_hard = np.reshape(test_single_input_hard, (1, -1))
                 if normal_out:
                     predictions_easy[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input_easy)))
@@ -253,11 +258,11 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
                     predictions_hard[i] = model.predict(norm_feature.transform(test_single_input_hard))
         else: # we have a grid
             if normal_out:
-                predictions_easy = norm_labels.inverse_transform(model.predict(norm_feature.transform(easy_case)))[0]
-                predictions_hard = norm_labels.inverse_transform(model.predict(norm_feature.transform(hard_case)))[0]
+                predictions_easy = norm_labels.inverse_transform(model.predict(norm_feature.transform(some_easy_case)))[0]
+                predictions_hard = norm_labels.inverse_transform(model.predict(norm_feature.transform(some_hard_case)))[0]
             else:
-                predictions_easy = model.predict(norm_feature.transform(easy_case))[0]
-                predictions_hard = model.predict(norm_feature.transform(hard_case))[0]
+                predictions_easy = model.predict(norm_feature.transform(some_easy_case))[0]
+                predictions_hard = model.predict(norm_feature.transform(some_hard_case))[0]
 
         # if prices, calc imp vol
         if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
@@ -308,7 +313,7 @@ def model_testing2(model_list : list, plot_title : str, easy_case : np.ndarray, 
         handles[i]._edgecolors2d = handles[i]._edgecolors3d 
 
     fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.2)
-    fig.legend(handles, labels, loc="lower center", ncol = 5, fontsize=15)
+    fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
     fig.suptitle(plot_title, fontsize=20)
     plt.savefig("Final_plots/"+plot_title.replace(" ", "_")+".png")
     plt.close()
@@ -378,9 +383,9 @@ def generate_bar_error(error_list : list, name : str):
     bar_ax.bar(x_pos, values)
     bar_ax.set_xticks(x_pos)
     bar_ax.set_xticklabels(labels, rotation=90)
-    bar_fig.suptitle("MSE with benchmark, "+name)
+    bar_fig.suptitle("MSE, "+name)
     plt.tight_layout()
-    plt.savefig("Plots2/"+name.replace(" ", "_")+"_mse.png")
+    plt.savefig("Final_plots/"+name.replace(" ", "_")+"_mse.png")
     plt.close()
 
 def generate_plots(model_list : list, plot_title: str):
@@ -388,20 +393,7 @@ def generate_plots(model_list : list, plot_title: str):
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
-    combined_list = glob.glob("Models5/*/*.h5")
-
-    test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
-    model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
-    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
-
-    X_test = model_input_1[test_index, :]
-    Y_test = imp_vol_1[test_index, :]
-    Y_test_price = price_1[test_index, :]
-
-    combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
-    combined_mse.sort(key = lambda x: -x[1])
-
+    combined_list = []
     first_run_keys = [
         "benchmark",
         "benchmark_include",
@@ -409,16 +401,33 @@ if __name__ == "__main__":
         "output_scaling_normalize",
         "mix",
         "price",
+        "price_standardize",
         "tanh",
         "standardize"
     ]
 
+    for key in first_run_keys:
+        combined_list.append(glob.glob("Models5/"+key+"/*.h5"))
+
+    combined_list = [item for sublist in combined_list for item in sublist]
+
+    test_index = np.loadtxt("Data/test_index_200000.csv", delimiter=",").astype(int)
+    model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
+    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
+
+    X_test = model_input[test_index, :]
+    Y_test = imp_vol[test_index, :]
+    Y_test_price = price[test_index, :]
+
+    combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+    combined_mse.sort(key = lambda x: -x[1])
+
     evaluation_first_list = []
     for some_list in combined_mse:
-        if first_run_keys.count(some_list[0][:some_list[0].rfind("_")-2]) > 0:
-            evaluation_first_list.append(
-                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
-            )
+        evaluation_first_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
+        )
     
     ### Finding best models per group
     evaluation_first_list.sort(key = lambda x: x[0])
@@ -441,6 +450,111 @@ if __name__ == "__main__":
         top_first_network_list.append(some_list[0])
 
     top_first_network_list.sort(key = lambda x: x[1])
+
+    ### Price vs implied
+    price_imp_dict = {
+        "price" : ["price", "price_include", "price_standardize", "price_output_standardize", \
+            "price_output_normalize"],
+        "imp" : ["benchmark", "benchmark_inlcude", "output_scaling", "output_scaling_normalize", \
+            "standardize"]
+    }
+
+    price_models = []
+    imp_models = []
+    for some_list in combined_mse:
+        if (price_imp_dict["price"].count(some_list[0][:some_list[0].rfind("_")-2]) > 0):
+            price_models.append(some_list)
+        elif (price_imp_dict["imp"].count(some_list[0][:some_list[0].rfind("_")-2]) > 0):
+            imp_models.append(some_list)
+    price_models.sort(key = lambda x: x[1])
+    imp_models.sort(key = lambda x: x[1])
+    price_imp_models = []
+    for i in range(5):
+        price_imp_models.append(price_models[i][0])
+        price_imp_models.append(imp_models[i][0])
+    model_testing2(price_imp_models, "Price vs implied volatility")
+    price_imp_mse = price_models[0:5] + imp_models[0:5]
+    generate_bar_error(price_imp_mse, "Price vs implied volatility")
+
+    ### Data filtering
+    benchmark_models = []
+    benchmark_include_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "benchmark_include"):
+            benchmark_include_models.append(some_list)
+    benchmark_models.sort(key = lambda x: x[1])
+    benchmark_include_models.sort(key = lambda x : x[1])
+    data_filter_models = []
+    for i in range(5):
+        data_filter_models.append(benchmark_models[i][0])
+        data_filter_models.append(benchmark_include_models[i][0])
+    model_testing2(data_filter_models, "Data filtering")
+    generate_bar_error(benchmark_models[0:5] + benchmark_include_models[0:5], "Data filtering")
+
+    ### Input scaling
+    benchmark_models = []
+    standardize_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
+            standardize_models.append(some_list)
+    benchmark_models.sort(key = lambda x: x[1])
+    standardize_models.sort(key = lambda x : x[1])
+    generate_bar_error(benchmark_models[0:5] + standardize_models[0:5], "Input scaling")
+    input_scaling_models = []
+    for i in range(5):
+        input_scaling_models.append(benchmark_models[i][0])
+        input_scaling_models.append(standardize_models[i][0])
+    model_testing2(input_scaling_models, "Input scaling")
+
+    ### Output scaling
+    benchmark_models = []
+    output_scaling_models = []
+    output_scaling_normalize_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "output_scaling"):
+            output_scaling_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "output_scaling_normalize"):
+            output_scaling_normalize_models.append(somelist)
+    benchmark_models.sort(key = lambda x: x[1])
+    output_scaling_models.sort(key = lambda x : x[1])
+    output_scaling_normalize_models.sort(key = lambda x : x[1])
+    generate_bar_error(benchmark_models[0:5] + output_scaling_models[0:5] + output_scaling_normalize_models[0:5], "Input scaling")
+    output_scaling_total_models = []
+    for i in range(5):
+        output_scaling_total_models.append(benchmark_models[i][0])
+        output_scaling_total_models.append(output_scaling_models[i][0])
+        output_scaling_total_models.append(output_scaling_normalize_models[i][0])
+    model_testing2(input_scaling_models, "Input scaling")
+
+    ### Activation functions
+    benchmark_models = []
+    tanh_models = []
+    mix_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "tanh"):
+            tanh_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "mix"):
+            mix_models.append(somelist)
+    benchmark_models.sort(key = lambda x: x[1])
+    tanh_models.sort(key = lambda x : x[1])
+    mix_models.sort(key = lambda x : x[1])
+    generate_bar_error(benchmark_models[0:5] + tanh_models[0:5] + mix_models[0:5], "Activation functions")
+    activiation_function_models = []
+    for i in range(5):
+        activiation_function_models.append(benchmark_models[i][0])
+        activiation_function_models.append(tanh_models[i][0])
+        activiation_function_models.append(mix_models[i][0])
+    model_testing2(activiation_function_models, "Activation functions")
+
+
 
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")
