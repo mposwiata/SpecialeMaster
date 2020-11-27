@@ -123,7 +123,6 @@ def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.n
     return output_price_matrix, output_imp_vol_matrix
 
 if __name__ == "__main__":
-    """
     model_input = model_input_generator()
 
     option_input = option_input_generator() # different option combinations
@@ -148,10 +147,6 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/hestonGridInput2_wide.csv", model_input, delimiter=",")
-    np.savetxt("Data/hestonGridPrice2_wide.csv", price_output, delimiter=",")
-    np.savetxt("Data/hestonGridImpVol2_wide.csv", imp_vol_output, delimiter=",")
-
-    Sobol.generate_sobol_input(len(model_input))
-    """
-    print("Data generation")
+    np.savetxt("Data/grid_input.csv", model_input, delimiter=",")
+    np.savetxt("Data/grid_price.csv", price_output, delimiter=",")
+    np.savetxt("Data/grid_imp.csv", imp_vol_output, delimiter=",")

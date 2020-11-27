@@ -406,7 +406,7 @@ if __name__ == "__main__":
         "benchmark",
         "benchmark_include",
         "output_scaling",
-        "output_scaling_normalize"
+        "output_scaling_normalize",
         "mix",
         "price",
         "tanh",
@@ -428,19 +428,19 @@ if __name__ == "__main__":
     for key, group in group_by_model:
         some_list = list(group)
         some_list.sort(key = lambda x: x[2])
-        top_models_list.append(some_list[0])
+        top_first_models_list.append(some_list[0])
 
     ### Finding best models per setup
-    evaluation_list.sort(key = lambda x: x[1])
-    group_by_network = itertools.groupby(evaluation_list, key = lambda x: x[1])
+    evaluation_first_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_first_list, key = lambda x: x[1])
 
     top_first_network_list = []
     for key, group in group_by_network:
         some_list = list(group)
         some_list.sort(key = lambda x: x[2])
-        top_network_list.append(some_list[0])
+        top_first_network_list.append(some_list[0])
 
-    top_network_list.sort(key = lambda x: x[1])
+    top_first_network_list.sort(key = lambda x: x[1])
 
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")

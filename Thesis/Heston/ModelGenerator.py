@@ -8,44 +8,69 @@ sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis.Heston import NNModelGenerator as mg
 
-if __name__ == '__main__':
-    if not (os.path.exists("Data/MC/train_index.csv") and os.path.exists("Data/MC/test_index.csv")):
-        index = np.arange(200000)
+def load_index(no : int) -> list:
+    if not (os.path.exists("Data/MC/train_index"+str(no)+".csv") and os.path.exists("Data/MC/test_index"+str(no)+".csv")):
+        index = np.arange(no)
         train_index, test_index = train_test_split(index, test_size=0.3, random_state=42)
-        np.savetxt("Data/MC/train_index.csv", train_index, delimiter=",")
-        np.savetxt("Data/MC/test_index.csv", test_index, delimiter=",")
+        np.savetxt("Data/MC/train_index"+str(no)+".csv", train_index, delimiter=",")
+        np.savetxt("Data/MC/test_index"+str(no)+".csv", test_index, delimiter=",")
     else:
-        train_index = np.loadtxt("Data/MC/train_index.csv", delimiter=",").astype(int)
-        test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
+        train_index = np.loadtxt("Data/MC/train_index"+str(no)+".csv", delimiter=",").astype(int)
+        test_index = np.loadtxt("Data/MC/test_index"+str(no)+".csv", delimiter=",").astype(int)
+
+    return train_index, test_index
+
+if __name__ == '__main__':
+    train_index, test_index = load_index(200000)
     
-    model_input_1 = np.loadtxt("Data/hestonSobolGridInput2_compare2_200000.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_imp_compare200000.csv", delimiter=",")
-    price_1 = np.loadtxt("Data/hestonSobolGridPrice2_compare2_200000.csv", delimiter=",")
+    model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
+    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
 
-    X_train = model_input_1[train_index, :]
-    X_test = model_input_1[test_index, :]
-    Y_train = imp_vol_1[train_index, :]
-    Y_test = imp_vol_1[test_index, :]
-    Y_train_price = price_1[train_index, :]
-    Y_test_price = price_1[test_index, :]
-
-    model_input_2 = np.loadtxt("Data/sobol_second_set_input200000.csv", delimiter = ",")
-    imp_vol_2 = np.loadtxt("Data/sobol_second_set_imp_vol200000.csv", delimiter=",")
-
-    X_train_2 = model_input_1[train_index, :]
-    X_test_2 = model_input_1[test_index, :]
-    Y_train_2 = imp_vol_1[train_index, :]
-    Y_test_2 = imp_vol_1[test_index, :]
+    X_train = model_input[train_index, :]
+    X_test = model_input[test_index, :]
+    Y_train = imp_vol[train_index, :]
+    Y_test = imp_vol[test_index, :]
+    Y_train_price = price[train_index, :]
+    Y_test_price = price[test_index, :]
 
     data_set_1 = [X_train, X_test, Y_train, Y_test]
-    data_set_2 = [X_train_2, X_test_2, Y_train_2, Y_test_2]
     data_set_price = [X_train, X_test, Y_train_price, Y_test_price]
 
     layers = [1, 2, 3, 4, 5]
     neurons = [50, 100, 500, 1000]
 
+    train_index_1, test_index_1 = load_index(100000)
+    model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
+    imp_vol_1 = np.loadtxt("Data/100000_imp.csv", delimiter=",")
+    X_train_1 = model_input_2[train_index_1, :]
+    X_test_1 = model_input_2[test_index_1, :]
+    Y_train_1 = imp_vol_2[train_index_1, :]
+    Y_test_1 = imp_vol_2[test_index, :]
+
+    data_set_100000 = [X_train_1, X_test_1, Y_train_1, Y_test_1]
+
+    train_index_3, test_index_3 = load_index(300000)
+    model_input_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")
+    imp_vol_3 = np.loadtxt("Data/300000_imp.csv", delimiter=",")
+    X_train_3 = model_input_3[train_index_1, :]
+    X_test_3 = model_input_3[test_index_1, :]
+    Y_train_3 = imp_vol_3[train_index_1, :]
+    Y_test_3 = imp_vol_3[test_index, :]
+
+    data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
+
+
     layer_neuron_combs = np.array(list(itertools.product(layers, neurons)))
     benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
+        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    low_data_list = list(zip(itertools.repeat(data_set_100000), itertools.repeat("benchmark"), \
+        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    high_data_list = list(zip(itertools.repeat(data_set_300000), itertools.repeat("benchmark"), \
         itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
@@ -109,7 +134,7 @@ if __name__ == '__main__':
     compute11_list = mix_list + price_list + standardize_list + noise_list
     next_list = price_output_scaling_list + combined_best_list + output_scaling_mix_list + standardize_mix_list
 
-    next_list_2 = output_scaling_normalize_list
+    next_list_2 = low_data_list + high_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4
