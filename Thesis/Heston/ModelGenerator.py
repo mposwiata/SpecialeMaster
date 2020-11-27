@@ -61,10 +61,10 @@ if __name__ == '__main__':
     data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
 
     train_grid_compare_index, test_grid_compare_index  = load_index(279936)
-    grid_compare_sobol_input = np.loadtxt("Data/279936_input.csv")
-    grid_compare_sobol_imp = np.loadtxt("Data/279936_imp.csv")
-    grid_compare_input = np.loadtxt("Data/grid_input.csv")
-    grid_compare_imp = np.loadtxt("Data/grid_imp.csv")
+    grid_compare_sobol_input = np.loadtxt("Data/279936_input.csv", delimiter = ",")
+    grid_compare_sobol_imp = np.loadtxt("Data/279936_imp.csv", delimiter = ",")
+    grid_compare_input = np.loadtxt("Data/grid_input.csv", delimiter = ",")
+    grid_compare_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
     X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
     X_test_grid_sobol = grid_compare_sobol_input[test_grid_compare_index, :]
     Y_train_grid_sobol = grid_compare_sobol_imp[train_grid_compare_index, :]
