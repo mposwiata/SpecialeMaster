@@ -406,6 +406,7 @@ if __name__ == "__main__":
         "benchmark",
         "benchmark_include",
         "output_scaling",
+        "output_scaling_normalize"
         "mix",
         "price",
         "tanh",
@@ -440,9 +441,6 @@ if __name__ == "__main__":
         top_network_list.append(some_list[0])
 
     top_network_list.sort(key = lambda x: x[1])
-
-
-
 
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")
