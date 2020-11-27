@@ -554,8 +554,6 @@ if __name__ == "__main__":
         activiation_function_models.append(mix_models[i][0])
     model_testing2(activiation_function_models, "Activation functions")
 
-
-
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")
     benchmark_mse = model_testing2(benchmark, "benchmark", easy_case(), hard_case(), option_input())
