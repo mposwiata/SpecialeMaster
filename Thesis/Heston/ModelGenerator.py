@@ -127,6 +127,14 @@ if __name__ == '__main__':
         itertools.repeat("price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
 
+    price_tanh_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_tanh"), \
+        itertools.repeat("price_tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    price_mix_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_mix"), \
+        itertools.repeat("price_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
     price_include_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_include"), \
         itertools.repeat("price_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
@@ -170,7 +178,7 @@ if __name__ == '__main__':
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
-    next_list_2 = price_include_list + price_standardize_list
+    next_list_2 = price_tanh_list + price_mix_list
     next_list_3 = price_output_standardize_list + price_output_normalize_list
 
     if cpu_count() == 4:
@@ -179,5 +187,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, next_list_3, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, next_list_2, chunksize=1)
     pool.close()

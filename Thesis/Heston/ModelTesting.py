@@ -319,7 +319,7 @@ def model_testing2(model_list : list, plot_title : str) -> list:
     plt.close()
     return mse_list
 
-def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, Y_test_price : np.ndarray) -> list:
+def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, Y_test_price : np.ndarray = None) -> list:
     mse_list = []
     for model_string in model_list:
         if (model_string.find("price") != -1):
@@ -406,11 +406,7 @@ if __name__ == "__main__":
         "price_output_standardize",
         "price_output_normalize",
         "tanh",
-        "standardize",
-        "low_data",
-        "high_data",
-        "grid",
-        "grid_sobol"
+        "standardize"
     ]
 
     for key in first_run_keys:
@@ -427,7 +423,34 @@ if __name__ == "__main__":
     Y_test = imp_vol[test_index, :]
     Y_test_price = price[test_index, :]
 
+    ### 100.000
+    test_index_1 = np.loadtxt("Data/test_index_100000.csv", delimiter=",").astype(int)
+    X_test_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")[test_index_1, :]
+    Y_test_1 = np.loadtxt("Data/100000_imp.csv", delimiter = ",")[test_index_1, :]
+    low_data_models = glob.glob("Models5/low_data/*.h5")
+    low_data_models_mse = model_test_set(low_data_models, X_test_1, Y_test_1)
+
+    test_index_3 = np.loadtxt("Data/test_index_300000.csv", delimiter=",").astype(int)
+    X_test_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")[test_index_3, :]
+    Y_test_3 = np.loadtxt("Data/300000_imp.csv", delimiter = ",")[test_index_3, :]
+    high_data_models = glob.glob("Models5/high_data/*.h5")
+    high_data_models_mse = model_test_set(high_data_models, X_test_3, Y_test_3)
+
+    test_index_grid = np.loadtxt("Data/test_index_279936.csv", delimiter=",").astype(int)
+    X_test_grid = np.loadtxt("Data/279936_input.csv", delimiter = ",")[test_index_grid, :]
+    Y_test_grid = np.loadtxt("Data/279936_imp.csv", delimiter = ",")[test_index_grid, :]
+    grid_models = glob.glob("Models5/grid/*.h5")
+    sobol_models = glob.glob("Models5/sobol/*.h5")
+    grid_models_mse = model_test_set(grid_models, X_test_grid, Y_test_grid)
+    sobol_models_mse = model_test_set(sobol_models, X_test_grid, Y_test_grid)
+
     combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
+    for i in range(20):
+        combined_mse.append(low_data_models_mse[i])
+        combined_mse.append(high_data_models_mse[i])
+        combined_mse.append(grid_models_mse[i])
+        combined_mse.append(sobol_models_mse[i])
+
     combined_mse.sort(key = lambda x: -x[1])
 
     evaluation_first_list = []
@@ -576,7 +599,7 @@ if __name__ == "__main__":
     for i in range(5):
         grid_sobol_models.append(sobol_models[i][0])
         grid_sobol_models.append(grid_models[i][0])
-    model_testing2(grid_sobol_models, "Input scaling")
+    model_testing2(grid_sobol_models, "Sobol vs grid")
 
     ### Low-high no. data
     benchmark_models = []
