@@ -171,6 +171,7 @@ if __name__ == '__main__':
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
     next_list_2 = price_include_list + price_standardize_list
+    next_list_3 = price_output_standardize_list + price_output_normalize_list
 
     if cpu_count() == 4:
         cpu_cores = 4
@@ -178,5 +179,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, next_list_2, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, next_list_3, chunksize=1)
     pool.close()

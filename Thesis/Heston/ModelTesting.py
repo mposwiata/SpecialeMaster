@@ -401,9 +401,16 @@ if __name__ == "__main__":
         "output_scaling_normalize",
         "mix",
         "price",
+        "price_incldue",
         "price_standardize",
+        "price_output_standardize",
+        "price_output_normalize",
         "tanh",
-        "standardize"
+        "standardize",
+        "low_data",
+        "high_data",
+        "grid",
+        "grid_sobol"
     ]
 
     for key in first_run_keys:
@@ -553,6 +560,45 @@ if __name__ == "__main__":
         activiation_function_models.append(tanh_models[i][0])
         activiation_function_models.append(mix_models[i][0])
     model_testing2(activiation_function_models, "Activation functions")
+
+    ### Grid vs sobol
+    sobol_models = []
+    grid_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "sobol"):
+            sobol_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "grid"):
+            grid_models.append(some_list)
+    sobol_models.sort(key = lambda x: x[1])
+    grid_models.sort(key = lambda x : x[1])
+    generate_bar_error(sobol_models[0:5] + grid_models[0:5], "Sobol vs grid")
+    grid_sobol_models = []
+    for i in range(5):
+        grid_sobol_models.append(sobol_models[i][0])
+        grid_sobol_models.append(grid_models[i][0])
+    model_testing2(grid_sobol_models, "Input scaling")
+
+    ### Low-high no. data
+    benchmark_models = []
+    low_data_models = []
+    high_data_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "low_data"):
+            low_data_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "high_data"):
+            high_data_models.append(some_list)
+    benchmark_models.sort(key = lambda x: x[1])
+    low_data_models.sort(key = lambda x : x[1])
+    high_data_models.sort(key = lambda x : x[1])
+    generate_bar_error(benchmark_models[0:5] + low_data_models[0:5] + high_data_models[0:5], "Data size")
+    data_no_models = []
+    for i in range(5):
+        data_no_models.append(benchmark_models[i][0])
+        data_no_models.append(low_data_models[i][0])
+        data_no_models.append(high_data_models[i][0])
+    model_testing2(data_no_models, "Data size")
 
     ### Models 5
     benchmark = glob.glob("Models5/benchmark/*.h5")
