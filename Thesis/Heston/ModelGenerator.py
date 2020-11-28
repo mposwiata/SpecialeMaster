@@ -115,13 +115,21 @@ if __name__ == '__main__':
         itertools.repeat("output_scaling_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat(False)))
 
-    tanh_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh"), \
+    tanh_list = tanh_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh"), \
         itertools.repeat("tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    tanh_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh_standardize"), \
+        itertools.repeat("tanh_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
 
     mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("mix"), \
         itertools.repeat("mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+
+    mix_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("mix_standardize"), \
+        itertools.repeat("mix_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
 
     price_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price"), \
         itertools.repeat("price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
@@ -179,7 +187,7 @@ if __name__ == '__main__':
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
     next_list_2 = price_tanh_list + price_mix_list
-    next_list_3 = price_output_standardize_list + price_output_normalize_list
+    next_list_3 = tanh_standardize_list + mix_standardize_list
 
     if cpu_count() == 4:
         cpu_cores = 4

@@ -273,7 +273,7 @@ def model_testing2(model_list : list, plot_title : str) -> list:
                 imp_vol_predictions_hard[i] = model_class_hard.impVol(predictions_hard[i], some_option_list[i])
             predictions_easy = imp_vol_predictions_easy
             predictions_hard = imp_vol_predictions_hard
-        
+            
         c = next(color)
 
         z_easy = predictions_easy
@@ -401,7 +401,7 @@ if __name__ == "__main__":
         "output_scaling_normalize",
         "mix",
         "price",
-        "price_incldue",
+        "price_include",
         "price_standardize",
         "price_output_standardize",
         "price_output_normalize",
