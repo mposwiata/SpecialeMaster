@@ -9,14 +9,14 @@ sys.path.append(os.getcwd()) # added for calc server support
 from Thesis.Heston import NNModelGenerator as mg
 
 def load_index(no : int) -> list:
-    if not (os.path.exists("Data/MC/train_index"+str(no)+".csv") and os.path.exists("Data/MC/test_index"+str(no)+".csv")):
+    if not (os.path.exists("Data/train_index_"+str(no)+".csv") and os.path.exists("Data/test_index_"+str(no)+".csv")):
         index = np.arange(no)
         train_index, test_index = train_test_split(index, test_size=0.3, random_state=42)
-        np.savetxt("Data/MC/train_index"+str(no)+".csv", train_index, delimiter=",")
-        np.savetxt("Data/MC/test_index"+str(no)+".csv", test_index, delimiter=",")
+        np.savetxt("Data/train_index_"+str(no)+".csv", train_index, delimiter=",")
+        np.savetxt("Data/test_index_"+str(no)+".csv", test_index, delimiter=",")
     else:
-        train_index = np.loadtxt("Data/MC/train_index"+str(no)+".csv", delimiter=",").astype(int)
-        test_index = np.loadtxt("Data/MC/test_index"+str(no)+".csv", delimiter=",").astype(int)
+        train_index = np.loadtxt("Data/train_index_"+str(no)+".csv", delimiter=",").astype(int)
+        test_index = np.loadtxt("Data/test_index_"+str(no)+".csv", delimiter=",").astype(int)
 
     return train_index, test_index
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         itertools.repeat("price_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
 
-    price_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("price_standardize"), \
+    price_standardize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_standardize"), \
         itertools.repeat("price_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
 
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
-    next_list_2 = low_data_list + high_data_list + price_include_list + grid_list + grid_sobol_list + price_standardize_list
+    next_list_2 = price_include_list + price_standardize_list
 
     if cpu_count() == 4:
         cpu_cores = 4

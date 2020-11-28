@@ -520,17 +520,17 @@ if __name__ == "__main__":
         elif (some_list[0][:some_list[0].rfind("_")-2] == "output_scaling"):
             output_scaling_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "output_scaling_normalize"):
-            output_scaling_normalize_models.append(somelist)
+            output_scaling_normalize_models.append(some_list)
     benchmark_models.sort(key = lambda x: x[1])
     output_scaling_models.sort(key = lambda x : x[1])
     output_scaling_normalize_models.sort(key = lambda x : x[1])
-    generate_bar_error(benchmark_models[0:5] + output_scaling_models[0:5] + output_scaling_normalize_models[0:5], "Input scaling")
+    generate_bar_error(benchmark_models[0:5] + output_scaling_models[0:5] + output_scaling_normalize_models[0:5], "Output scaling")
     output_scaling_total_models = []
     for i in range(5):
         output_scaling_total_models.append(benchmark_models[i][0])
         output_scaling_total_models.append(output_scaling_models[i][0])
         output_scaling_total_models.append(output_scaling_normalize_models[i][0])
-    model_testing2(input_scaling_models, "Input scaling")
+    model_testing2(output_scaling_total_models, "Output scaling")
 
     ### Activation functions
     benchmark_models = []
@@ -542,7 +542,7 @@ if __name__ == "__main__":
         elif (some_list[0][:some_list[0].rfind("_")-2] == "tanh"):
             tanh_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "mix"):
-            mix_models.append(somelist)
+            mix_models.append(some_list)
     benchmark_models.sort(key = lambda x: x[1])
     tanh_models.sort(key = lambda x : x[1])
     mix_models.sort(key = lambda x : x[1])
