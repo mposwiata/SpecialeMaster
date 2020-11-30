@@ -407,6 +407,8 @@ if __name__ == "__main__":
         "price_output_normalize",
         "tanh",
         "standardize"
+        "mix_standardize",
+        "tanh_standardize"
     ]
 
     for key in first_run_keys:

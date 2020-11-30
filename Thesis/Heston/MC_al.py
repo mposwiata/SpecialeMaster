@@ -118,7 +118,7 @@ def generate_multi_network(X, Y):
 
     return model
 
-def generate_predictions(test_x, model, norm):
+def generate_predictions(test_x, model, norm_feature, norm_labels):
     ### Derivatives
     inp_tensor = tf.convert_to_tensor(test_x)
 
@@ -130,9 +130,11 @@ def generate_predictions(test_x, model, norm):
             predict = model(inp_tensor)
         grads = tape2.gradient(predict, inp_tensor)
 
-    grads2 = tape.gradient(grads, inp_tensor) / ((norm.data_max_ - norm.data_min_) ** 2)
+    grads2 = tape.gradient(grads, inp_tensor) * (norm_labels.data_max_ - norm_labels.data_min_) / (np.sqrt(norm_feature.var_[0]) ** 2)
 
-    grads = grads / (norm.data_max_ - norm.data_min_)
+    grads = grads * (norm_labels.data_max_ - norm_labels.data_min_) / np.sqrt(norm_feature.var_[0])
+
+    predict = norm_labels.inverse_transform(predict)
 
     return predict, grads, grads2
 
@@ -359,21 +361,57 @@ if __name__ == "__main__":
     plot_func(spot, training_data, "Training data")
 
     ### Ready for NN
-    norm_features = MinMaxScaler() #MinMaxScaler(feature_range = (-1, 1))
-    norm_features_multiple = MinMaxScaler()
-
+    norm_features = StandardScaler()
+    norm_features_multiple = StandardScaler()
     X = norm_features.fit_transform(spot)
     X_multi = norm_features_multiple.fit_transform(input_array)
 
-    al_model1 = generate_network(X, al_output1)
-    mc_model1 = generate_network(X, mc_output1)
-    al_model2 = generate_network(X, al_output2)
-    mc_model2 = generate_network(X, mc_output2)
+    norm_labels_al1 = MinMaxScaler()
+    Y_al1 = norm_labels_al1.fit_transform(al_output1)
+    norm_labels_mc1 = MinMaxScaler()
+    Y_mc1 = norm_labels_mc1.fit_transform(mc_output1)
+    norm_labels_al2 = MinMaxScaler()
+    Y_al2 = norm_labels_al2.fit_transform(al_output2)
+    norm_labels_mc2 = MinMaxScaler()
+    Y_mc1 = norm_labels_mc2.fit_transform(mc_output2)
 
-    al_multi_model1 = generate_multi_network(X_multi, al_output_multiple_1)
-    mc_multi_model1 = generate_multi_network(X_multi, mc_output_multiple_1)
-    al_multi_model2 = generate_multi_network(X_multi, al_output_multiple_2)
-    mc_multi_model2 = generate_multi_network(X_multi, mc_output_multiple_2)
+    al_models1 = load_model("Models5/MC_poc/al_model1.h5")
+    #al_model1 = generate_network(X, Y_al1)
+    #al_model1.save("Models5/MC_poc/al_model1.h5")
+    mc_model1 = load_model("Models5/MC_poc/mc_model1.h5")
+    #mc_model1 = generate_network(X, Y_mc1)
+    #mc_model1.save("Models5/MC_poc/mc_model1.h5")
+    al_model2 = load_model("Models5/MC_poc/al_model2.h5")
+    #al_model2 = generate_network(X, Y_al2)
+    #al_model2.save("Models5/MC_poc/al_model2.h5")
+    mc_model2 = load_model("Models5/MC_poc/mc_model2.h5")
+    #mc_model2 = generate_network(X, Y_mc1)
+    #mc_model2.save("Models5/MC_poc/mc_model2.h5")
+
+    norm_labels_multi_al1 = MinMaxScaler()
+    Y_multi_al1 = norm_labels_multi_al1.fit_transform(al_output_multiple_1)
+    norm_labels_multi_mc1 = MinMaxScaler()
+    Y_multi_mc1 = norm_labels_multi_mc1.fit_transform(mc_output_multiple_1)
+    norm_labels_multi_al2 = MinMaxScaler()
+    Y_multi_al2 = norm_labels_multi_al2.fit_transform(al_output_multiple_2)
+    norm_labels_multi_mc2 = MinMaxScaler()
+    Y_multi_mc2 = norm_labels_multi_mc2.fit_transform(mc_output_multiple_2)
+
+    al_multi_model1 = load_model("Models5/MC_poc/al_multi_model1.h5")
+    #al_multi_model1 = generate_multi_network(X_multi, Y_multi_al1)
+    #al_multi_model1.save("Models5/MC_poc/al_multi_model1.h5")
+
+    mc_multi_model1 = load_model("Models5/MC_poc/mc_multi_model1.h5")
+    #mc_multi_model1 = generate_multi_network(X_multi, Y_multi_mc1)
+    #mc_multi_model1.save("Models5/MC_poc/mc_multi_model1.h5")
+
+    al_multi_model2 = load_model("Models5/MC_poc/al_multi_model2.h5")
+    #al_multi_model2 = generate_multi_network(X_multi, Y_multi_al2)
+    #al_multi_model2.save("Models5/MC_poc/al_multi_model2.h5")
+
+    mc_multi_model2 = load_model("Models5/MC_poc/mc_multi_model2.h5")
+    #mc_multi_model2 = generate_multi_network(X_multi, Y_multi_mc2)
+    #mc_multi_model2.save("Models5/MC_poc/mc_multi_model2.h5")
 
     ### Model testing
     spot_plot = np.linspace(start = 75, stop = 125, num = 200)
@@ -410,15 +448,40 @@ if __name__ == "__main__":
     input_multi_easy = norm_features_multiple.transform(input_multi_easy)
     input_multi_hard = norm_features_multiple.transform(input_multi_hard)
 
-    al_predict1, al_grads1, al_grads1_2 = generate_predictions(test_input, al_model1, norm_features)
-    mc_predict1, mc_grads1, mc_grads1_2 = generate_predictions(test_input, mc_model1, norm_features)
-    al_predict2, al_grads2, al_grads2_2 = generate_predictions(test_input, al_model2, norm_features)
-    mc_predict2, mc_grads2, mc_grads2_2 = generate_predictions(test_input, mc_model2, norm_features)
+    al_predict1, al_grads1, al_grads1_2 = generate_predictions(test_input, al_model1, norm_features, norm_labels_al1)
+    mc_predict1, mc_grads1, mc_grads1_2 = generate_predictions(test_input, mc_model1, norm_features, norm_labels_mc1)
+    al_predict2, al_grads2, al_grads2_2 = generate_predictions(test_input, al_model2, norm_features, norm_labels_al2)
+    mc_predict2, mc_grads2, mc_grads2_2 = generate_predictions(test_input, mc_model2, norm_features, norm_labels_mc2)
 
-    al_multi_predict1, al_multi_grads1, al_multi_grads1_2 = generate_predictions(input_multi_easy, al_multi_model1, norm_features_multiple)
-    mc_multi_predict1, mc_multi_grads1, mc_multi_grads1_2 = generate_predictions(input_multi_easy, mc_multi_model1, norm_features_multiple)
-    al_multi_predict2, al_multi_grads2, al_multi_grads2_2 = generate_predictions(input_multi_hard, al_multi_model2, norm_features_multiple)
-    mc_multi_predict2, mc_multi_grads2, mc_multi_grads2_2 = generate_predictions(input_multi_hard, mc_multi_model2, norm_features_multiple)
+    al_multi_predict1, al_multi_grads1, al_multi_grads1_2 = generate_predictions(input_multi_easy, al_multi_model1, norm_features_multiple, norm_labels_multi_al1)
+    mc_multi_predict1, mc_multi_grads1, mc_multi_grads1_2 = generate_predictions(input_multi_easy, mc_multi_model1, norm_features_multiple, norm_labels_multi_mc1)
+    al_multi_predict2, al_multi_grads2, al_multi_grads2_2 = generate_predictions(input_multi_hard, al_multi_model2, norm_features_multiple, norm_labels_multi_al2)
+    mc_multi_predict2, mc_multi_grads2, mc_multi_grads2_2 = generate_predictions(input_multi_hard, mc_multi_model2, norm_features_multiple, norm_labels_multi_mc2)
+
+    prediction_data = {
+        "Andersen Lake" : [al_predict1, al_predict2],
+        "Monte Carlo" : [mc_predict1, mc_predict2],
+        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
+        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2]
+    }
+
+    delta_data = {
+        "Andersen Lake" : [al_grads1, al_grads2],
+        "Monte Carlo" : [mc_grads1, mc_grads2],
+        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]]
+    }
+
+    gamma_data = {
+        "Andersen Lake" : [al_grads1_2, al_grads2_2],
+        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
+        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
+        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]]
+    }
+
+    plot_func(spot_plot, prediction_data, "MC Predictions")
+    plot_func(spot_plot, delta_data, "MC Delta")
+    plot_func(spot_plot, gamma_data, "MC Gamma")
 
     ### Plotting grads for best models
     benchmark = "Models5/benchmark/benchmark_5_1000.h5"
