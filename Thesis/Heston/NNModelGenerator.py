@@ -27,7 +27,7 @@ def lr_schedule(epoch, rate):
 
     return lr
 
-def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : str, standardize : bool) -> float:
+def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str) -> float:
     model_save = "Models5/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
     model_path = "Models5/"+folder+"/"
 
@@ -39,34 +39,38 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     Y_train = data_set[2]
     Y_test = data_set[3]
 
-    if standardize:
+    if input_scaling == "standardize":
         norm_features = StandardScaler()
-    else:
+        normal_in = True
+    elif input_scaling == "normalize":
         norm_features = MinMaxScaler()
+        normal_in = True
+    else:
+        normal_in = False
+    
 
-    if normal_out == "standardize":
+    if output_scaling == "standardize":
         norm_labels = StandardScaler()
-        Y_train = norm_labels.fit_transform(Y_train)
-        Y_test = norm_labels.transform(Y_test)
-        ### saving label normalization if it doesn't exists.
-        if not os.path.exists(model_path+"/norm_labels.pkl"):
-            joblib.dump(norm_labels, model_path+"norm_labels.pkl")
-    elif normal_out == "normalize":
+        normal_out = True
+    elif output_scaling == "normalize":
         norm_labels = MinMaxScaler()
+        normal_out = True
+    else:
+        normal_out = False
+
+    if normal_in:
+        X_train = norm_features.fit_transform(X_train)
+        X_test = norm_features.transform(X_test)
+        ### saving feature normalization if it doesn't exists.
+        if not os.path.exists(model_path+"/norm_feature.pkl"):
+            joblib.dump(norm_features, model_path+"norm_feature.pkl")
+    
+    if normal_out:
         Y_train = norm_labels.fit_transform(Y_train)
         Y_test = norm_labels.transform(Y_test)
-        ### saving label normalization if it doesn't exists.
         if not os.path.exists(model_path+"/norm_labels.pkl"):
             joblib.dump(norm_labels, model_path+"norm_labels.pkl")
 
-    X_train = norm_features.fit_transform(X_train)
-    
-    X_test = norm_features.transform(X_test)
-
-    ### saving feature normalization if it doesn't exists.
-    if not os.path.exists(model_path+"/norm_feature.pkl"):
-        joblib.dump(norm_features, model_path+"norm_feature.pkl")
-    
     if nn_type == "normal":
         model = nng.NN_generator(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     elif nn_type == "tanh":

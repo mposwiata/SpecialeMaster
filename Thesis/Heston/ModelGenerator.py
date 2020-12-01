@@ -81,113 +81,117 @@ if __name__ == '__main__':
     layer_neuron_combs = np.array(list(itertools.product(layers, neurons)))
     benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
         itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
+
+    non_input_scaling_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
+        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("False"), itertools.repeat(False)))
 
     low_data_list = list(zip(itertools.repeat(data_set_100000), itertools.repeat("low_data"), \
         itertools.repeat("low_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     high_data_list = list(zip(itertools.repeat(data_set_300000), itertools.repeat("high_data"), \
         itertools.repeat("high_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     grid_sobol_list = list(zip(itertools.repeat(data_set_grid_sobol), itertools.repeat("grid_sobol"), \
         itertools.repeat("grid_sobol"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     grid_list = list(zip(itertools.repeat(data_set_grid), itertools.repeat("grid"), \
         itertools.repeat("grid"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     benchmark_include_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark_include"), \
         itertools.repeat("benchmark_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(True)))
 
     output_scaling_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("output_scaling"), \
         itertools.repeat("output_scaling"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("standardize"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     output_scaling_normalize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("output_scaling_normalize"), \
         itertools.repeat("output_scaling_normalize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     output_scaling_mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("output_scaling_mix"), \
         itertools.repeat("output_scaling_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("standardize"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     tanh_list = tanh_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh"), \
         itertools.repeat("tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     tanh_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh_standardize"), \
         itertools.repeat("tanh_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("mix"), \
         itertools.repeat("mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     mix_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("mix_standardize"), \
         itertools.repeat("mix_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     price_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price"), \
         itertools.repeat("price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     price_tanh_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_tanh"), \
         itertools.repeat("price_tanh"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     price_mix_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_mix"), \
         itertools.repeat("price_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     price_include_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_include"), \
         itertools.repeat("price_include"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(True)))
 
     price_standardize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_standardize"), \
         itertools.repeat("price_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     price_output_standardize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_output_standardize"), \
         itertools.repeat("price_output_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("standardize"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     price_output_normalize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_output_normalize"), \
         itertools.repeat("price_output_normalize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat(False), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize"), \
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     standardize_mix_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_mix"), \
         itertools.repeat("standardize_mix"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     noise_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise"), \
         itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     combined_best_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("combined"), \
         itertools.repeat("combined"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("standardize"), itertools.repeat(True), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("standardize"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     noise_included_standard_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise_included_standard"), \
         itertools.repeat("noise_included_standard"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("noise"), itertools.repeat("False"), itertools.repeat(True), itertools.repeat(True)))
+        itertools.repeat("noise"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     noise_included_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise_included"), \
         itertools.repeat("noise_included"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("noise"), itertools.repeat("False"), itertools.repeat(False), itertools.repeat(True)))
+        itertools.repeat("noise"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(True)))
 
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
     next_list_2 = price_tanh_list + price_mix_list
-    next_list_3 = tanh_standardize_list + mix_standardize_list
+    next_list_3 = non_input_scaling_list
 
     if cpu_count() == 4:
         cpu_cores = 4
