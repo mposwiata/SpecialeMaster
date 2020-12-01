@@ -83,8 +83,8 @@ if __name__ == '__main__':
         itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
-    non_input_scaling_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
-        itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    non_input_scaling_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("non_input_scaling"), \
+        itertools.repeat("non_input_scaling"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("False"), itertools.repeat(False)))
 
     low_data_list = list(zip(itertools.repeat(data_set_100000), itertools.repeat("low_data"), \
