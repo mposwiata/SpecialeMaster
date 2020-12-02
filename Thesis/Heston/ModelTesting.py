@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error as mse
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import os
 import itertools
+import pickle
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
 from Thesis.misc import VanillaOptions as vo
@@ -232,10 +233,17 @@ def model_testing2(model_list : list, plot_title : str) -> list:
     y = option[:,1]
     mse_list = []
     for model_string in model_list:
+        some_easy_case = easy_case()
+        some_hard_case = hard_case()
         model_string = ' '.join(glob.glob("Models5/*/"+model_string))
         model = load_model(model_string)
         model_folder = model_string[:model_string.rfind("/") + 1]
-        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+        if os.path.exists(model_folder+"/norm_feature.pkl"):
+            norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+            normal_in = True
+        else:
+            normal_in = False
+        
         if os.path.exists(model_folder+"/norm_labels.pkl"):
             norm_labels = joblib.load(model_folder+"norm_labels.pkl")
             normal_out = True
@@ -250,19 +258,25 @@ def model_testing2(model_list : list, plot_title : str) -> list:
                 test_single_input_easy = np.reshape(test_single_input_easy, (1, -1))
                 test_single_input_hard = np.concatenate((some_hard_case, option[i]), axis=None)
                 test_single_input_hard = np.reshape(test_single_input_hard, (1, -1))
+                if normal_in:
+                    test_single_input_easy = norm_feature.transform(test_single_input_easy)
+                    test_single_input_hard = norm_feature.transform(test_single_input_hard)
                 if normal_out:
-                    predictions_easy[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input_easy)))
-                    predictions_hard[i] = norm_labels.inverse_transform(model.predict(norm_feature.transform(test_single_input_hard)))
+                    predictions_easy[i] = norm_labels.inverse_transform(model.predict(test_single_input_easy))
+                    predictions_hard[i] = norm_labels.inverse_transform(model.predict(test_single_input_hard))
                 else:
-                    predictions_easy[i] = model.predict(norm_feature.transform(test_single_input_easy))
-                    predictions_hard[i] = model.predict(norm_feature.transform(test_single_input_hard))
+                    predictions_easy[i] = model.predict(test_single_input_easy)
+                    predictions_hard[i] = model.predict(test_single_input_hard)
         else: # we have a grid
+            if normal_in:
+                some_easy_case = norm_feature.transform(some_easy_case)
+                some_hard_case = norm_feature.transform(some_hard_case)
             if normal_out:
-                predictions_easy = norm_labels.inverse_transform(model.predict(norm_feature.transform(some_easy_case)))[0]
-                predictions_hard = norm_labels.inverse_transform(model.predict(norm_feature.transform(some_hard_case)))[0]
+                predictions_easy = norm_labels.inverse_transform(model.predict(some_easy_case))[0]
+                predictions_hard = norm_labels.inverse_transform(model.predict(some_hard_case))[0]
             else:
-                predictions_easy = model.predict(norm_feature.transform(some_easy_case))[0]
-                predictions_hard = model.predict(norm_feature.transform(some_hard_case))[0]
+                predictions_easy = model.predict(some_easy_case)[0]
+                predictions_hard = model.predict(some_hard_case)[0]
 
         # if prices, calc imp vol
         if (model_string.find("Price") != -1 or model_string.find("price") != -1 ):
@@ -330,7 +344,7 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
         x_test_loop = X_test
         
 
-        if (model_string.find("benchmark_include") != -1):
+        if ((model_string.find("benchmark_include") != -1) or (model_string.find("price_include") != -1)):
             index = np.all(y_test_loop != -1, axis = 1)
         else:
             index = np.all(y_test_loop > 0, axis = 1)
@@ -340,12 +354,12 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
 
         model = load_model(model_string)
         model_folder = model_string[:model_string.rfind("/") + 1]
-        norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+        if os.path.exists(model_folder+"/norm_feature.pkl"):
+            norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+            x_test_loop = norm_feature.transform(x_test_loop)
         if os.path.exists(model_folder+"/norm_labels.pkl"):
             norm_labels = joblib.load(model_folder+"norm_labels.pkl")
             y_test_loop = norm_labels.transform(y_test_loop)
-
-        x_test_loop = norm_feature.transform(x_test_loop)
 
         name = model_string[model_string.rfind("/")+1:]
         score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
@@ -389,7 +403,7 @@ def generate_bar_error(error_list : list, name : str):
     plt.close()
 
 def generate_plots(model_list : list, plot_title: str):
-    mse = model_testing(model_list, plot_title, easy_case(), hard_case(), option_input())
+    mse = model_testing2(model_list, plot_title)
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
@@ -406,9 +420,10 @@ if __name__ == "__main__":
         "price_output_standardize",
         "price_output_normalize",
         "tanh",
-        "standardize"
+        "standardize",
         "mix_standardize",
-        "tanh_standardize"
+        "tanh_standardize",
+        "non_input_scaling"
     ]
 
     for key in first_run_keys:
@@ -454,11 +469,16 @@ if __name__ == "__main__":
         combined_mse.append(sobol_models_mse[i])
 
     combined_mse.sort(key = lambda x: -x[1])
+    with open("combined_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(combined_mse, fp)
+
+    with open("combined_mse.pkl", "rb") as fp:   # Unpickling
+        combined_mse = pickle.load(fp)
 
     evaluation_first_list = []
     for some_list in combined_mse:
         evaluation_first_list.append(
-            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
         )
     
     ### Finding best models per group
@@ -472,8 +492,14 @@ if __name__ == "__main__":
         top_first_models_list.append(some_list[0])
 
     ### Finding best models per setup
-    evaluation_first_list.sort(key = lambda x: x[1])
-    group_by_network = itertools.groupby(evaluation_first_list, key = lambda x: x[1])
+    evaluation_setup_list = []
+    for some_list in combined_mse:
+        if not (some_list[0].find("price") != -1 or some_list[0].find("high_data") != -1 or some_list[0].find("sobol") != -1):
+            evaluation_setup_list.append(
+                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+            )
+    evaluation_setup_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_setup_list, key = lambda x: x[1])
 
     top_first_network_list = []
     for key, group in group_by_network:
@@ -483,12 +509,40 @@ if __name__ == "__main__":
 
     top_first_network_list.sort(key = lambda x: x[1])
 
+    models_for_evaluation = [
+        "standardize_5_500.h5",
+        "standardize_5_1000.h5",
+        "standardize_5_100.h5",
+        "tanh_5_50.h5",
+        "tanh_1_50.h5",
+        "tanh_3_50.h5"
+    ]
+    generate_plots(models_for_evaluation, "Top implied volatility models")
+
+    ### Finding best models per setup, prices
+    evaluation_setup_price_list = []
+    for some_list in combined_mse:
+        if some_list[0].find("price") != -1:
+            evaluation_setup_price_list.append(
+                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+            )
+    evaluation_setup_price_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_setup_price_list, key = lambda x: x[1])
+
+    top_first_network_price_list = []
+    for key, group in group_by_network:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_first_network_price_list.append(some_list[0])
+
+    top_first_network_price_list.sort(key = lambda x: x[1])
+
     ### Price vs implied
     price_imp_dict = {
         "price" : ["price", "price_include", "price_standardize", "price_output_standardize", \
             "price_output_normalize"],
         "imp" : ["benchmark", "benchmark_inlcude", "output_scaling", "output_scaling_normalize", \
-            "standardize"]
+            "standardize", "non_input_scaling "]
     }
 
     price_models = []
@@ -528,18 +582,23 @@ if __name__ == "__main__":
     ### Input scaling
     benchmark_models = []
     standardize_models = []
+    non_input_scaling_models = []
     for some_list in combined_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
             standardize_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "non_input_scaling"):
+            non_input_scaling_models.append(some_list)
     benchmark_models.sort(key = lambda x: x[1])
     standardize_models.sort(key = lambda x : x[1])
-    generate_bar_error(benchmark_models[0:5] + standardize_models[0:5], "Input scaling")
+    non_input_scaling_models.sort(key = lambda x: x[1])
+    generate_bar_error(benchmark_models[0:5] + standardize_models[0:5] + non_input_scaling_models[0:5], "Input scaling")
     input_scaling_models = []
     for i in range(5):
         input_scaling_models.append(benchmark_models[i][0])
         input_scaling_models.append(standardize_models[i][0])
+        input_scaling_models.append(non_input_scaling_models[i][0])
     model_testing2(input_scaling_models, "Input scaling")
 
     ### Output scaling
@@ -564,7 +623,7 @@ if __name__ == "__main__":
         output_scaling_total_models.append(output_scaling_normalize_models[i][0])
     model_testing2(output_scaling_total_models, "Output scaling")
 
-    ### Activation functions
+    ### Activation functions, normalize
     benchmark_models = []
     tanh_models = []
     mix_models = []
@@ -578,13 +637,44 @@ if __name__ == "__main__":
     benchmark_models.sort(key = lambda x: x[1])
     tanh_models.sort(key = lambda x : x[1])
     mix_models.sort(key = lambda x : x[1])
-    generate_bar_error(benchmark_models[0:5] + tanh_models[0:5] + mix_models[0:5], "Activation functions")
+    generate_bar_error(benchmark_models[0:5] + tanh_models[0:5] + mix_models[0:5], "Activation functions normalize")
     activiation_function_models = []
     for i in range(5):
         activiation_function_models.append(benchmark_models[i][0])
         activiation_function_models.append(tanh_models[i][0])
         activiation_function_models.append(mix_models[i][0])
-    model_testing2(activiation_function_models, "Activation functions")
+    model_testing2(activiation_function_models, "Activation functions normalize")
+
+    ### Activation functions, standardize
+    tanh_standard_models = []
+    mix_standard_models = []
+    standardize_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
+            standardize_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "mix_standardize"):
+            mix_standard_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "tanh_standardize"):
+            tanh_standard_models.append(some_list)
+    benchmark_models.sort(key = lambda x: x[1])
+    tanh_models.sort(key = lambda x : x[1])
+    mix_models.sort(key = lambda x : x[1])
+    generate_bar_error(tanh_standard_models[0:5] + mix_standard_models[0:5] + standardize_models[0:5], "Activation functions standardize")
+    activiation_function_models = []
+    for i in range(5):
+        activiation_function_models.append(tanh_standard_models[i][0])
+        activiation_function_models.append(mix_standard_models[i][0])
+        activiation_function_models.append(standardize_models[i][0])
+    model_testing2(activiation_function_models, "Activation functions standardize")
+
+    ### Best activation functions
+    all_activation_functions = benchmark_models + tanh_models + mix_models + standardize_models + mix_standard_models + tanh_standard_models
+    all_activation_functions.sort(key = lambda x: x[1])
+    generate_bar_error(all_activation_functions[0:10], "Activation functions")
+    all_activation_functions_list = []
+    for i in range(10):
+        all_activation_functions_list.append(all_activation_functions[i][0])
+    model_testing2(all_activation_functions_list, "Activation functions")
 
     ### Grid vs sobol
     sobol_models = []

@@ -4,6 +4,8 @@ import tensorflow as tf
 import itertools
 import joblib
 import glob
+import time
+import timeit
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from keras.optimizers import Adam
 from keras import backend as k
@@ -64,7 +66,7 @@ def plot_func(x_axis : np.array, plot_data : dict, title : str):
     hard_ax = plt.subplot(122)
     color=iter(plt.cm.tab10(np.linspace(0,1,len(plot_data))))
     for key in plot_data:
-        if key == "Andersen Lake FD":
+        if key == "Andersen Lake":
             c = 'black'
         else:
             c = next(color)
@@ -177,7 +179,26 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         normal_out = False
 
     if isinstance(norm_feature, MinMaxScaler):
-        if normal_out:
+        grads_bot = (norm_feature.data_max_[0] - norm_feature.data_min_[0])
+        grads2_bot = ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
+    elif isinstance(norm_feature, StandardScaler):
+        grads_bot = np.sqrt(norm_feature.var_[0])
+        grads2_bot = (np.sqrt(norm_feature.var_[0]) ** 2)
+    else:
+        grads_bot = 1
+        grads2_bot = 1
+    if normal_out:
+        if isinstance(norm_labels, MinMaxScaler):
+            grads_top = (norm_labels.data_max_[12] - norm_labels.data_min_[12])
+        elif isinstance(norm_labels, StandardScaler):
+            grads_top = np.sqrt(norm_labels.var_[12])
+    else:
+        grads_top = 1
+
+    grads_scale = grads_top / grads_bot
+    grads2_scale = grads_top / grads2_bot
+    """
+    if normal_out:
             grads_scale = np.sqrt(norm_labels.var_[12]) / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
             grads2_scale = np.sqrt(norm_labels.var_[12]) / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
         else:
@@ -190,6 +211,7 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         else:
             grads_scale = 1 / np.sqrt(norm_feature.var_[0])
             grads2_scale = 1 / (np.sqrt(norm_feature.var_[0]) ** 2)
+    """
 
     inp_tensor_easy = tf.convert_to_tensor(norm_feature.transform(easy_case))
     inp_tensor_hard = tf.convert_to_tensor(norm_feature.transform(hard_case))
@@ -300,6 +322,62 @@ def mc_price_grads(model : str, easy_case : np.ndarray, hard_case : np.ndarray) 
     }
 
     return return_dict
+
+def timing(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray) -> dict:
+    model = load_model(model_string)
+    model_folder = model_string[:model_string.rfind("/") + 1]
+    norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+
+    if os.path.exists(model_folder+"/norm_labels.pkl"):
+        norm_labels = joblib.load(model_folder+"norm_labels.pkl")
+        normal_out = True
+    else:
+        normal_out = False
+
+    if isinstance(norm_feature, MinMaxScaler):
+        grads_bot = (norm_feature.data_max_[0] - norm_feature.data_min_[0])
+        grads2_bot = ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
+    elif isinstance(norm_feature, StandardScaler):
+        grads_bot = np.sqrt(norm_feature.var_[0])
+        grads2_bot = (np.sqrt(norm_feature.var_[0]) ** 2)
+    else:
+        grads_bot = 1
+        grads2_bot = 1
+    if normal_out:
+        if isinstance(norm_labels, MinMaxScaler):
+            grads_top = (norm_labels.data_max_[12] - norm_labels.data_min_[12])
+        elif isinstance(norm_labels, StandardScaler):
+            grads_top = np.sqrt(norm_labels.var_[12])
+    else:
+        grads_top = 1
+
+    grads_scale = grads_top / grads_bot
+    grads2_scale = grads_top / grads2_bot
+
+    inp_tensor_easy = tf.convert_to_tensor(norm_feature.transform(easy_case))
+    inp_tensor_hard = tf.convert_to_tensor(norm_feature.transform(hard_case))
+    if normal_out:
+        easy_start = time.time()
+        for i in range(100):
+            norm_labels.inverse_transform(model(inp_tensor_easy))
+        easy_time = time.time() - easy_start
+
+        hard_start = time.time()
+        for i in range(100):
+            norm_labels.inverse_transform(model(inp_tensor_hard))
+        hard_time = time.time() - hard_start
+    else:
+        easy_start = time.time()
+        for i in range(100):
+            model(inp_tensor_easy)
+        easy_time = time.time() - easy_start
+
+        hard_start = time.time()
+        for i in range(100):
+            model(inp_tensor_hard)
+        hard_time = time.time() - hard_start
+
+    return easy_time / 100, hard_time / 100
 
 if __name__ == "__main__":
     ### Generating input data
@@ -484,79 +562,119 @@ if __name__ == "__main__":
     plot_func(spot_plot, gamma_data, "MC Gamma")
 
     ### Plotting grads for best models
-    benchmark = "Models5/benchmark/benchmark_5_1000.h5"
-    benchmark_dict = model_grads(benchmark, input_good_easy, input_good_hard, some_option)
+    standardize_5_1000 = "Models5/standardize/standardize_5_1000.h5"
+    standardize_5_1000_dict = model_grads(standardize_5_1000, input_good_easy, input_good_hard, some_option)
 
-    benchmark_include = "Models5/benchmark_include/benchmark_include_5_500.h5"
-    benchmark_include_dict = model_grads(benchmark_include, input_good_easy, input_good_hard, some_option)
+    standardize_5_100 = "Models5/standardize/standardize_5_100.h5"
+    standardize_5_100_dict = model_grads(standardize_5_100, input_good_easy, input_good_hard, some_option)
 
-    output_scaling = "Models5/output_scaling/output_scaling_5_500.h5"
-    output_scaling_dict = model_grads(output_scaling, input_good_easy, input_good_hard, some_option)
+    standardize_5_500 = "Models5/standardize/standardize_5_500.h5"
+    standardize_5_500_dict = model_grads(standardize_5_500, input_good_easy, input_good_hard, some_option)
 
-    tanh = "Models5/tanh/tanh_4_100.h5"
-    tanh_dict = model_grads(tanh, input_good_easy, input_good_hard, some_option)
+    standardize_4_50 = "Models5/standardize/standardize_4_50.h5"
+    standardize_4_50_dict = model_grads(standardize_4_50, input_good_easy, input_good_hard, some_option)
 
-    mix = "Models5/mix/mix_5_1000.h5"
-    mix_dict = model_grads(mix, input_good_easy, input_good_hard, some_option)
+    tanh_5_50 = "Models5/tanh/tanh_5_50.h5"
+    tanh_5_50_dict = model_grads(tanh_5_50, input_good_easy, input_good_hard, some_option)
 
-    price = "Models5/price/price_3_1000.h5"
-    price_dict = model_grads(price, input_good_easy, input_good_hard, some_option)
+    tanh_1_50 = "Models5/tanh/tanh_1_50.h5"
+    tanh_1_50_dict = model_grads(tanh_1_50, input_good_easy, input_good_hard, some_option)
 
-    standardize = "Models5/standardize/standardize_5_1000.h5"
-    standardize_dict = model_grads(standardize, input_good_easy, input_good_hard, some_option)
-
-    noise = "Models5/noise/noise_4_1000.h5"
-    noise_dict = model_grads(noise, input_good_easy, input_good_hard, some_option)
+    tanh_3_50 = "Models5/tanh/tanh_3_50.h5"
+    tanh_3_50_dict = model_grads(tanh_3_50, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
-        "Andersen Lake" : [al_predict1, al_predict2],
-        "Monte Carlo" : [mc_predict1, mc_predict2],
-        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
-        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
-        "Benchmark" : [benchmark_dict["pred"][0], benchmark_dict["pred"][1]],
-        "Benchmark, include" : [benchmark_include_dict["pred"][0], benchmark_include_dict["pred"][1]],
-        "Output scaling" : [output_scaling_dict["pred"][0], output_scaling_dict["pred"][1]],
-        "Tanh" : [tanh_dict["pred"][0], tanh_dict["pred"][1]],
-        "Mix model" : [mix_dict["pred"][0], mix_dict["pred"][1]],
-        "Price" : [price_dict["pred"][0], price_dict["pred"][1]],
-        "Standardize" : [standardize_dict["pred"][0], standardize_dict["pred"][1]],
-        "Noise" : [noise_dict["pred"][0], noise_dict["pred"][1]]
+        "tanh_3_50" : [tanh_3_50_dict["pred"][0], tanh_3_50_dict["pred"][1]],
+        "tanh_1_50" : [tanh_1_50_dict["pred"][0], tanh_1_50_dict["pred"][1]],
+        "tanh_5_50" : [tanh_5_50_dict["pred"][0], tanh_5_50_dict["pred"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["pred"][0], standardize_5_500_dict["pred"][1]],
+        "standardize_5_100" : [standardize_5_100_dict["pred"][0], standardize_5_100_dict["pred"][1]],
+        "standardize_5_1000" : [standardize_5_1000_dict["pred"][0], standardize_5_1000_dict["pred"][1]],
+        "standardize_4_50" : [standardize_4_50_dict["pred"][0], standardize_4_50_dict["pred"][1]]
     }
 
     delta_data = {
-        "Andersen Lake" : [al_grads1, al_grads2],
-        "Monte Carlo" : [mc_grads1, mc_grads2],
-        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
-        "Benchmark" : [benchmark_dict["delta"][0], benchmark_dict["delta"][1]],
-        "Benchmark, include" : [benchmark_include_dict["delta"][0], benchmark_include_dict["delta"][1]],
-        "Output scaling" : [output_scaling_dict["delta"][0], output_scaling_dict["delta"][1]],
-        "Tanh" : [tanh_dict["delta"][0], tanh_dict["delta"][1]],
-        "Mix model" : [mix_dict["delta"][0], mix_dict["delta"][1]],
-        "Price" : [price_dict["delta"][0], price_dict["delta"][1]],
-        "Standardize" : [standardize_dict["delta"][0], standardize_dict["delta"][1]],
-        "Noise" : [noise_dict["delta"][0], noise_dict["delta"][1]]
+        "tanh_3_50" : [tanh_3_50_dict["delta"][0], tanh_3_50_dict["delta"][1]],
+        "tanh_1_50" : [tanh_1_50_dict["delta"][0], tanh_1_50_dict["delta"][1]],
+        "tanh_5_50" : [tanh_5_50_dict["delta"][0], tanh_5_50_dict["delta"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["delta"][0], standardize_5_500_dict["delta"][1]],
+        "standardize_5_100" : [standardize_5_100_dict["delta"][0], standardize_5_100_dict["delta"][1]],
+        "standardize_5_1000" : [standardize_5_1000_dict["delta"][0], standardize_5_1000_dict["delta"][1]],
+        "standardize_4_50" : [standardize_4_50_dict["delta"][0], standardize_4_50_dict["delta"][1]]
     }
 
     gamma_data = {
-        "Andersen Lake" : [al_grads1_2, al_grads2_2],
-        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
-        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
-        "Benchmark" : [benchmark_dict["gamma"][0], benchmark_dict["gamma"][1]],
-        "Benchmark, include" : [benchmark_include_dict["gamma"][0], benchmark_include_dict["gamma"][1]],
-        "Output scaling" : [output_scaling_dict["gamma"][0], output_scaling_dict["gamma"][1]],
-        "Tanh" : [tanh_dict["gamma"][0], tanh_dict["gamma"][1]],
-        "Mix model" : [mix_dict["gamma"][0], mix_dict["gamma"][1]],
-        "Price" : [price_dict["gamma"][0], price_dict["gamma"][1]],
-        "Standardize" : [standardize_dict["gamma"][0], standardize_dict["gamma"][1]],
-        "Noise" : [noise_dict["gamma"][0], noise_dict["gamma"][1]]
+        "tanh_3_50" : [tanh_3_50_dict["gamma"][0], tanh_3_50_dict["gamma"][1]],
+        "tanh_1_50" : [tanh_1_50_dict["gamma"][0], tanh_1_50_dict["gamma"][1]],
+        "tanh_5_50" : [tanh_5_50_dict["gamma"][0], tanh_5_50_dict["gamma"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["gamma"][0], standardize_5_500_dict["gamma"][1]],
+        "standardize_5_100" : [standardize_5_100_dict["gamma"][0], standardize_5_100_dict["gamma"][1]],
+        "standardize_5_1000" : [standardize_5_1000_dict["gamma"][0], standardize_5_1000_dict["gamma"][1]],
+        "standardize_4_50" : [standardize_4_50_dict["gamma"][0], standardize_4_50_dict["gamma"][1]]
     }
 
-    plot_func(spot_plot, prediction_data, "Predictions")
-    plot_func(spot_plot, delta_data, "Delta")
-    plot_func(spot_plot, gamma_data, "Gamma")
+    plot_func(spot_plot, prediction_data, "Predictions implied volatility models")
+    plot_func(spot_plot, delta_data, "Delta implied volatility models")
+    plot_func(spot_plot, gamma_data, "Gamma implied volatility models")
 
+    ### Price models
+    price_output_normalize_2_50 = "Models5/price_output_normalize/price_output_normalize_2_50.h5"
+    price_output_normalize_2_50_dict = model_grads(price_output_normalize_2_50, input_good_easy, input_good_hard, some_option)
+
+    price_output_normalize_3_100 = "Models5/price_output_normalize/price_output_normalize_3_100.h5"
+    price_output_normalize_3_100_dict = model_grads(price_output_normalize_3_100, input_good_easy, input_good_hard, some_option)
+
+    price_output_normalize_4_50 = "Models5/price_output_normalize/price_output_normalize_4_50.h5"
+    price_output_normalize_4_50_dict = model_grads(price_output_normalize_4_50, input_good_easy, input_good_hard, some_option)
+
+    price_output_normalize_5_500 = "Models5/price_output_normalize/price_output_normalize_5_500.h5"
+    price_output_normalize_5_500_dict = model_grads(price_output_normalize_5_500, input_good_easy, input_good_hard, some_option)
+
+    price_output_normalize_5_1000 = "Models5/price_output_normalize/price_output_normalize_5_1000.h5"
+    price_output_normalize_5_1000_dict = model_grads(price_output_normalize_5_1000, input_good_easy, input_good_hard, some_option)
+
+    prediction_data_price = {
+        "price_output_normalize_2_50" : [price_output_normalize_2_50_dict["pred"][0], price_output_normalize_2_50_dict["pred"][1]],
+        "price_output_normalize_3_100" : [price_output_normalize_3_100_dict["pred"][0], price_output_normalize_3_100_dict["pred"][1]],
+        "price_output_normalize_4_50" : [price_output_normalize_4_50_dict["pred"][0], price_output_normalize_4_50_dict["pred"][1]],
+        "price_output_normalize_5_500" : [price_output_normalize_5_500_dict["pred"][0], price_output_normalize_5_500_dict["pred"][1]],
+        "price_output_normalize_5_1000" : [price_output_normalize_5_1000_dict["pred"][0], price_output_normalize_5_1000_dict["pred"][1]]
+    }
+
+    delta_data_price = {
+        "price_output_normalize_2_50" : [price_output_normalize_2_50_dict["delta"][0], price_output_normalize_2_50_dict["delta"][1]],
+        "price_output_normalize_3_100" : [price_output_normalize_3_100_dict["delta"][0], price_output_normalize_3_100_dict["delta"][1]],
+        "price_output_normalize_4_50" : [price_output_normalize_4_50_dict["delta"][0], price_output_normalize_4_50_dict["delta"][1]],
+        "price_output_normalize_5_500" : [price_output_normalize_5_500_dict["delta"][0], price_output_normalize_5_500_dict["delta"][1]],
+        "price_output_normalize_5_1000" : [price_output_normalize_5_1000_dict["delta"][0], price_output_normalize_5_1000_dict["delta"][1]]
+    }
+
+    gamma_data_price = {
+        "price_output_normalize_2_50" : [price_output_normalize_2_50_dict["gamma"][0], price_output_normalize_2_50_dict["gamma"][1]],
+        "price_output_normalize_3_100" : [price_output_normalize_3_100_dict["gamma"][0], price_output_normalize_3_100_dict["gamma"][1]],
+        "price_output_normalize_4_50" : [price_output_normalize_4_50_dict["gamma"][0], price_output_normalize_4_50_dict["gamma"][1]],
+        "price_output_normalize_5_500" : [price_output_normalize_5_500_dict["gamma"][0], price_output_normalize_5_500_dict["gamma"][1]],
+        "price_output_normalize_5_1000" : [price_output_normalize_5_1000_dict["gamma"][0], price_output_normalize_5_1000_dict["gamma"][1]]
+    }
+
+    plot_func(spot_plot, prediction_data_price, "Predictions price models")
+    plot_func(spot_plot, delta_data_price, "Delta price models")
+    plot_func(spot_plot, gamma_data_price, "Gamma price models")
+
+    ### Timing
+    timing_list = [standardize_5_1000] + [standardize_5_100] + [standardize_5_500] + [standardize_4_50] + \
+        [tanh_5_50] + [tanh_1_50] + [tanh_3_50] + [price_output_normalize_2_50] + [price_output_normalize_3_100] + \
+        [price_output_normalize_4_50] + [price_output_normalize_5_500] + [price_output_normalize_5_1000]
+    
+    timing_results = []
+    for some_model in timing_list:
+        some_time = timing(some_model, input_good_easy, input_good_hard)
+        name = some_model[some_model.rfind("/")+1:]
+        timing_results.append([name, some_time])
+
+    al_start = time.time()
+    al.Andersen_Lake(model_class_easy, some_option)
+    al_time = time.time() - al_start
 
     ### Noise
     noise_model = "Models4/noise/noise_5_500.h5"
@@ -731,12 +849,14 @@ if __name__ == "__main__":
         delta_hard_al[i] = ((al_f_x_p_hard2 - al_f_x_m_hard2) / h ) 
         gamma_hard_al[i] = (al_f_x_p_hard - 2 * al_f_x_hard + al_f_x_m_hard) / (h * h)
 
-    prediction_data["Andersen Lake FD"] = [price_easy_al, price_hard_al]
-    delta_data["Andersen Lake FD"] = [delta_easy_al, delta_hard_al]
-    gamma_data["Andersen Lake FD"] = [gamma_easy_al, gamma_hard_al]
+    prediction_data["Andersen Lake"] = [price_easy_al, price_hard_al]
+    prediction_data_price["Andersen Lake"] = [price_easy_al, price_hard_al]
     plot_func(spot_plot, prediction_data, "Predictions2")
     plot_func(spot_plot, delta_data, "Delta2")
     plot_func(spot_plot, gamma_data, "Gamma2")
+    plot_func(spot_plot, prediction_data_price, "Predictions2 price")
+    plot_func(spot_plot, delta_data_price, "Delta2 price")
+    plot_func(spot_plot, gamma_data_price, "Gamma2 price")
 
     norm_folder = "Models4/norms/"
     norm_feature_good = joblib.load(norm_folder+"norm_feature.pkl")
