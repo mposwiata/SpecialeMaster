@@ -190,13 +190,15 @@ if __name__ == '__main__':
 
     price_list = mc_1_price_set + mc_10_price_set + mc_100_price_set + mc_1000_price_set + mc_10000_price_set
 
+    server_list = imp_list + price_list
+
     if cpu_count() == 4:
         cpu_cores = 4
     else:
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, price_list + imp_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, imp_list, chunksize=1)
     pool.close()
 
     """
