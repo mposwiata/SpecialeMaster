@@ -215,7 +215,6 @@ if __name__ == '__main__':
         itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
-
     compute10_list = benchmark_list + benchmark_include_list + output_scaling_list + tanh_list
     compute11_list = mix_list + price_list + standardize_list + noise_list
 
@@ -228,5 +227,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, standardize_single_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, standardize_mat_list, chunksize=1)
     pool.close()
