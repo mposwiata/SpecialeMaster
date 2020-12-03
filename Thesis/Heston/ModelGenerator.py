@@ -20,6 +20,36 @@ def load_index(no : int) -> list:
 
     return train_index, test_index
 
+
+def transform_single(X_set : np.ndarray, Y_set : np.ndarray) -> (np.ndarray, np.ndarray):
+    option_input = dg.option_input_generator()
+    total_comb = np.shape(X_set)[0] * np.shape(Y_set)[1]
+    total_cols = np.shape(X_set)[1] + 2
+    total_options = np.shape(Y_set)[1]
+    single_input = np.zeros((total_comb, total_cols))
+    single_output = np.zeros((total_comb, 1))
+    for i in range(np.shape(X_set)[0]):
+        for j in range(total_options):
+            single_input[i*total_options+j, 0:np.shape(X_set)[1]] = X_set[i]
+            single_input[i*total_options+j, (np.shape(X_set)[1]) : total_cols] = option_input[j]
+            single_output[i*total_options+j] = Y_set[i, j]
+    
+    return single_input, single_output
+
+def transform_mat(X_set : np.ndarray, Y_set : np.ndarray) -> (np.ndarray, np.ndarray):
+    total_comb = np.shape(X_set)[0] * 5
+    total_cols = np.shape(X_set)[1] + 1
+    total_options = 5
+    mat_input = np.zeros((total_comb, total_cols))
+    mat_output = np.zeros((total_comb, 5))
+    for i in range(np.shape(X_set)[0]):
+        for j in range(5):
+            mat_input[i*total_options+j, 0:np.shape(X_set)[1]] = X_set[i]
+            mat_input[i*total_options+j, (np.shape(X_set)[1]) : total_cols] = option_input[j*5, 0]
+            mat_output[i*total_options+j,:] = Y_set[i, j*5 : j*5+5]
+    
+    return mat_input, mat_output
+
 if __name__ == '__main__':
     train_index, test_index = load_index(200000)
     
@@ -33,9 +63,15 @@ if __name__ == '__main__':
     Y_test = imp_vol[test_index, :]
     Y_train_price = price[train_index, :]
     Y_test_price = price[test_index, :]
+    X_train_single, Y_train_single = transform_single(X_train, Y_train)
+    X_test_single, Y_test_single = transform_single(X_test, Y_test)
+    X_train_mat, Y_train_mat = transform_mat(X_train, Y_train)
+    X_test_mat, Y_test_mat = transform_mat(X_test, Y_test)
 
     data_set_1 = [X_train, X_test, Y_train, Y_test]
     data_set_price = [X_train, X_test, Y_train_price, Y_test_price]
+    data_set_single = [X_train_single, X_test_single, Y_train_single, Y_test_single]
+    data_set_mat = [X_train_mat, X_test_mat, Y_train_mat, Y_test_mat]
 
     layers = [1, 2, 3, 4, 5]
     neurons = [50, 100, 500, 1000]
@@ -127,6 +163,14 @@ if __name__ == '__main__':
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
+    standardize_single_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_single"), \
+        itertools.repeat("standardize_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
+
+    standardize_mat_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_mat"), \
+        itertools.repeat("standardize_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
+
     tanh_standardize_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("tanh_standardize"), \
         itertools.repeat("tanh_standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("tanh"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
@@ -184,5 +228,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, next_list_3, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, standardize_single, chunksize=1)
     pool.close()

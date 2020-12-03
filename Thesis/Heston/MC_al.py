@@ -676,6 +676,68 @@ if __name__ == "__main__":
     al.Andersen_Lake(model_class_easy, some_option)
     al_time = time.time() - al_start
 
+    ### Monte Carlo
+    mc_1000_price_5_1000 = "Models5/mc_1000_price/mc_1000_price_5_1000.h5"
+    mc_1000_price_5_1000_dict = model_grads(mc_1000_price_5_1000, input_good_easy, input_good_hard, some_option)
+
+    mc_10_price_5_50 = "Models5/mc_10_price/mc_10_price_5_50.h5"
+    mc_10_price_5_50_dict = model_grads(mc_10_price_5_50, input_good_easy, input_good_hard, some_option)
+
+    mc_10000_price_3_1000 = "Models5/mc_10000_price/mc_10000_price_3_1000.h5"
+    mc_10000_price_3_1000_dict = model_grads(mc_10000_price_3_1000, input_good_easy, input_good_hard, some_option)
+
+    mc_100_price_4_500 = "Models5/mc_100_price/mc_100_price_4_500.h5"
+    mc_100_price_4_500_dict = model_grads(mc_100_price_4_500, input_good_easy, input_good_hard, some_option)
+
+    mc_1_price_2_1000 = "Models5/mc_1_price/mc_1_price_2_1000.h5"
+    mc_1_price_2_1000_dict = model_grads(mc_1_price_2_1000, input_good_easy, input_good_hard, some_option)
+
+    mc_10000_5_1000 = "Models5/mc_10000/mc_10000_5_1000.h5"
+    mc_10000_5_1000_dict = model_grads(mc_10000_5_1000, input_good_easy, input_good_hard, some_option)
+
+    mc_1000_5_100 = "Models5/mc_1000/mc_1000_5_100.h5"
+    mc_1000_5_100_dict = model_grads(mc_1000_5_100, input_good_easy, input_good_hard, some_option)
+
+    mc_100_4_1000 = "Models5/mc_100/mc_100_4_1000.h5"
+    mc_100_4_1000_dict = model_grads(mc_100_4_1000, input_good_easy, input_good_hard, some_option)
+
+    mc_prediction_data = {
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["pred"][0], mc_1000_price_5_1000_dict["pred"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["pred"][0], mc_10_price_5_50_dict["pred"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["pred"][0], mc_10000_price_3_1000_dict["pred"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["pred"][0], mc_100_price_4_500_dict["pred"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["pred"][0], mc_1_price_2_1000_dict["pred"][1]],
+        "mc_10000_5_1000" : [mc_10000_5_1000_dict["pred"][0], mc_10000_5_1000_dict["pred"][1]],
+        "mc_1000_5_100" : [mc_1000_5_100_dict["pred"][0], mc_1000_5_100_dict["pred"][1]],
+        "mc_100_4_1000" : [mc_100_4_1000_dict["pred"][0], mc_100_4_1000_dict["pred"][1]]
+    }
+
+    mc_delta_data= {
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["delta"][0], mc_1000_price_5_1000_dict["delta"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["delta"][0], mc_10_price_5_50_dict["delta"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["delta"][0], mc_10000_price_3_1000_dict["delta"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["delta"][0], mc_100_price_4_500_dict["delta"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["delta"][0], mc_1_price_2_1000_dict["delta"][1]],
+        "mc_10000_5_1000" : [mc_10000_5_1000_dict["delta"][0], mc_10000_5_1000_dict["delta"][1]],
+        "mc_1000_5_100" : [mc_1000_5_100_dict["delta"][0], mc_1000_5_100_dict["delta"][1]],
+        "mc_100_4_1000" : [mc_100_4_1000_dict["delta"][0], mc_100_4_1000_dict["delta"][1]]
+    }
+
+    mc_gamma_data = {
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["gamma"][0], mc_1000_price_5_1000_dict["gamma"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["gamma"][0], mc_10_price_5_50_dict["gamma"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["gamma"][0], mc_10000_price_3_1000_dict["gamma"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["gamma"][0], mc_100_price_4_500_dict["gamma"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["gamma"][0], mc_1_price_2_1000_dict["gamma"][1]],
+        "mc_10000_5_1000" : [mc_10000_5_1000_dict["gamma"][0], mc_10000_5_1000_dict["gamma"][1]],
+        "mc_1000_5_100" : [mc_1000_5_100_dict["gamma"][0], mc_1000_5_100_dict["gamma"][1]],
+        "mc_100_4_1000" : [mc_100_4_1000_dict["gamma"][0], mc_100_4_1000_dict["gamma"][1]]
+    }
+
+    plot_func(spot_plot, mc_prediction_data, "Monte Carlo Predictions")
+    plot_func(spot_plot, mc_delta_data, "Monte Carlo Delta")
+    plot_func(spot_plot, mc_gamma_data, "Monte Carlo Gamma")
+
     ### Noise
     noise_model = "Models4/noise/noise_5_500.h5"
     noise_dict = model_grads(noise_model, input_good_easy, input_good_hard, some_option, True)

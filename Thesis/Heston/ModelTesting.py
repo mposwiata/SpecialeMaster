@@ -715,67 +715,59 @@ if __name__ == "__main__":
         data_no_models.append(high_data_models[i][0])
     model_testing2(data_no_models, "Data size")
 
-    ### Models 5
-    benchmark = glob.glob("Models5/benchmark/*.h5")
-    benchmark_mse = model_testing2(benchmark, "benchmark", easy_case(), hard_case(), option_input())
-    benchmark_mse.sort(key = lambda x: -x[1])
+    ### Monte Carlo
+    mc = [
+        "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price"
+    ]
 
-    benchmark_include = glob.glob("Models5/benchmark_include/*.h5")
-    benchmark_include_mse = model_testing2(benchmark_include, "benchmark_include", easy_case(), hard_case(), option_input())
-    benchmark_include_mse.sort(key = lambda x: -x[1])
+    mc_list = []
+    for key in mc:
+        mc_list.append(glob.glob("Models5/"+key+"/*.h5"))
 
-    output_scaling = glob.glob("Models5/output_scaling/*.h5")
-    output_scaling_mse = model_testing2(output_scaling, "output_scaling", easy_case(), hard_case(), option_input())
-    output_scaling_mse.sort(key = lambda x: -x[1])
+    mc_list = [item for sublist in mc_list for item in sublist]
 
-    tanh = glob.glob("Models5/tanh/*.h5")
-    tanh_mse = model_testing2(tanh, "tanh", easy_case(), hard_case(), option_input())
-    tanh_mse.sort(key = lambda x: -x[1])
+    mc_mse = model_test_set(mc_list, X_test, Y_test, Y_test_price)
 
-    mix = glob.glob("Models5/mix/*.h5")
-    mix_mse = model_testing2(mix, "mix", easy_case(), hard_case(), option_input())
-    mix_mse.sort(key = lambda x: -x[1])
+    mc_mse.sort(key = lambda x: -x[1])
+    with open("mc_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(mc_mse, fp)
 
-    price = glob.glob("Models5/price/*.h5")
-    price_mse = model_testing2(price, "price", easy_case(), hard_case(), option_input())
-    price_mse.sort(key = lambda x: -x[1])
+    with open("mc_mse.pkl", "rb") as fp:   # Unpickling
+        mc_mse = pickle.load(fp)
 
-    standardize = glob.glob("Models5/standardize/*.h5")
-    standardize_mse = model_testing2(standardize, "standardize", easy_case(), hard_case(), option_input())
-    standardize_mse.sort(key = lambda x: -x[1])
+    evaluation_first_list = []
+    for some_list in mc_mse:
+        evaluation_first_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+        )
+    
+    ### Finding best models per group
+    evaluation_first_list.sort(key = lambda x: x[0])
+    group_by_model = itertools.groupby(evaluation_first_list, key = lambda x: x[0])
 
-    noise = glob.glob("Models5/noise/*.h5")
-    noise_mse = model_testing2(noise, "noise", easy_case(), hard_case(), option_input())
-    noise_mse.sort(key = lambda x: -x[1])
+    top_first_models_list = []
+    for key, group in group_by_model:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_first_models_list.append(some_list[0])
 
-    output_scaling_price = glob.glob("Models5/output_scaling_price/*.h5")
-    output_scaling_price_mse = model_testing2(output_scaling_price, "noise", easy_case(), hard_case(), option_input())
-    output_scaling_price_mse.sort(key = lambda x: -x[1])
+    ### Finding best models per setup
+    evaluation_setup_list = []
+    for some_list in mc_mse:
+        evaluation_setup_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+        )
+    evaluation_setup_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_setup_list, key = lambda x: x[1])
 
-    combined = glob.glob("Models5/output_scaling_price/*.h5")
-    combined_mse = model_testing2(combined, "noise", easy_case(), hard_case(), option_input())
-    combined_mse.sort(key = lambda x: -x[1])
+    top_first_network_list = []
+    for key, group in group_by_network:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_first_network_list.append(some_list[0])
 
-    output_scaling_mix = glob.glob("Models5/output_scaling_price/*.h5")
-    output_scaling_mix_mse = model_testing2(output_scaling_mix, "noise", easy_case(), hard_case(), option_input())
-    output_scaling_mix_mse.sort(key = lambda x: -x[1])
+    top_first_network_list.sort(key = lambda x: x[1])
 
-    noise_included_standard = glob.glob("Models5/output_scaling_price/*.h5")
-    noise_included_standard_mse = model_testing2(noise_included_standard, "noise", easy_case(), hard_case(), option_input())
-    noise_included_standard_mse.sort(key = lambda x: -x[1])
-
-    noise_included = glob.glob("Models5/output_scaling_price/*.h5")
-    noise_included_mse = model_testing2(noise_included, "noise", easy_case(), hard_case(), option_input())
-    noise_included_mse.sort(key = lambda x: -x[1])
-
-    standardize_mix = glob.glob("Models5/output_scaling_price/*.h5")
-    standardize_mix_mse = model_testing2(standardize_mix, "noise", easy_case(), hard_case(), option_input())
-    standardize_mix_mse.sort(key = lambda x: -x[1])
-
-    best_mse = [benchmark_mse[-1]] + [benchmark_include_mse[-1]] + [output_scaling_mse[-1]] + [tanh_mse[-1]] + \
-        [mix_mse[-1]] + [price_mse[-1]] + [standardize_mse[-1]] + [noise_mse[-1]] + [output_scaling_price_mse[-1]] + \
-        [combined_mse[-1]] + [output_scaling_mix_mse[-1]] + [noise_included_standard_mse[-1]] + \
-        [noise_included_mse[-1]] + [standardize_mix_mse[-1]]
 
     """
     ### New models

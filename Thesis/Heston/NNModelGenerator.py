@@ -11,6 +11,7 @@ import os
 sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis import NeuralNetworkGenerator as nng
+from Thesis.Heston import DataGeneration as dg
 from sklearn.model_selection import train_test_split
 
 def lr_schedule(epoch, rate):
@@ -114,7 +115,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     print("Done with: ", model_save)
     return score
 
-def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  normal_out : str, standardize : bool, include_zero : bool) -> float:
+def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool) -> float:
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
@@ -133,7 +134,7 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     
     try:
         data_set = [X_train, X_test, Y_train, Y_test]
-        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  normal_out, standardize)
+        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  output_scaling, input_scaling)
 
         return score
     except:
