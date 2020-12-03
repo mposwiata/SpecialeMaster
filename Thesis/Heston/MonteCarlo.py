@@ -170,23 +170,23 @@ if __name__ == '__main__':
     ### Prices
     mc_1_price_set = list(zip(itertools.repeat(mc_1_price), itertools.repeat("mc_1_price"), \
         itertools.repeat("mc_1_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     mc_10_price_set = list(zip(itertools.repeat(mc_10_price), itertools.repeat("mc_10_price"), \
         itertools.repeat("mc_10_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     mc_100_price_set = list(zip(itertools.repeat(mc_100_price), itertools.repeat("mc_100_price"), \
         itertools.repeat("mc_100_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     mc_1000_price_set = list(zip(itertools.repeat(mc_1000_price), itertools.repeat("mc_1000_price"), \
         itertools.repeat("mc_1000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     mc_10000_price_set = list(zip(itertools.repeat(mc_10000_price), itertools.repeat("mc_10000_price"), \
         itertools.repeat("mc_10000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(False)))
+        itertools.repeat("mix"), itertools.repeat("normalize"), itertools.repeat("standardize"), itertools.repeat(True)))
 
     price_list = mc_1_price_set + mc_10_price_set + mc_100_price_set + mc_1000_price_set + mc_10000_price_set
 

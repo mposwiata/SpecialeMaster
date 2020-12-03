@@ -10,7 +10,7 @@ import os
 import itertools
 import pickle
 
-from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg
+from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg, ModelGenerator as mg
 from Thesis.misc import VanillaOptions as vo
 
 def hard_case() -> np.ndarray:
@@ -342,6 +342,11 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
             y_test_loop = Y_test
        
         x_test_loop = X_test
+
+        if (model_string.find("single") != -1):
+            x_test_loop, y_test_loop = mg.transform_single(x_test_loop, y_test_loop)
+        elif (model_string.find("mat") != -1):
+            x_test_loop, y_test_loop = mg.transform_mat(x_test_loop, y_test_loop)
         
 
         if ((model_string.find("benchmark_include") != -1) or (model_string.find("price_include") != -1)):
