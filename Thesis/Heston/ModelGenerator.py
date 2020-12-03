@@ -163,11 +163,11 @@ if __name__ == '__main__':
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
-    standardize_single_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_single"), \
+    standardize_single_list = list(zip(itertools.repeat(data_set_single), itertools.repeat("standardize_single"), \
         itertools.repeat("standardize_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
-    standardize_mat_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_mat"), \
+    standardize_mat_list = list(zip(itertools.repeat(data_set_mat), itertools.repeat("standardize_mat"), \
         itertools.repeat("standardize_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
