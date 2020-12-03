@@ -6,7 +6,7 @@ import os
 import itertools
 sys.path.append(os.getcwd()) # added for calc server support
 
-from Thesis.Heston import NNModelGenerator as mg
+from Thesis.Heston import NNModelGenerator as mg, DataGeneration as dg
 
 def load_index(no : int) -> list:
     if not (os.path.exists("Data/train_index_"+str(no)+".csv") and os.path.exists("Data/test_index_"+str(no)+".csv")):
@@ -19,7 +19,6 @@ def load_index(no : int) -> list:
         test_index = np.loadtxt("Data/test_index_"+str(no)+".csv", delimiter=",").astype(int)
 
     return train_index, test_index
-
 
 def transform_single(X_set : np.ndarray, Y_set : np.ndarray) -> (np.ndarray, np.ndarray):
     option_input = dg.option_input_generator()
@@ -37,6 +36,7 @@ def transform_single(X_set : np.ndarray, Y_set : np.ndarray) -> (np.ndarray, np.
     return single_input, single_output
 
 def transform_mat(X_set : np.ndarray, Y_set : np.ndarray) -> (np.ndarray, np.ndarray):
+    option_input = dg.option_input_generator()
     total_comb = np.shape(X_set)[0] * 5
     total_cols = np.shape(X_set)[1] + 1
     total_options = 5
