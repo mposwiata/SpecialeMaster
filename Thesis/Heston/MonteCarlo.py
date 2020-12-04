@@ -58,14 +58,14 @@ if __name__ == '__main__':
     mc_imp_vol_10000 = np.loadtxt("Data/MC/Heston_mc_imp_vol_10000.csv", delimiter=",")
     mc_price_10000 = np.loadtxt("Data/MC/HestonMC_price_10000.csv", delimiter=",")
 
-    if not (os.path.exists("Data/MC/train_index.csv") and os.path.exists("Data/MC/test_index.csv")):
+    if not (os.path.exists("Data/train_index_200000.csv") and os.path.exists("Data/test_index_200000.csv")):
         index = np.arange(200000)
         train_index, test_index = train_test_split(index, test_size=0.3, random_state=42)
-        np.savetxt("Data/MC/train_index.csv", train_index, delimiter=",")
-        np.savetxt("Data/MC/test_index.csv", test_index, delimiter=",")
+        np.savetxt("Data/train_index_200000.csv", train_index, delimiter=",")
+        np.savetxt("Data/test_index_200000.csv", test_index, delimiter=",")
     else:
-        train_index = np.loadtxt("Data/MC/train_index.csv", delimiter=",").astype(int)
-        test_index = np.loadtxt("Data/MC/test_index.csv", delimiter=",").astype(int)
+        train_index = np.loadtxt("Data/train_index_200000.csv", delimiter=",").astype(int)
+        test_index = np.loadtxt("Data/test_index_200000.csv", delimiter=",").astype(int)
 
     mc_1_imp = [
         model_input[train_index, :],
