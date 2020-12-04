@@ -10,7 +10,7 @@ import itertools
 import sys
 sys.path.append(os.getcwd()) # added for calc server support
 
-from Thesis.Heston import NNModelGenerator as mg, HestonModel as hm, AndersenLake as al
+from Thesis.Heston import NNModelGenerator as mg, HestonModel as hm, AndersenLake as al, ModelGenerator
 from Thesis.misc import VanillaOptions as vo
 
 def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int):
@@ -165,7 +165,51 @@ if __name__ == '__main__':
         itertools.repeat("mc_10000"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
+    ### Implied vols, maturity
+    mc_1_mat_set = list(zip(itertools.repeat(mc_1_imp), itertools.repeat("mc_1_mat"), \
+        itertools.repeat("mc_1_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("mat")))
+
+    mc_10_mat_set = list(zip(itertools.repeat(mc_10_imp), itertools.repeat("mc_10_mat"), \
+        itertools.repeat("mc_10_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("mat")))
+
+    mc_100_mat_set = list(zip(itertools.repeat(mc_100_imp), itertools.repeat("mc_100_mat"), \
+        itertools.repeat("mc_100_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("mat")))
+
+    mc_1000_mat_set = list(zip(itertools.repeat(mc_1000_imp), itertools.repeat("mc_1000_mat"), \
+        itertools.repeat("mc_1000_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("mat")))
+
+    mc_10000_mat_set = list(zip(itertools.repeat(mc_10000_imp), itertools.repeat("mc_10000_mat"), \
+        itertools.repeat("mc_10000_mat"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("mat")))
+
+        ### Implied vols
+    mc_1_single_set = list(zip(itertools.repeat(mc_1_imp), itertools.repeat("mc_1_single"), \
+        itertools.repeat("mc_1_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("single")))
+
+    mc_10_single_set = list(zip(itertools.repeat(mc_10_imp), itertools.repeat("mc_10_single"), \
+        itertools.repeat("mc_10_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("single")))
+
+    mc_100_single_set = list(zip(itertools.repeat(mc_100_imp), itertools.repeat("mc_100_single"), \
+        itertools.repeat("mc_100_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("single")))
+
+    mc_1000_single_set = list(zip(itertools.repeat(mc_1000_imp), itertools.repeat("mc_1000_single"), \
+        itertools.repeat("mc_1000_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("single")))
+
+    mc_10000_single_set = list(zip(itertools.repeat(mc_10000_imp), itertools.repeat("mc_10000_single"), \
+        itertools.repeat("mc_10000_single"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False), itertools.repeat("single")))
+
     imp_list = mc_1_set + mc_10_set + mc_100_set + mc_1000_set + mc_10000_set
+    imp_mat_list = mc_1_mat_set + mc_10_mat_set + mc_100_mat_set + mc_1000_mat_set + mc_10000_mat_set
+    imp_single_list = mc_1_single_set + mc_10_single_set + mc_100_single_set + mc_1000_single_set + mc_10000_single_set
 
     ### Prices
     mc_1_price_set = list(zip(itertools.repeat(mc_1_price), itertools.repeat("mc_1_price"), \
@@ -190,13 +234,13 @@ if __name__ == '__main__':
 
     price_list = mc_1_price_set + mc_10_price_set + mc_100_price_set + mc_1000_price_set + mc_10000_price_set
 
-    server_list = imp_list + price_list
+    server_list = imp_mat_list + imp_single_list
 
     if cpu_count() == 4:
         cpu_cores = 4
     else:
-        cpu_cores = int(min(cpu_count()/4, 16))
+        cpu_cores = int(min(cpu_count()/2, 20))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, price_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, server_list, chunksize=1)
     pool.close()

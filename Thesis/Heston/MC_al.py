@@ -18,7 +18,7 @@ import sys
 import os
 sys.path.append(os.getcwd()) # added for calc server support
 
-from Thesis.Heston import MonteCarlo as mc, AndersenLake as al, HestonModel as hm, NNModelGenerator as mg
+from Thesis.Heston import MonteCarlo as mc, AndersenLake as al, HestonModel as hm, NNModelGenerator as mg, ModelGenerator
 from Thesis.misc import VanillaOptions as vo
 from Thesis import NeuralNetworkGenerator as nng
 from Thesis.BlackScholes import BlackScholes as bs
@@ -178,6 +178,20 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
     else:
         normal_out = False
 
+    if (model_string.find("standardize_mat") != -1):
+        option_no = 2
+        mat = np.reshape(np.repeat(1.005, np.shape(easy_case)[0]), (-1, 1))
+        easy_case = np.concatenate((easy_case, mat), axis = 1)
+        hard_case = np.concatenate((hard_case, mat), axis = 1)
+    elif (model_string.find("standardize_single") != -1):
+        option_no = 0
+        mat = np.reshape(np.repeat(1.005, np.shape(easy_case)[0]), (-1, 1))
+        strike = np.reshape(np.repeat(100, np.shape(easy_case)[0]), (-1, 1))
+        easy_case = np.concatenate((easy_case, mat, strike), axis = 1)
+        hard_case = np.concatenate((hard_case, mat, strike), axis = 1)
+    else:
+        option_no = 12
+
     if isinstance(norm_feature, MinMaxScaler):
         grads_bot = (norm_feature.data_max_[0] - norm_feature.data_min_[0])
         grads2_bot = ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
@@ -189,29 +203,14 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         grads2_bot = 1
     if normal_out:
         if isinstance(norm_labels, MinMaxScaler):
-            grads_top = (norm_labels.data_max_[12] - norm_labels.data_min_[12])
+            grads_top = (norm_labels.data_max_[option_no] - norm_labels.data_min_[option_no])
         elif isinstance(norm_labels, StandardScaler):
-            grads_top = np.sqrt(norm_labels.var_[12])
+            grads_top = np.sqrt(norm_labels.var_[option_no])
     else:
         grads_top = 1
 
     grads_scale = grads_top / grads_bot
     grads2_scale = grads_top / grads2_bot
-    """
-    if normal_out:
-            grads_scale = np.sqrt(norm_labels.var_[12]) / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
-            grads2_scale = np.sqrt(norm_labels.var_[12]) / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
-        else:
-            grads_scale = 1 / (norm_feature.data_max_[0] - norm_feature.data_min_[0])
-            grads2_scale = 1 / ((norm_feature.data_max_[0] - norm_feature.data_min_[0]) ** 2)
-    else:
-        if normal_out:
-            grads_scale = np.sqrt(norm_labels.var_[12]) / np.sqrt(norm_feature.var_[0])
-            grads2_scale = np.sqrt(norm_labels.var_[12]) / (np.sqrt(norm_feature.var_[0]) ** 2)
-        else:
-            grads_scale = 1 / np.sqrt(norm_feature.var_[0])
-            grads2_scale = 1 / (np.sqrt(norm_feature.var_[0]) ** 2)
-    """
 
     inp_tensor_easy = tf.convert_to_tensor(norm_feature.transform(easy_case))
     inp_tensor_hard = tf.convert_to_tensor(norm_feature.transform(hard_case))
@@ -220,31 +219,31 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
         tape.watch(inp_tensor_easy)
         with tf.GradientTape(persistent = True) as tape2:
             tape2.watch(inp_tensor_easy)
-            predict_easy = model(inp_tensor_easy)[:,12]
+            predict_easy = model(inp_tensor_easy)[:,option_no]
         grads_easy = tape2.gradient(predict_easy, inp_tensor_easy)[:,0]
     
     grads2_easy = tape.gradient(grads_easy, inp_tensor_easy).numpy() 
     grads2_easy = grads2_easy[:,0] * grads2_scale
     grads_easy = grads_easy.numpy() * grads_scale
     try:
-        predict_easy = norm_labels.inverse_transform(model(inp_tensor_easy))[:,12]
+        predict_easy = norm_labels.inverse_transform(model(inp_tensor_easy))[:,option_no]
     except:
-        predict_easy = model(inp_tensor_easy)[:,12]
+        predict_easy = model(inp_tensor_easy)[:,option_no]
 
     with tf.GradientTape(persistent = True) as tape:
         tape.watch(inp_tensor_hard)
         with tf.GradientTape(persistent = True) as tape2:
             tape2.watch(inp_tensor_hard)
-            predict_hard = model(inp_tensor_hard)[:,12]
+            predict_hard = model(inp_tensor_hard)[:,option_no]
         grads_hard = tape2.gradient(predict_hard, inp_tensor_hard)[:,0]
     
     grads2_hard = tape.gradient(grads_hard, inp_tensor_hard).numpy()
     grads2_hard = grads2_hard[:,0] * grads2_scale
     grads_hard = grads_hard.numpy() * grads_scale
     try:
-        predict_hard = norm_labels.inverse_transform(model(inp_tensor_hard))[:,12]
+        predict_hard = norm_labels.inverse_transform(model(inp_tensor_hard))[:,option_no]
     except:
-        predict_hard = model(inp_tensor_hard)[:,12]
+        predict_hard = model(inp_tensor_hard)[:,option_no]
 
     if (model_string.find("price") == -1): # we are modelling implied vol
         spot_plot = easy_case[:,0]
@@ -583,6 +582,14 @@ if __name__ == "__main__":
     tanh_3_50 = "Models5/tanh/tanh_3_50.h5"
     tanh_3_50_dict = model_grads(tanh_3_50, input_good_easy, input_good_hard, some_option)
 
+    ### Mat models
+    standardize_mat = "Models5/standardize_mat/standardize_mat_5_1000.h5"
+    standardize_mat_dict = model_grads(standardize_mat, input_good_easy, input_good_hard, some_option)
+
+    ### Single models
+    standardize_single = "Models5/standardize_single/standardize_single_5_100.h5"
+    standardize_single_dict = model_grads(standardize_single, input_good_easy, input_good_hard, some_option)
+
     prediction_data = {
         "tanh_3_50" : [tanh_3_50_dict["pred"][0], tanh_3_50_dict["pred"][1]],
         "tanh_1_50" : [tanh_1_50_dict["pred"][0], tanh_1_50_dict["pred"][1]],
@@ -590,7 +597,9 @@ if __name__ == "__main__":
         "standardize_5_500" : [standardize_5_500_dict["pred"][0], standardize_5_500_dict["pred"][1]],
         "standardize_5_100" : [standardize_5_100_dict["pred"][0], standardize_5_100_dict["pred"][1]],
         "standardize_5_1000" : [standardize_5_1000_dict["pred"][0], standardize_5_1000_dict["pred"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["pred"][0], standardize_4_50_dict["pred"][1]]
+        "standardize_4_50" : [standardize_4_50_dict["pred"][0], standardize_4_50_dict["pred"][1]],
+        "standardize_mat" : [standardize_mat_dict["pred"][0], standardize_mat_dict["pred"][1]],
+        "standardize_single" : [standardize_single_dict["pred"][0], standardize_single_dict["pred"][1]]
     }
 
     delta_data = {
@@ -600,7 +609,9 @@ if __name__ == "__main__":
         "standardize_5_500" : [standardize_5_500_dict["delta"][0], standardize_5_500_dict["delta"][1]],
         "standardize_5_100" : [standardize_5_100_dict["delta"][0], standardize_5_100_dict["delta"][1]],
         "standardize_5_1000" : [standardize_5_1000_dict["delta"][0], standardize_5_1000_dict["delta"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["delta"][0], standardize_4_50_dict["delta"][1]]
+        "standardize_4_50" : [standardize_4_50_dict["delta"][0], standardize_4_50_dict["delta"][1]],
+        "standardize_mat" : [standardize_mat_dict["delta"][0], standardize_mat_dict["delta"][1]],
+        "standardize_single" : [standardize_single_dict["delta"][0], standardize_single_dict["delta"][1]]
     }
 
     gamma_data = {
@@ -610,7 +621,9 @@ if __name__ == "__main__":
         "standardize_5_500" : [standardize_5_500_dict["gamma"][0], standardize_5_500_dict["gamma"][1]],
         "standardize_5_100" : [standardize_5_100_dict["gamma"][0], standardize_5_100_dict["gamma"][1]],
         "standardize_5_1000" : [standardize_5_1000_dict["gamma"][0], standardize_5_1000_dict["gamma"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["gamma"][0], standardize_4_50_dict["gamma"][1]]
+        "standardize_4_50" : [standardize_4_50_dict["gamma"][0], standardize_4_50_dict["gamma"][1]],
+        "standardize_mat" : [standardize_mat_dict["gamma"][0], standardize_mat_dict["gamma"][1]],
+        "standardize_single" : [standardize_single_dict["gamma"][0], standardize_single_dict["gamma"][1]]
     }
 
     plot_func(spot_plot, prediction_data, "Predictions implied volatility models")
@@ -702,33 +715,33 @@ if __name__ == "__main__":
     mc_100_4_1000_dict = model_grads(mc_100_4_1000, input_good_easy, input_good_hard, some_option)
 
     mc_prediction_data = {
-        "mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["pred"][0], mc_1000_price_5_1000_dict["pred"][1]],
-        "mc_10_price_5_50" : [mc_10_price_5_50_dict["pred"][0], mc_10_price_5_50_dict["pred"][1]],
-        "mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["pred"][0], mc_10000_price_3_1000_dict["pred"][1]],
-        "mc_100_price_4_500" : [mc_100_price_4_500_dict["pred"][0], mc_100_price_4_500_dict["pred"][1]],
-        "mc_1_price_2_1000" : [mc_1_price_2_1000_dict["pred"][0], mc_1_price_2_1000_dict["pred"][1]],
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["pred"][0], mc_1000_price_5_1000_dict["pred"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["pred"][0], mc_10_price_5_50_dict["pred"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["pred"][0], mc_10000_price_3_1000_dict["pred"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["pred"][0], mc_100_price_4_500_dict["pred"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["pred"][0], mc_1_price_2_1000_dict["pred"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["pred"][0], mc_10000_5_1000_dict["pred"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["pred"][0], mc_1000_5_100_dict["pred"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["pred"][0], mc_100_4_1000_dict["pred"][1]]
     }
 
     mc_delta_data= {
-        "mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["delta"][0], mc_1000_price_5_1000_dict["delta"][1]],
-        "mc_10_price_5_50" : [mc_10_price_5_50_dict["delta"][0], mc_10_price_5_50_dict["delta"][1]],
-        "mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["delta"][0], mc_10000_price_3_1000_dict["delta"][1]],
-        "mc_100_price_4_500" : [mc_100_price_4_500_dict["delta"][0], mc_100_price_4_500_dict["delta"][1]],
-        "mc_1_price_2_1000" : [mc_1_price_2_1000_dict["delta"][0], mc_1_price_2_1000_dict["delta"][1]],
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["delta"][0], mc_1000_price_5_1000_dict["delta"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["delta"][0], mc_10_price_5_50_dict["delta"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["delta"][0], mc_10000_price_3_1000_dict["delta"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["delta"][0], mc_100_price_4_500_dict["delta"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["delta"][0], mc_1_price_2_1000_dict["delta"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["delta"][0], mc_10000_5_1000_dict["delta"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["delta"][0], mc_1000_5_100_dict["delta"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["delta"][0], mc_100_4_1000_dict["delta"][1]]
     }
 
     mc_gamma_data = {
-        "mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["gamma"][0], mc_1000_price_5_1000_dict["gamma"][1]],
-        "mc_10_price_5_50" : [mc_10_price_5_50_dict["gamma"][0], mc_10_price_5_50_dict["gamma"][1]],
-        "mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["gamma"][0], mc_10000_price_3_1000_dict["gamma"][1]],
-        "mc_100_price_4_500" : [mc_100_price_4_500_dict["gamma"][0], mc_100_price_4_500_dict["gamma"][1]],
-        "mc_1_price_2_1000" : [mc_1_price_2_1000_dict["gamma"][0], mc_1_price_2_1000_dict["gamma"][1]],
+        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["gamma"][0], mc_1000_price_5_1000_dict["gamma"][1]],
+        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["gamma"][0], mc_10_price_5_50_dict["gamma"][1]],
+        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["gamma"][0], mc_10000_price_3_1000_dict["gamma"][1]],
+        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["gamma"][0], mc_100_price_4_500_dict["gamma"][1]],
+        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["gamma"][0], mc_1_price_2_1000_dict["gamma"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["gamma"][0], mc_10000_5_1000_dict["gamma"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["gamma"][0], mc_1000_5_100_dict["gamma"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["gamma"][0], mc_100_4_1000_dict["gamma"][1]]

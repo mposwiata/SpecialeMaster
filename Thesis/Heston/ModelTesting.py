@@ -348,7 +348,6 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
         elif (model_string.find("mat") != -1):
             x_test_loop, y_test_loop = mg.transform_mat(x_test_loop, y_test_loop)
         
-
         if ((model_string.find("benchmark_include") != -1) or (model_string.find("price_include") != -1)):
             index = np.all(y_test_loop != -1, axis = 1)
         else:
@@ -773,12 +772,18 @@ if __name__ == "__main__":
 
     top_first_network_list.sort(key = lambda x: x[1])
 
+    ### New models
+    standardize_mat = glob.glob("Models5/standardize_mat/*.h5")
+    standardize_mat_mse = model_test_set(standardize_mat, X_test, Y_test, Y_test_price)
+    standardize_mat_mse.sort(key = lambda x: x[1])
+
+    with open("standardize_mat_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(standardize_mat_mse, fp)
+
+    with open("standardize_mat_mse.pkl", "rb") as fp:   # Unpickling
+        standardize_mat_mse = pickle.load(fp)
 
     """
-    ### New models
-    base = glob.glob("Models4/benchmark/*.h5")
-    #generate_plots(base, "base")
-
     grid_vs_sobol = glob.glob("Models4/grid_vs_sobol/*.h5")
     #generate_plots(grid_vs_sobol, "grid_vs_sobol")
 
