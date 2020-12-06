@@ -93,7 +93,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     ]
 
     start_time = time.time()
-    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 1, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
     score = model.evaluate(X_test, Y_test, verbose=2)
