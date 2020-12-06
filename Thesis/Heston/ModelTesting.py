@@ -6,6 +6,7 @@ from keras.models import load_model
 import glob
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from keras.optimizers import Adam
 import os
 import itertools
 import pickle
@@ -367,6 +368,7 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
 
         name = model_string[model_string.rfind("/")+1:]
         score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
+        mse(model.predict(x_test_loop), y_test_loop)
         mse_list.append((name, score))
     
     return mse_list
@@ -437,7 +439,7 @@ if __name__ == "__main__":
 
     combined_list = [item for sublist in combined_list for item in sublist]
 
-    test_index = np.loadtxt("Data/test_index_200000.csv", delimiter=",").astype(int)
+    train_index, test_index = mg.load_index(200000)
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
     imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")

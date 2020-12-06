@@ -68,8 +68,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     if normal_out:
         Y_train = norm_labels.fit_transform(Y_train)
         Y_test = norm_labels.transform(Y_test)
-        if not os.path.exists(model_path+"/norm_labels.pkl"):
-            joblib.dump(norm_labels, model_path+"norm_labels.pkl")
+        joblib.dump(norm_labels, model_path+"norm_labels.pkl")
 
     if nn_type == "normal":
         model = nng.NN_generator(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])

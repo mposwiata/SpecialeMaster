@@ -1,47 +1,59 @@
 import numpy as np
-import time
-import sys
+import itertools
+import matplotlib.pyplot as plt
+import joblib
+from keras.models import load_model
+import glob
+from sklearn.metrics import mean_squared_error as mse
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from keras.optimizers import Adam
 import os
-sys.path.append(os.getcwd()) # added for calc server support
+import itertools
+import pickle
 
-from Thesis.misc import VanillaOptions as vo 
-from Thesis.Heston import NNModelGenerator as mg, HestonModel as hm, AndersenLake as al, DataGeneration as dg
-from Thesis.BlackScholes import BlackScholes as bs
+from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg, ModelGenerator as mg
+from Thesis.misc import VanillaOptions as vo
 
-model_input = np.loadtxt("Data/MC/HestonMC_input.csv", delimiter=",")
-price_1 = np.loadtxt("Data/MC/HestonMC_price_1.csv", delimiter=",")
-price_10 = np.loadtxt("Data/MC/HestonMC_price_10.csv", delimiter=",")
-price_100 = np.loadtxt("Data/MC/HestonMC_price_100.csv", delimiter=",")
-price_1000 = np.loadtxt("Data/MC/HestonMC_price_1000.csv", delimiter=",")
-price_10000 = np.loadtxt("Data/MC/HestonMC_price_10000.csv", delimiter=",")
+model_string = "Models5/standardize_non_early/standardize_non_early_1_50.h5"
 
-option_array = dg.option_input_generator()
-some_option_list = np.array([])
-for option in option_array:
-    some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
+train_index, test_index = mg.load_index(200000)
+model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
+imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
 
-output_imp_vol_1 = np.empty((200000, 25), dtype=np.float64)
-output_imp_vol_10 = np.empty((200000, 25), dtype=np.float64)
-output_imp_vol_100 = np.empty((200000, 25), dtype=np.float64)
-output_imp_vol_1000 = np.empty((200000, 25), dtype=np.float64)
-output_imp_vol_10000 = np.empty((200000, 25), dtype=np.float64)
+X_test = model_input[test_index, :]
+Y_test = imp_vol[test_index, :]
+Y_test_price = price[test_index, :]
 
-def imp_vol(price : float, some_option : vo.VanillaOption, model) -> float:
-    return model.impVol(price, some_option) if price != 0 else 0
+if (model_string.find("price") != -1):
+    y_test_loop = Y_test_price
+else:
+    y_test_loop = Y_test
 
-j = 0
-for some_row in model_input:
-    some_model = hm.HestonClass(some_row[0], some_row[1], some_row[2], some_row[3], some_row[4], some_row[5], some_row[6])
-    for i in range(len(some_option_list)):
-        output_imp_vol_1[j, i] = imp_vol(price_1[j, i], some_option_list[i], some_model)
-        output_imp_vol_10[j, i] = imp_vol(price_10[j, i], some_option_list[i], some_model)
-        output_imp_vol_100[j, i] = imp_vol(price_100[j, i], some_option_list[i], some_model)
-        output_imp_vol_1000[j, i] = imp_vol(price_1000[j, i], some_option_list[i], some_model)
-        output_imp_vol_10000[j, i] = imp_vol(price_10000[j, i], some_option_list[i], some_model)
-    j += 1
+x_test_loop = X_test
 
-np.savetxt("Data/MC/Heston_mc_imp_vol_1.csv", output_imp_vol_1, delimiter=",")
-np.savetxt("Data/MC/Heston_mc_imp_vol_10.csv", output_imp_vol_10, delimiter=",")
-np.savetxt("Data/MC/Heston_mc_imp_vol_100.csv", output_imp_vol_100, delimiter=",")
-np.savetxt("Data/MC/Heston_mc_imp_vol_1000.csv", output_imp_vol_1000, delimiter=",")
-np.savetxt("Data/MC/Heston_mc_imp_vol_10000.csv", output_imp_vol_10000, delimiter=",")
+if (model_string.find("single") != -1):
+    x_test_loop, y_test_loop = mg.transform_single(x_test_loop, y_test_loop)
+elif (model_string.find("mat") != -1):
+    x_test_loop, y_test_loop = mg.transform_mat(x_test_loop, y_test_loop)
+
+if ((model_string.find("benchmark_include") != -1) or (model_string.find("price_include") != -1)):
+    index = np.all(y_test_loop != -1, axis = 1)
+else:
+    index = np.all(y_test_loop > 0, axis = 1)
+
+x_test_loop = x_test_loop[index, :]
+y_test_loop = y_test_loop[index, :]
+
+model = load_model(model_string)
+model_folder = model_string[:model_string.rfind("/") + 1]
+if os.path.exists(model_folder+"/norm_feature.pkl"):
+    norm_feature = joblib.load(model_folder+"norm_feature.pkl")
+    x_test_loop = norm_feature.transform(x_test_loop)
+if os.path.exists(model_folder+"/norm_labels.pkl"):
+    norm_labels = joblib.load(model_folder+"norm_labels.pkl")
+    y_test_loop = norm_labels.transform(y_test_loop)
+
+name = model_string[model_string.rfind("/")+1:]
+score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
+print(score)
