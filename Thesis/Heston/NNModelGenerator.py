@@ -87,8 +87,8 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     )
 
     callbacks_list = [
-        LearningRateScheduler(lr_schedule, verbose = 0)#,
-        #ModelCheckpoint(model_save, monitor="val_loss", save_best_only=True)
+        LearningRateScheduler(lr_schedule, verbose = 0),
+        ModelCheckpoint(model_save, monitor="val_loss", save_best_only=True)
     ]
 
     start_time = time.time()
@@ -99,7 +99,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
 
     if score > 0.7: #if overfitting, save that model
         print("overfit, saving overfit model")
-    model.save(model_save)
+        model.save(model_save)
 
     if not os.path.exists(model_path+"/HestonModels.txt"):
         with open(model_path+"/HestonModels.txt", "w") as output_file:

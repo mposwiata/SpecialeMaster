@@ -502,7 +502,9 @@ if __name__ == "__main__":
     ### Finding best models per setup
     evaluation_setup_list = []
     for some_list in combined_mse:
-        if not (some_list[0].find("price") != -1 or some_list[0].find("high_data") != -1 or some_list[0].find("sobol") != -1):
+        if not (some_list[0].find("price") != -1 or some_list[0].find("high_data") != -1 or \
+            some_list[0].find("sobol") != -1 or some_list[0].find("standardize_") != -1 or \
+            some_list[0].find("grid") != -1 or some_list[0].find("low_data") != -1):
             evaluation_setup_list.append(
                 [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
             )
@@ -518,10 +520,10 @@ if __name__ == "__main__":
     top_first_network_list.sort(key = lambda x: x[1])
 
     models_for_evaluation = [
-        "standardize_5_500.h5",
-        "standardize_5_1000.h5",
-        "standardize_5_100.h5",
-        "tanh_5_50.h5",
+        "standardize_single_5_100.h5",
+        "standardize_single_4_50.h5",
+        "standardize_mat_5_100.h5",
+        "mix_standardize_5_1000.h5",
         "tanh_1_50.h5",
         "tanh_3_50.h5"
     ]
