@@ -178,12 +178,12 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
     else:
         normal_out = False
 
-    if (model_string.find("standardize_mat") != -1):
+    if (model_string.find("mat") != -1):
         option_no = 2
         mat = np.reshape(np.repeat(1.005, np.shape(easy_case)[0]), (-1, 1))
         easy_case = np.concatenate((easy_case, mat), axis = 1)
         hard_case = np.concatenate((hard_case, mat), axis = 1)
-    elif (model_string.find("standardize_single") != -1):
+    elif (model_string.find("single") != -1):
         option_no = 0
         mat = np.reshape(np.repeat(1.005, np.shape(easy_case)[0]), (-1, 1))
         strike = np.reshape(np.repeat(100, np.shape(easy_case)[0]), (-1, 1))
@@ -587,7 +587,7 @@ if __name__ == "__main__":
     standardize_mat_dict = model_grads(standardize_mat, input_good_easy, input_good_hard, some_option)
 
     ### Single models
-    standardize_single = "Models5/standardize_single/standardize_single_5_100.h5"
+    standardize_single = "Models5/standardize_single/standardize_single_2_1000.h5"
     standardize_single_dict = model_grads(standardize_single, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
@@ -690,20 +690,20 @@ if __name__ == "__main__":
     al_time = time.time() - al_start
 
     ### Monte Carlo
-    mc_1000_price_5_1000 = "Models5/mc_1000_price/mc_1000_price_5_1000.h5"
-    mc_1000_price_5_1000_dict = model_grads(mc_1000_price_5_1000, input_good_easy, input_good_hard, some_option)
+    mc_100_price_5_500 = "Models5/mc_100_price/mc_100_price_5_500.h5"
+    mc_100_price_5_500_dict = model_grads(mc_100_price_5_500, input_good_easy, input_good_hard, some_option)
 
-    mc_10_price_5_50 = "Models5/mc_10_price/mc_10_price_5_50.h5"
-    mc_10_price_5_50_dict = model_grads(mc_10_price_5_50, input_good_easy, input_good_hard, some_option)
+    mc_10_price_4_500 = "Models5/mc_10_price/mc_10_price_4_500.h5"
+    mc_10_price_4_500_dict = model_grads(mc_10_price_4_500, input_good_easy, input_good_hard, some_option)
 
-    mc_10000_price_3_1000 = "Models5/mc_10000_price/mc_10000_price_3_1000.h5"
-    mc_10000_price_3_1000_dict = model_grads(mc_10000_price_3_1000, input_good_easy, input_good_hard, some_option)
+    mc_10000_price_5_100 = "Models5/mc_10000_price/mc_10000_price_5_100.h5"
+    mc_10000_price_5_100_dict = model_grads(mc_10000_price_5_100, input_good_easy, input_good_hard, some_option)
 
-    mc_100_price_4_500 = "Models5/mc_100_price/mc_100_price_4_500.h5"
-    mc_100_price_4_500_dict = model_grads(mc_100_price_4_500, input_good_easy, input_good_hard, some_option)
+    mc_10000_price_4_500 = "Models5/mc_10000_price/mc_10000_price_4_500.h5"
+    mc_10000_price_4_500_dict = model_grads(mc_10000_price_4_500, input_good_easy, input_good_hard, some_option)
 
-    mc_1_price_2_1000 = "Models5/mc_1_price/mc_1_price_2_1000.h5"
-    mc_1_price_2_1000_dict = model_grads(mc_1_price_2_1000, input_good_easy, input_good_hard, some_option)
+    mc_1_price_4_100 = "Models5/mc_1_price/mc_1_price_4_100.h5"
+    mc_1_price_4_100_dict = model_grads(mc_1_price_4_100, input_good_easy, input_good_hard, some_option)
 
     mc_10000_5_1000 = "Models5/mc_10000/mc_10000_5_1000.h5"
     mc_10000_5_1000_dict = model_grads(mc_10000_5_1000, input_good_easy, input_good_hard, some_option)
@@ -715,33 +715,33 @@ if __name__ == "__main__":
     mc_100_4_1000_dict = model_grads(mc_100_4_1000, input_good_easy, input_good_hard, some_option)
 
     mc_prediction_data = {
-        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["pred"][0], mc_1000_price_5_1000_dict["pred"][1]],
-        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["pred"][0], mc_10_price_5_50_dict["pred"][1]],
-        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["pred"][0], mc_10000_price_3_1000_dict["pred"][1]],
-        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["pred"][0], mc_100_price_4_500_dict["pred"][1]],
-        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["pred"][0], mc_1_price_2_1000_dict["pred"][1]],
+        "mc_100_price_5_500" : [mc_100_price_5_500_dict["pred"][0], mc_100_price_5_500_dict["pred"][1]],
+        "mc_10_price_4_500" : [mc_10_price_4_500_dict["pred"][0], mc_10_price_4_500_dict["pred"][1]],
+        "mc_10000_price_5_100" : [mc_10000_price_5_100_dict["pred"][0], mc_10000_price_5_100_dict["pred"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["pred"][0], mc_10000_price_4_500_dict["pred"][1]],
+        "mc_1_price_4_100" : [mc_1_price_4_100_dict["pred"][0], mc_1_price_4_100_dict["pred"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["pred"][0], mc_10000_5_1000_dict["pred"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["pred"][0], mc_1000_5_100_dict["pred"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["pred"][0], mc_100_4_1000_dict["pred"][1]]
     }
 
     mc_delta_data= {
-        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["delta"][0], mc_1000_price_5_1000_dict["delta"][1]],
-        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["delta"][0], mc_10_price_5_50_dict["delta"][1]],
-        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["delta"][0], mc_10000_price_3_1000_dict["delta"][1]],
-        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["delta"][0], mc_100_price_4_500_dict["delta"][1]],
-        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["delta"][0], mc_1_price_2_1000_dict["delta"][1]],
+        "mc_100_price_5_500" : [mc_100_price_5_500_dict["delta"][0], mc_100_price_5_500_dict["delta"][1]],
+        "mc_10_price_4_500" : [mc_10_price_4_500_dict["delta"][0], mc_10_price_4_500_dict["delta"][1]],
+        "mc_10000_price_5_100" : [mc_10000_price_5_100_dict["delta"][0], mc_10000_price_5_100_dict["delta"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["delta"][0], mc_10000_price_4_500_dict["delta"][1]],
+        "mc_1_price_4_100" : [mc_1_price_4_100_dict["delta"][0], mc_1_price_4_100_dict["delta"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["delta"][0], mc_10000_5_1000_dict["delta"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["delta"][0], mc_1000_5_100_dict["delta"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["delta"][0], mc_100_4_1000_dict["delta"][1]]
     }
 
     mc_gamma_data = {
-        #"mc_1000_price_5_1000" : [mc_1000_price_5_1000_dict["gamma"][0], mc_1000_price_5_1000_dict["gamma"][1]],
-        #"mc_10_price_5_50" : [mc_10_price_5_50_dict["gamma"][0], mc_10_price_5_50_dict["gamma"][1]],
-        #"mc_10000_price_3_1000" : [mc_10000_price_3_1000_dict["gamma"][0], mc_10000_price_3_1000_dict["gamma"][1]],
-        #"mc_100_price_4_500" : [mc_100_price_4_500_dict["gamma"][0], mc_100_price_4_500_dict["gamma"][1]],
-        #"mc_1_price_2_1000" : [mc_1_price_2_1000_dict["gamma"][0], mc_1_price_2_1000_dict["gamma"][1]],
+        "mc_100_price_5_500" : [mc_100_price_5_500_dict["gamma"][0], mc_100_price_5_500_dict["gamma"][1]],
+        "mc_10_price_4_500" : [mc_10_price_4_500_dict["gamma"][0], mc_10_price_4_500_dict["gamma"][1]],
+        "mc_10000_price_5_100" : [mc_10000_price_5_100_dict["gamma"][0], mc_10000_price_5_100_dict["gamma"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["gamma"][0], mc_10000_price_4_500_dict["gamma"][1]],
+        "mc_1_price_4_100" : [mc_1_price_4_100_dict["gamma"][0], mc_1_price_4_100_dict["gamma"][1]],
         "mc_10000_5_1000" : [mc_10000_5_1000_dict["gamma"][0], mc_10000_5_1000_dict["gamma"][1]],
         "mc_1000_5_100" : [mc_1000_5_100_dict["gamma"][0], mc_1000_5_100_dict["gamma"][1]],
         "mc_100_4_1000" : [mc_100_4_1000_dict["gamma"][0], mc_100_4_1000_dict["gamma"][1]]

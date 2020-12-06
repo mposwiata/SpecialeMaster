@@ -721,7 +721,8 @@ if __name__ == "__main__":
 
     ### Monte Carlo
     mc = [
-        "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price"
+        "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price",
+        "mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat"
     ]
 
     mc_list = []
@@ -782,6 +783,16 @@ if __name__ == "__main__":
 
     with open("standardize_mat_mse.pkl", "rb") as fp:   # Unpickling
         standardize_mat_mse = pickle.load(fp)
+
+    standardize_single = glob.glob("Models5/standardize_single/*.h5")
+    standardize_single_mse = model_test_set(standardize_single, X_test, Y_test, Y_test_price)
+    standardize_single_mse.sort(key = lambda x: x[1])
+
+    with open("standardize_single_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(standardize_single_mse, fp)
+
+    with open("standardize_single_mse.pkl", "rb") as fp:   # Unpickling
+        standardize_single_mse = pickle.load(fp)
 
     """
     grid_vs_sobol = glob.glob("Models4/grid_vs_sobol/*.h5")

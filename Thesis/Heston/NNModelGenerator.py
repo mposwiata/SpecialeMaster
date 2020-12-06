@@ -15,7 +15,7 @@ from Thesis.Heston import DataGeneration as dg, ModelGenerator as mg
 from sklearn.model_selection import train_test_split
 
 def lr_schedule(epoch, rate):
-    lower_lr = 1e-4
+    lower_lr = 1e-5
     upper_lr = lower_lr * 100
     no_epochs = 100
     peak_epoch = 45
