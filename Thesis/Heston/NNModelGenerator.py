@@ -15,7 +15,7 @@ from Thesis.Heston import DataGeneration as dg, ModelGenerator as mg
 from sklearn.model_selection import train_test_split
 
 def lr_schedule(epoch, rate):
-    lower_lr = 1e-5
+    lower_lr = 1e-4
     upper_lr = lower_lr * 100
     no_epochs = 100
     peak_epoch = 45
@@ -88,19 +88,19 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     )
 
     callbacks_list = [
-        LearningRateScheduler(lr_schedule, verbose = 0),
-        ModelCheckpoint(model_save, monitor="val_loss", save_best_only=True)
+        LearningRateScheduler(lr_schedule, verbose = 0)#,
+        #ModelCheckpoint(model_save, monitor="val_loss", save_best_only=True)
     ]
 
     start_time = time.time()
-    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 1, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
     score = model.evaluate(X_test, Y_test, verbose=2)
 
     if score > 0.7: #if overfitting, save that model
         print("overfit, saving overfit model")
-        model.save(model_save)
+    model.save(model_save)
 
     if not os.path.exists(model_path+"/HestonModels.txt"):
         with open(model_path+"/HestonModels.txt", "w") as output_file:

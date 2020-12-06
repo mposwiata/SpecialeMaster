@@ -16,20 +16,12 @@ from Thesis import NeuralNetworkGenerator as nng
 from Thesis.Heston import DataGeneration as dg, ModelGenerator as mg
 from sklearn.model_selection import train_test_split
 
-def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, LR_lower : float, LR_upper : float) -> float:
+def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str) -> float:
     def lr_schedule(epoch, rate):
-        lower_lr = LR_lower
-        upper_lr = LR_upper
-        no_epochs = 100
-        peak_epoch = 45
-        if epoch <= peak_epoch:
-            lr = lower_lr + epoch / peak_epoch * (upper_lr - lower_lr)
-        elif peak_epoch < epoch < peak_epoch * 2:
-            lr = upper_lr - (epoch - peak_epoch) / peak_epoch * (upper_lr - lower_lr)
-        else:
-            lr = lower_lr * (1 - (epoch - 2 * peak_epoch) / (no_epochs - 2 * peak_epoch)) * (1 - 1 / 10)
-
-        return lr
+        seq = 10**np.linspace(start = -10, stop = 0, num=100)
+        return seq[epoch]
+    
+    
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
@@ -62,7 +54,6 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
         Y_train = norm_labels.fit_transform(Y_train)
         Y_test = norm_labels.transform(Y_test)
  
-
     if nn_type == "normal":
         model = nng.NN_generator(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     elif nn_type == "tanh":
@@ -89,7 +80,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
 
     return loss_history
 
-def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool, LR_lower : float, LR_upper : float, special_type : str = None,) -> float:
+def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool, special_type : str = None,) -> float:
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
@@ -113,13 +104,10 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     X_test = X_test[test_index, :]
     Y_test = Y_test[test_index, :]
     
-    try:
-        data_set = [X_train, X_test, Y_train, Y_test]
-        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  output_scaling, input_scaling, LR_lower, LR_upper)
+    data_set = [X_train, X_test, Y_train, Y_test]
+    score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  output_scaling, input_scaling)
 
-        return score
-    except:
-        return 0
+    return score
 
 if __name__ == '__main__':
     train_index, test_index = mg.load_index(200000)
@@ -134,25 +122,46 @@ if __name__ == '__main__':
 
     data_set_1 = [X_train, X_test, Y_train, Y_test]
 
+    x_axis = 10**np.linspace(start = -10, stop = 0, num=100)
+    some_5_100_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False)
+    some_4_1000_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 4, 1000, "normal", "False", "standardize", False)
+    some_3_500_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 3, 500, "normal", "False", "standardize", False)
+    some_2_500_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 2, 500, "normal", "False", "standardize", False)
+
+    fig = plt.figure(figsize=(10, 10), dpi = 200)
+    ax = fig.add_subplot(111)
+    ax.plot(x_axis, some_5_100_run.history["loss"])
+    ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)
+    ax.set_xlabel("Learning rate")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_title("Loss w. different LR rates.")
+    #ax.set_ylim(0, 0.04)
+    plt.savefig("something.png")
+    #tikzplotlib.save("LR_schedule2.tex")
+    plt.close()
+
     ### Lower LR bound of 10e-4
-    some_history = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-4, 10e-2)
+    some_history = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 3e-2)
+
+    some_history2 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 1e-2)
 
     ### Lower LR bound of 10e-6
-    some_history2 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-6, 10e-4)
+    some_history2 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-6, 1e-4)
 
     ### Lower LR bound of 10e-8
-    some_history3 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-8, 10e-6)
+    some_history3 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-8, 1e-6)
 
     ### Lower LR bound of 10e-2
-    some_history4 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-2, 10e-0)
+    some_history4 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-2, 1e-0)
 
     ### Lower LR bound of 10e-4, 10 times higher
-    some_history5 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-4, 10e-3)
+    some_history5 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 1e-3)
 
     ### Lower LR bound of 10e-4, 10 times higher
-    some_history6 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 10e-5, 10e-3)
+    some_history6 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-5, 1e-3)
 
-"""
+    """
     fig = plt.figure(figsize=(20, 10), dpi = 200)
     ax = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
@@ -179,24 +188,24 @@ if __name__ == '__main__':
     plt.savefig("something.png")
     #tikzplotlib.save("LR_schedule2.tex")
     plt.close()
-"""
+    """
     ### Lower LR bound of 10e-4
-    some_history21 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-4, 10e-2)
+    some_history21 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-4, 1e-2)
 
     ### Lower LR bound of 10e-6
-    some_history22 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-6, 10e-4)
+    some_history22 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-6, 1e-4)
 
     ### Lower LR bound of 10e-8
-    some_history23 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-8, 10e-6)
+    some_history23 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-8, 1e-6)
 
     ### Lower LR bound of 10e-2
-    some_history24 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-2, 10e-0)
+    some_history24 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-2, 1e-0)
 
     ### Lower LR bound of 10e-4, 10 times higher
-    some_history25 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-4, 10e-3)
+    some_history25 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-4, 1e-3)
 
     ### Lower LR bound of 10e-4, 10 times higher
-    some_history26 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 10e-5, 10e-3)
+    some_history26 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-5, 1e-3)
 
     fig = plt.figure(figsize=(20, 10), dpi = 200)
     ax = fig.add_subplot(121)
@@ -207,7 +216,7 @@ if __name__ == '__main__':
     ax.plot(some_history24.history["loss"], label="LR, 10e-2, 1")
     ax.plot(some_history25.history["loss"], label="LR, 10e-4, 10e-3")
     ax.plot(some_history26.history["loss"], label="LR, 10e-5, 10e-3")
-    ax2.plot(some_history2.history["loss"], label="LR, 10e-4, 10e-2")
+    ax2.plot(some_history21.history["loss"], label="LR, 10e-4, 10e-2")
     ax2.plot(some_history25.history["loss"], label="LR, 10e-4, 10e-3")
     ax2.plot(some_history26.history["loss"], label="LR, 10e-5, 10e-3")
     ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)

@@ -163,8 +163,8 @@ if __name__ == '__main__':
         itertools.repeat("standardize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
-    standardize_new_LR_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_new_LR"), \
-        itertools.repeat("standardize_new_LR"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    standardize_non_early_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("standardize_non_early"), \
+        itertools.repeat("standardize_non_early"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
     standardize_single_list = list(zip(itertools.repeat(data_set_single), itertools.repeat("standardize_single"), \
@@ -231,5 +231,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, standardize_new_LR_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, standardize_non_early_list, chunksize=1)
     pool.close()

@@ -427,7 +427,9 @@ if __name__ == "__main__":
         "standardize",
         "mix_standardize",
         "tanh_standardize",
-        "non_input_scaling"
+        "non_input_scaling",
+        "standardize_single",
+        "standardize_mat"
     ]
 
     for key in first_run_keys:
@@ -722,7 +724,8 @@ if __name__ == "__main__":
     ### Monte Carlo
     mc = [
         "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price",
-        "mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat"
+        "mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat",
+        "mc_1_single", "mc_10_single", "mc_100_single", "mc_1000_single", "mc_10000_single"
     ]
 
     mc_list = []
