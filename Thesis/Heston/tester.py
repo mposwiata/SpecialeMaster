@@ -10,6 +10,8 @@ from keras.optimizers import Adam
 import os
 import itertools
 import pickle
+import sys
+sys.path.append(os.getcwd()) # added for calc server support
 
 from Thesis.Heston import AndersenLake as al, HestonModel as hm, DataGeneration as dg, ModelGenerator as mg
 from Thesis.misc import VanillaOptions as vo
