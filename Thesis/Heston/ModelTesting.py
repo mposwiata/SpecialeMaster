@@ -434,7 +434,17 @@ if __name__ == "__main__":
         "standardize_mat"
     ]
 
-    for key in first_run_keys:
+    tmp_run = [
+        "benchmark",
+        "benchmark_include",
+        "output_scaling",
+        "output_scaling_normalize",
+        "mix",
+        "standardize",
+        "tanh"
+    ]
+
+    for key in tmp_run:
         combined_list.append(glob.glob("Models5/"+key+"/*.h5"))
 
     combined_list = [item for sublist in combined_list for item in sublist]
@@ -477,10 +487,10 @@ if __name__ == "__main__":
         combined_mse.append(sobol_models_mse[i])
 
     combined_mse.sort(key = lambda x: -x[1])
-    with open("combined_mse.pkl", "wb") as fp:   #Pickling
+    with open("final_combined_mse.pkl", "wb") as fp:   #Pickling
         pickle.dump(combined_mse, fp)
 
-    with open("combined_mse.pkl", "rb") as fp:   # Unpickling
+    with open("final_combined_mse.pkl", "rb") as fp:   # Unpickling
         combined_mse = pickle.load(fp)
 
     evaluation_first_list = []
@@ -503,8 +513,9 @@ if __name__ == "__main__":
     evaluation_setup_list = []
     for some_list in combined_mse:
         if not (some_list[0].find("price") != -1 or some_list[0].find("high_data") != -1 or \
-            some_list[0].find("sobol") != -1 or some_list[0].find("standardize_") != -1 or \
-            some_list[0].find("grid") != -1 or some_list[0].find("low_data") != -1):
+            some_list[0].find("sobol") != -1 or some_list[0].find("standardize_mat") != -1 or \
+            some_list[0].find("grid") != -1 or some_list[0].find("low_data") != -1 or \
+            some_list[0].find("standardize_single") != -1):
             evaluation_setup_list.append(
                 [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
             )
@@ -569,7 +580,7 @@ if __name__ == "__main__":
         price_imp_models.append(price_models[i][0])
         price_imp_models.append(imp_models[i][0])
     model_testing2(price_imp_models, "Price vs implied volatility")
-    price_imp_mse = price_models[0:5] + imp_models[0:5]
+    price_imp_mse = imp_models[0:5] + price_models[0:5]
     generate_bar_error(price_imp_mse, "Price vs implied volatility")
 
     ### Data filtering

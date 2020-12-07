@@ -17,25 +17,10 @@ from Thesis.Heston import DataGeneration as dg, ModelGenerator as mg
 from sklearn.model_selection import train_test_split
 
 def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str) -> float:
-    #def lr_schedule(epoch, rate):
-    #    seq = 10**np.linspace(start = -10, stop = 0, num=100)
-    #    return seq[epoch]
-    
     def lr_schedule(epoch, rate):
-        lower_lr = 1e-4
-        upper_lr = lower_lr * 100
-        no_epochs = 100
-        peak_epoch = 45
-        if epoch <= peak_epoch:
-            lr = lower_lr + epoch / peak_epoch * (upper_lr - lower_lr)
-        elif peak_epoch < epoch < peak_epoch * 2:
-            lr = upper_lr - (epoch - peak_epoch) / peak_epoch * (upper_lr - lower_lr)
-        else:
-            lr = lower_lr * (1 - (epoch - 2 * peak_epoch) / (no_epochs - 2 * peak_epoch)) * (1 - 1 / 10)
-
-        return lr
-
-    
+        seq = 10**np.linspace(start = -10, stop = 0, num=100)
+        return seq[epoch]
+        
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
@@ -92,7 +77,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     loss_history = model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 1, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
-    return X_test, Y_test
+    return loss_history
 
 def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool, special_type : str = None,) -> float:
     X_train = data_set[0] 
@@ -134,40 +119,25 @@ if __name__ == '__main__':
     Y_train = imp_vol[train_index, :]
     Y_test = imp_vol[test_index, :]
 
-    train_index = np.all(Y_train > 0, axis = 1)
-    test_index = np.all(Y_test > 0, axis = 1)
-    X_train3 = X_train[train_index, :]
-    Y_train3 = Y_train[train_index, :]
-    X_test3 = X_test[test_index, :]
-    Y_test3 = Y_test[test_index, :]
-
-    some_scaler = StandardScaler()
-    some_scaler.fit(X_train3)
-    some_x_train = some_scaler.transform(X_test3)
-
     data_set_1 = [X_train, X_test, Y_train, Y_test]
-
-    X_test2, Y_test2 = NN_mc_model_1(data_set_1, "LR", "LR", 2, 50, "normal", "False", "standardize", False)
-
-    some_models.save("test.h5")
-    some_models2 = load_model("test.h5")
-
-    some_models.get_weights()[0] == some_models2.get_weights()[0]
-    some_models.get_weights()[1] == some_models2.get_weights()[1]
-    some_models.get_weights()[2] == some_models2.get_weights()[2]
-    some_models.get_weights()[3] == some_models2.get_weights()[3]
-    some_models.get_weights()[4] == some_models2.get_weights()[4]
-    some_models.get_weights()[5] == some_models2.get_weights()[5]
 
     x_axis = 10**np.linspace(start = -10, stop = 0, num=100)
     some_5_100_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False)
     some_4_1000_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 4, 1000, "normal", "False", "standardize", False)
     some_3_500_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 3, 500, "normal", "False", "standardize", False)
     some_2_500_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 2, 500, "normal", "False", "standardize", False)
+    some_5_50_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 5, 50, "normal", "False", "standardize", False)
+    some_5_1000_lr_run = NN_mc_model_1(data_set_1, "LR", "LR", 5, 1000, "normal", "False", "standardize", False)
+
 
     fig = plt.figure(figsize=(10, 10), dpi = 200)
     ax = fig.add_subplot(111)
     ax.plot(x_axis, some_5_100_run.history["loss"])
+    ax.plot(x_axis, some_4_1000_lr_run.history["loss"])
+    ax.plot(x_axis, some_3_500_lr_run.history["loss"])
+    ax.plot(x_axis, some_2_500_lr_run.history["loss"])
+    ax.plot(x_axis, some_5_50_lr_run.history["loss"])
+    ax.plot(x_axis, some_5_1000_lr_run.history["loss"])
     ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)
     ax.set_xlabel("Learning rate")
     ax.set_xscale("log")

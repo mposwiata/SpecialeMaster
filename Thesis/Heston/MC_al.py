@@ -583,11 +583,11 @@ if __name__ == "__main__":
     tanh_3_50_dict = model_grads(tanh_3_50, input_good_easy, input_good_hard, some_option)
 
     ### Mat models
-    standardize_mat = "Models5/standardize_mat/standardize_mat_5_1000.h5"
+    standardize_mat = "Models5/standardize_mat/standardize_mat_5_100.h5"
     standardize_mat_dict = model_grads(standardize_mat, input_good_easy, input_good_hard, some_option)
 
     ### Single models
-    standardize_single = "Models5/standardize_single/standardize_single_2_1000.h5"
+    standardize_single = "Models5/standardize_single/standardize_single_5_100.h5"
     standardize_single_dict = model_grads(standardize_single, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
