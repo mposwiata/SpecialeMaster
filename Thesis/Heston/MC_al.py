@@ -561,8 +561,8 @@ if __name__ == "__main__":
     plot_func(spot_plot, gamma_data, "MC Gamma")
 
     ### Plotting grads for best models
-    standardize_5_1000 = "Models5/standardize/standardize_5_1000.h5"
-    standardize_5_1000_dict = model_grads(standardize_5_1000, input_good_easy, input_good_hard, some_option)
+    mix_standardize_5_1000 = "Models5/mix_standardize/mix_standardize_5_1000.h5"
+    mix_standardize_5_1000_dict = model_grads(mix_standardize_5_1000, input_good_easy, input_good_hard, some_option)
 
     standardize_5_100 = "Models5/standardize/standardize_5_100.h5"
     standardize_5_100_dict = model_grads(standardize_5_100, input_good_easy, input_good_hard, some_option)
@@ -570,17 +570,17 @@ if __name__ == "__main__":
     standardize_5_500 = "Models5/standardize/standardize_5_500.h5"
     standardize_5_500_dict = model_grads(standardize_5_500, input_good_easy, input_good_hard, some_option)
 
-    standardize_4_50 = "Models5/standardize/standardize_4_50.h5"
-    standardize_4_50_dict = model_grads(standardize_4_50, input_good_easy, input_good_hard, some_option)
+    mix_3_1000 = "Models5/mix/mix_3_1000.h5"
+    mix_3_1000_dict = model_grads(mix_3_1000, input_good_easy, input_good_hard, some_option)
 
-    tanh_5_50 = "Models5/tanh/tanh_5_50.h5"
-    tanh_5_50_dict = model_grads(tanh_5_50, input_good_easy, input_good_hard, some_option)
+    tanh_standardize_5_50 = "Models5/tanh_standardize/tanh_standardize_5_50.h5"
+    tanh_standardize_5_50_dict = model_grads(tanh_standardize_5_50, input_good_easy, input_good_hard, some_option)
 
-    tanh_1_50 = "Models5/tanh/tanh_1_50.h5"
-    tanh_1_50_dict = model_grads(tanh_1_50, input_good_easy, input_good_hard, some_option)
+    mix_standardize_1_500 = "Models5/mix_standardize/mix_standardize_1_500.h5"
+    mix_standardize_1_500_dict = model_grads(mix_standardize_1_500, input_good_easy, input_good_hard, some_option)
 
-    tanh_3_50 = "Models5/tanh/tanh_3_50.h5"
-    tanh_3_50_dict = model_grads(tanh_3_50, input_good_easy, input_good_hard, some_option)
+    tanh_standardize_1_50 = "Models5/tanh_standardize/tanh_standardize_1_50.h5"
+    tanh_standardize_1_50_dict = model_grads(tanh_standardize_1_50, input_good_easy, input_good_hard, some_option)
 
     ### Mat models
     standardize_mat = "Models5/standardize_mat/standardize_mat_5_100.h5"
@@ -591,37 +591,37 @@ if __name__ == "__main__":
     standardize_single_dict = model_grads(standardize_single, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
-        "tanh_3_50" : [tanh_3_50_dict["pred"][0], tanh_3_50_dict["pred"][1]],
-        "tanh_1_50" : [tanh_1_50_dict["pred"][0], tanh_1_50_dict["pred"][1]],
-        "tanh_5_50" : [tanh_5_50_dict["pred"][0], tanh_5_50_dict["pred"][1]],
-        "standardize_5_500" : [standardize_5_500_dict["pred"][0], standardize_5_500_dict["pred"][1]],
+        "mix_standardize_5_1000" : [mix_standardize_5_1000_dict["pred"][0], mix_standardize_5_1000_dict["pred"][1]],
         "standardize_5_100" : [standardize_5_100_dict["pred"][0], standardize_5_100_dict["pred"][1]],
-        "standardize_5_1000" : [standardize_5_1000_dict["pred"][0], standardize_5_1000_dict["pred"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["pred"][0], standardize_4_50_dict["pred"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["pred"][0], standardize_5_500_dict["pred"][1]],
+        "mix_3_1000" : [mix_3_1000_dict["pred"][0], mix_3_1000_dict["pred"][1]],
+        "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["pred"][0], tanh_standardize_5_50_dict["pred"][1]],
+        "mix_standardize_1_500" : [mix_standardize_1_500_dict["pred"][0], mix_standardize_1_500_dict["pred"][1]],
+        "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["pred"][0], tanh_standardize_1_50_dict["pred"][1]],
         "standardize_mat" : [standardize_mat_dict["pred"][0], standardize_mat_dict["pred"][1]],
         "standardize_single" : [standardize_single_dict["pred"][0], standardize_single_dict["pred"][1]]
     }
 
     delta_data = {
-        "tanh_3_50" : [tanh_3_50_dict["delta"][0], tanh_3_50_dict["delta"][1]],
-        "tanh_1_50" : [tanh_1_50_dict["delta"][0], tanh_1_50_dict["delta"][1]],
-        "tanh_5_50" : [tanh_5_50_dict["delta"][0], tanh_5_50_dict["delta"][1]],
-        "standardize_5_500" : [standardize_5_500_dict["delta"][0], standardize_5_500_dict["delta"][1]],
+        "mix_standardize_5_1000" : [mix_standardize_5_1000_dict["delta"][0], mix_standardize_5_1000_dict["delta"][1]],
         "standardize_5_100" : [standardize_5_100_dict["delta"][0], standardize_5_100_dict["delta"][1]],
-        "standardize_5_1000" : [standardize_5_1000_dict["delta"][0], standardize_5_1000_dict["delta"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["delta"][0], standardize_4_50_dict["delta"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["delta"][0], standardize_5_500_dict["delta"][1]],
+        "mix_3_1000" : [mix_3_1000_dict["delta"][0], mix_3_1000_dict["delta"][1]],
+        "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["delta"][0], tanh_standardize_5_50_dict["delta"][1]],
+        "mix_standardize_1_500" : [mix_standardize_1_500_dict["delta"][0], mix_standardize_1_500_dict["delta"][1]],
+        "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["delta"][0], tanh_standardize_1_50_dict["delta"][1]],
         "standardize_mat" : [standardize_mat_dict["delta"][0], standardize_mat_dict["delta"][1]],
         "standardize_single" : [standardize_single_dict["delta"][0], standardize_single_dict["delta"][1]]
     }
 
     gamma_data = {
-        "tanh_3_50" : [tanh_3_50_dict["gamma"][0], tanh_3_50_dict["gamma"][1]],
-        "tanh_1_50" : [tanh_1_50_dict["gamma"][0], tanh_1_50_dict["gamma"][1]],
-        "tanh_5_50" : [tanh_5_50_dict["gamma"][0], tanh_5_50_dict["gamma"][1]],
-        "standardize_5_500" : [standardize_5_500_dict["gamma"][0], standardize_5_500_dict["gamma"][1]],
+        "mix_standardize_5_1000" : [mix_standardize_5_1000_dict["gamma"][0], mix_standardize_5_1000_dict["gamma"][1]],
         "standardize_5_100" : [standardize_5_100_dict["gamma"][0], standardize_5_100_dict["gamma"][1]],
-        "standardize_5_1000" : [standardize_5_1000_dict["gamma"][0], standardize_5_1000_dict["gamma"][1]],
-        "standardize_4_50" : [standardize_4_50_dict["gamma"][0], standardize_4_50_dict["gamma"][1]],
+        "standardize_5_500" : [standardize_5_500_dict["gamma"][0], standardize_5_500_dict["gamma"][1]],
+        "mix_3_1000" : [mix_3_1000_dict["gamma"][0], mix_3_1000_dict["gamma"][1]],
+        "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["gamma"][0], tanh_standardize_5_50_dict["gamma"][1]],
+        "mix_standardize_1_500" : [mix_standardize_1_500_dict["gamma"][0], mix_standardize_1_500_dict["gamma"][1]],
+        "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["gamma"][0], tanh_standardize_1_50_dict["gamma"][1]],
         "standardize_mat" : [standardize_mat_dict["gamma"][0], standardize_mat_dict["gamma"][1]],
         "standardize_single" : [standardize_single_dict["gamma"][0], standardize_single_dict["gamma"][1]]
     }
@@ -678,7 +678,7 @@ if __name__ == "__main__":
     timing_list = [standardize_5_1000] + [standardize_5_100] + [standardize_5_500] + [standardize_4_50] + \
         [tanh_5_50] + [tanh_1_50] + [tanh_3_50] + [price_output_normalize_2_50] + [price_output_normalize_3_100] + \
         [price_output_normalize_4_50] + [price_output_normalize_5_500] + [price_output_normalize_5_1000]
-    
+
     timing_results = []
     for some_model in timing_list:
         some_time = timing(some_model, input_good_easy, input_good_hard)

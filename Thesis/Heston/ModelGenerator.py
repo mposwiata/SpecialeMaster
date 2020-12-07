@@ -218,6 +218,29 @@ if __name__ == '__main__':
     noise_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise"), \
         itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
+    
+    same_param_list = [
+        [data_set_1, "same_param", "same_param", 5, 100, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 1, 1324, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 2, 193, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 3, 139, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 4, 115, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 6, 90, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 7, 82, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 8, 76, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 9, 71, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 10, 67, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 11, 64, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 12, 61, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 13, 58, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 14, 56, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 15, 54, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 16, 52, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 17, 51, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 18, 49, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 19, 48, "normal", "False", "standardize", False],
+        [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
+    ]
 
     next_list = benchmark_list + benchmark_include_list + mix_list
     next_list2 = tanh_list + standardize_list + output_scaling_list + output_scaling_normalize_list
@@ -228,5 +251,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, next_list2, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, same_param_list, chunksize=1)
     pool.close()
