@@ -132,111 +132,19 @@ if __name__ == '__main__':
 
     fig = plt.figure(figsize=(10, 10), dpi = 200)
     ax = fig.add_subplot(111)
-    ax.plot(x_axis, some_5_100_run.history["loss"])
-    ax.plot(x_axis, some_4_1000_lr_run.history["loss"])
-    ax.plot(x_axis, some_3_500_lr_run.history["loss"])
-    ax.plot(x_axis, some_2_500_lr_run.history["loss"])
-    ax.plot(x_axis, some_5_50_lr_run.history["loss"])
-    ax.plot(x_axis, some_5_1000_lr_run.history["loss"])
+    ax.plot(x_axis, some_5_100_lr_run.history["loss"], label = "5, 100")
+    ax.plot(x_axis, some_4_1000_lr_run.history["loss"], label = "4, 1000")
+    ax.plot(x_axis, some_3_500_lr_run.history["loss"], label = "3, 500")
+    ax.plot(x_axis, some_2_500_lr_run.history["loss"], label = "2, 500")
+    ax.plot(x_axis, some_5_50_lr_run.history["loss"], label = "5, 50")
+    ax.plot(x_axis, some_5_1000_lr_run.history["loss"], label = "5, 1000")
     ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)
     ax.set_xlabel("Learning rate")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_title("Loss w. different LR rates.")
+    ax.legend(loc = "upper left")
     #ax.set_ylim(0, 0.04)
-    plt.savefig("something.png")
+    plt.savefig("loss_lr.png")
     #tikzplotlib.save("LR_schedule2.tex")
-    plt.close()
-
-    ### Lower LR bound of 10e-4
-    some_history = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 3e-2)
-
-    some_history2 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 1e-2)
-
-    ### Lower LR bound of 10e-6
-    some_history2 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-6, 1e-4)
-
-    ### Lower LR bound of 10e-8
-    some_history3 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-8, 1e-6)
-
-    ### Lower LR bound of 10e-2
-    some_history4 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-2, 1e-0)
-
-    ### Lower LR bound of 10e-4, 10 times higher
-    some_history5 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-4, 1e-3)
-
-    ### Lower LR bound of 10e-4, 10 times higher
-    some_history6 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 100, "normal", "False", "standardize", False, 1e-5, 1e-3)
-
-    """
-    fig = plt.figure(figsize=(20, 10), dpi = 200)
-    ax = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
-    ax.plot(some_history.history["loss"], label="LR, 10e-4, 10e-2")
-    ax.plot(some_history2.history["loss"], label="LR, 10e-6, 10e-4")
-    ax.plot(some_history3.history["loss"], label="LR, 10e-8, 10e-6")
-    ax.plot(some_history4.history["loss"], label="LR, 10e-2, 1")
-    ax.plot(some_history5.history["loss"], label="LR, 10e-4, 10e-3")
-    ax.plot(some_history6.history["loss"], label="LR, 10e-5, 10e-3")
-    ax2.plot(some_history.history["loss"], label="LR, 10e-4, 10e-2")
-    ax2.plot(some_history5.history["loss"], label="LR, 10e-4, 10e-3")
-    ax2.plot(some_history6.history["loss"], label="LR, 10e-5, 10e-3")
-    ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)
-    ax.set_xlabel("Epoch")
-    ax.set_title("Loss w. different LR schedules")
-    ax.set_ylim(0, 0.02)
-    ax.legend(loc="upper right")
-    ax2.set_ylabel("Loss", rotation="horizontal", labelpad=15)
-    ax2.set_xlabel("Epoch")
-    ax2.set_title("Loss w. different LR schedules")
-    ax2.set_ylim(0, 0.0002)
-    ax.legend(loc="upper right")
-    ax2.legend(loc="upper right")
-    plt.savefig("something.png")
-    #tikzplotlib.save("LR_schedule2.tex")
-    plt.close()
-    """
-    ### Lower LR bound of 10e-4
-    some_history21 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-4, 1e-2)
-
-    ### Lower LR bound of 10e-6
-    some_history22 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-6, 1e-4)
-
-    ### Lower LR bound of 10e-8
-    some_history23 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-8, 1e-6)
-
-    ### Lower LR bound of 10e-2
-    some_history24 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-2, 1e-0)
-
-    ### Lower LR bound of 10e-4, 10 times higher
-    some_history25 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-4, 1e-3)
-
-    ### Lower LR bound of 10e-4, 10 times higher
-    some_history26 = NN_mc_model_1(data_set_1, "LR", "LR", 5, 500, "normal", "False", "standardize", False, 1e-5, 1e-3)
-
-    fig = plt.figure(figsize=(20, 10), dpi = 200)
-    ax = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
-    ax.plot(some_history21.history["loss"], label="LR, 10e-4, 10e-2")
-    ax.plot(some_history22.history["loss"], label="LR, 10e-6, 10e-4")
-    ax.plot(some_history23.history["loss"], label="LR, 10e-8, 10e-6")
-    ax.plot(some_history24.history["loss"], label="LR, 10e-2, 1")
-    ax.plot(some_history25.history["loss"], label="LR, 10e-4, 10e-3")
-    ax.plot(some_history26.history["loss"], label="LR, 10e-5, 10e-3")
-    ax2.plot(some_history21.history["loss"], label="LR, 10e-4, 10e-2")
-    ax2.plot(some_history25.history["loss"], label="LR, 10e-4, 10e-3")
-    ax2.plot(some_history26.history["loss"], label="LR, 10e-5, 10e-3")
-    ax.set_ylabel("Loss", rotation="horizontal", labelpad=15)
-    ax.set_xlabel("Epoch")
-    ax.set_title("Loss w. different LR schedules")
-    ax.set_ylim(0, 0.02)
-    ax.legend(loc="upper right")
-    ax2.set_ylabel("Loss", rotation="horizontal", labelpad=15)
-    ax2.set_xlabel("Epoch")
-    ax2.set_title("Loss w. different LR schedules")
-    ax2.set_ylim(0, 0.0002)
-    ax.legend(loc="upper right")
-    ax2.legend(loc="upper right")
-    plt.savefig("something.png")
-    tikzplotlib.save("LR_schedule2.tex")
     plt.close()

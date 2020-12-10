@@ -214,11 +214,16 @@ if __name__ == '__main__':
     price_output_normalize_list = list(zip(itertools.repeat(data_set_price), itertools.repeat("price_output_normalize"), \
         itertools.repeat("price_output_normalize"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("normalize"), itertools.repeat("normalize"), itertools.repeat(False)))
-        
-    noise_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("noise"), \
-        itertools.repeat("noise"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
-        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
-    
+           
+    regul_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("regularization"), \
+        itertools.repeat("regularization"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("regul"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
+
+    dropout_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("dropout"), \
+        itertools.repeat("dropout"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("dropout"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
+
+
     same_param_list = [
         [data_set_1, "same_param", "same_param", 5, 100, "normal", "False", "standardize", False],
         [data_set_1, "same_param", "same_param", 1, 1324, "normal", "False", "standardize", False],
@@ -242,8 +247,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    next_list = benchmark_list + benchmark_include_list + mix_list
-    next_list2 = tanh_list + standardize_list + output_scaling_list + output_scaling_normalize_list
+    server_list = regul_list + dropout_list
 
     if cpu_count() == 4:
         cpu_cores = 4
@@ -251,5 +255,5 @@ if __name__ == '__main__':
         cpu_cores = int(min(cpu_count()/4, 16))
 
     pool = Pool(cpu_cores)
-    res = pool.starmap(mg.NN_mc_model_1, same_param_list, chunksize=1)
+    res = pool.starmap(mg.NN_mc_model_1, server_list, chunksize=1)
     pool.close()

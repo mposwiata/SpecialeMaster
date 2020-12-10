@@ -76,6 +76,10 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
         model = nng.NN_generator_tanh(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     elif nn_type == "mix":
         model = nng.NN_generator_mix(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
+    elif nn_type == "regularization":
+        model = nng.NN_generator_regul(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
+    elif nn_type == "dropput":
+        model = nng.NN_generator_dropout(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
     else:
         model = nng.NN_generator_mix_noise(n_layers, n_neurons, np.shape(X_train)[1], np.shape(Y_train)[1])
 

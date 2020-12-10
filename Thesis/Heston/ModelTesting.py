@@ -365,7 +365,6 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
         if os.path.exists(model_folder+"/norm_labels.pkl"):
             norm_labels = joblib.load(model_folder+"norm_labels.pkl")
             y_test_loop = norm_labels.transform(y_test_loop)
-
         name = model_string[model_string.rfind("/")+1:]
         score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
         mse(model.predict(x_test_loop), y_test_loop)
@@ -486,12 +485,13 @@ if __name__ == "__main__":
         combined_mse.append(grid_models_mse[i])
         combined_mse.append(sobol_models_mse[i])
 
-    combined_mse.sort(key = lambda x: -x[1])
     with open("final_combined_mse.pkl", "wb") as fp:   #Pickling
         pickle.dump(combined_mse, fp)
 
     with open("final_combined_mse.pkl", "rb") as fp:   # Unpickling
         combined_mse = pickle.load(fp)
+
+    combined_mse.sort(key = lambda x: -x[1])
 
     evaluation_first_list = []
     for some_list in combined_mse:
@@ -736,6 +736,29 @@ if __name__ == "__main__":
         data_no_models.append(high_data_models[i][0])
     model_testing2(data_no_models, "Data size")
 
+    ### Standardize vs mat vs single
+    benchmark_models = []
+    mat_models = []
+    single_models = []
+    for some_list in combined_mse:
+        if (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
+            benchmark_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize_mat"):
+            mat_models.append(some_list)
+        elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize_single"):
+            single_models.append(some_list)
+    benchmark_models.sort(key = lambda x: x[1])
+    mat_models.sort(key = lambda x : x[1])
+    single_models.sort(key = lambda x : x[1])
+    generate_bar_error(benchmark_models[0:5] + mat_models[0:5] + single_models[0:5], "Grid vs smile vs single")
+    data_no_models = []
+    for i in range(5):
+        data_no_models.append(benchmark_models[i][0])
+        data_no_models.append(low_data_models[i][0])
+        data_no_models.append(high_data_models[i][0])
+    model_testing2(data_no_models, "Data size")
+
+
     ### Monte Carlo
     mc = [
         "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price",
@@ -760,9 +783,10 @@ if __name__ == "__main__":
 
     evaluation_first_list = []
     for some_list in mc_mse:
-        evaluation_first_list.append(
-            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
-        )
+        if some_list[0].find("price") == -1:
+            evaluation_first_list.append(
+                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+            )
     
     ### Finding best models per group
     evaluation_first_list.sort(key = lambda x: x[0])
@@ -790,27 +814,6 @@ if __name__ == "__main__":
         top_first_network_list.append(some_list[0])
 
     top_first_network_list.sort(key = lambda x: x[1])
-
-    ### New models
-    standardize_mat = glob.glob("Models5/standardize_mat/*.h5")
-    standardize_mat_mse = model_test_set(standardize_mat, X_test, Y_test, Y_test_price)
-    standardize_mat_mse.sort(key = lambda x: x[1])
-
-    with open("standardize_mat_mse.pkl", "wb") as fp:   #Pickling
-        pickle.dump(standardize_mat_mse, fp)
-
-    with open("standardize_mat_mse.pkl", "rb") as fp:   # Unpickling
-        standardize_mat_mse = pickle.load(fp)
-
-    standardize_single = glob.glob("Models5/standardize_single/*.h5")
-    standardize_single_mse = model_test_set(standardize_single, X_test, Y_test, Y_test_price)
-    standardize_single_mse.sort(key = lambda x: x[1])
-
-    with open("standardize_single_mse.pkl", "wb") as fp:   #Pickling
-        pickle.dump(standardize_single_mse, fp)
-
-    with open("standardize_single_mse.pkl", "rb") as fp:   # Unpickling
-        standardize_single_mse = pickle.load(fp)
 
     """
     grid_vs_sobol = glob.glob("Models4/grid_vs_sobol/*.h5")
