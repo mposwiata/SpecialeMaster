@@ -8,7 +8,8 @@ import os
 import itertools
 sys.path.append(os.getcwd()) # added for calc server support
 
-from Thesis.Heston import NNModelGenerator as mg, DataGeneration as dg, ModelGenerator, ModelTesting as mt, Sobol
+from Thesis.Heston import NNModelGenerator as mg, DataGeneration as dg, ModelGenerator, ModelTesting as mt, Sobol, HestonModel as hm, AndersenLake as al
+from Thesis.misc import VanillaOptions as vo
 
 if __name__ == "__main__":
     train_index, test_index = ModelGenerator.load_index(200000)
@@ -16,6 +17,7 @@ if __name__ == "__main__":
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
     imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
+    price2 = np.loadtxt("Data/sobol_second_set_price200000.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
     X_test = model_input[test_index, :]
@@ -135,5 +137,3 @@ if __name__ == "__main__":
     model_list2_mse = mt.model_test_set(model_list, X_test, Y_test)
 
     model_list3_mse = mt.model_test_set(model_list, X_test_1, Y_test_1)
-
-    ### Testing on 300k test set

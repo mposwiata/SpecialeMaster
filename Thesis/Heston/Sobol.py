@@ -64,9 +64,9 @@ def generate_sobol_data(no_sobol : int):
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/sobol_second_set_input"+str(no_sobol)+".csv", gridInput, delimiter=",")
-    np.savetxt("Data/sobol_second_set_price"+str(no_sobol)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/sobol_second_set_imp_vol"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", gridInput, delimiter=",")
+    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     print("Done with 10000")
     """
     generate_sobol_data(100000)
-    #generate_sobol_data(200000)
+    generate_sobol_data(200000)
     generate_sobol_data(300000)
     
-    generate_sobol_data(279936) # matching number of inputs for the wide model
+    #generate_sobol_data(279936) # matching number of inputs for the wide model
