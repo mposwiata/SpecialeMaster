@@ -1,6 +1,7 @@
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import joblib
 from keras.models import load_model
 import glob
@@ -293,9 +294,9 @@ def model_testing2(model_list : list, plot_title : str) -> list:
 
         z_easy = predictions_easy
         z_hard = predictions_hard
-        name = model_string[model_string.find("/")+1:]
-        imp_ax_easy.plot_trisurf(x, y, z_easy, alpha = 0.5, label = name, color = c)
-        imp_ax_hard.plot_trisurf(x, y, z_hard, alpha = 0.5, label = name, color = c)
+        name = model_string[model_string.rfind("/")+1:]
+        imp_ax_easy.plot_trisurf(x, y, z_easy, alpha = 0.5, label = name[:-3], color = c)
+        imp_ax_hard.plot_trisurf(x, y, z_hard, alpha = 0.5, label = name[:-3], color = c)
         predictions = np.concatenate((predictions_easy, predictions_hard))
         benchmark = np.concatenate((benchmark_easy, benchmark_hard))
         mse_list.append((name, mse(predictions, benchmark)))
@@ -304,23 +305,27 @@ def model_testing2(model_list : list, plot_title : str) -> list:
     
     imp_ax_easy.plot_trisurf(x, y, benchmark_easy, color = "black", alpha = 0.5, label = "benchmark")
 
-    imp_ax_easy.set_ylabel("Strike")
-    imp_ax_easy.set_xlabel("Time to maturity")
-    imp_ax_easy.set_title("Implied volatility, easy case")
+    imp_ax_easy.set_ylabel("\n" + "Strike", linespacing=4, fontsize = 20)
+    imp_ax_easy.set_xlabel("\n" + "Time to maturity", linespacing=4, fontsize = 20)
+    imp_ax_easy.set_title("Implied volatility, easy case", fontsize = 25)
+    imp_ax_easy.tick_params(labelsize = 15)
 
-    error_ax_easy.set_ylabel("Strike")
-    error_ax_easy.set_xlabel("Time to maturity")
-    error_ax_easy.set_title("Error")
+    error_ax_easy.set_ylabel("\n" + "Strike", linespacing=4, fontsize = 20)
+    error_ax_easy.set_xlabel("\n" + "Time to maturity", linespacing=4, fontsize = 20)
+    error_ax_easy.set_title("Error", fontsize = 25)
+    error_ax_easy.tick_params(labelsize = 15)
 
     imp_ax_hard.plot_trisurf(x, y, benchmark_hard, color = "black", alpha = 0.5, label = "benchmark")
 
-    imp_ax_hard.set_ylabel("Strike")
-    imp_ax_hard.set_xlabel("Time to maturity")
-    imp_ax_hard.set_title("Implied volatility, hard case")
+    imp_ax_hard.set_ylabel("\n" + "Strike", linespacing=4, fontsize = 20)
+    imp_ax_hard.set_xlabel("\n" + "Time to maturity", linespacing=4, fontsize = 20)
+    imp_ax_hard.set_title("Implied volatility, hard case", fontsize = 25)
+    error_ax_easy.tick_params(labelsize = 15)
 
-    error_ax_hard.set_ylabel("Strike")
-    error_ax_hard.set_xlabel("Time to maturity")
-    error_ax_hard.set_title("Error")
+    error_ax_hard.set_ylabel("\n" + "Strike", linespacing=4, fontsize = 20)
+    error_ax_hard.set_xlabel("\n" + "Time to maturity", linespacing=4, fontsize = 20)
+    error_ax_hard.set_title("Error", fontsize = 25)
+    error_ax_easy.tick_params(labelsize = 15)
 
     handles, labels = imp_ax_easy.get_legend_handles_labels()
     for i in range(len(handles)):
@@ -328,8 +333,8 @@ def model_testing2(model_list : list, plot_title : str) -> list:
         handles[i]._edgecolors2d = handles[i]._edgecolors3d 
 
     fig.subplots_adjust(top=0.95, left=0.1, right=0.95, bottom=0.2)
-    fig.legend(handles, labels, loc="lower center", ncol = 4, fontsize=15)
-    fig.suptitle(plot_title, fontsize=20)
+    fig.legend(handles, labels, loc="lower center", ncol = 3, prop={'size': 30})
+    fig.suptitle(plot_title, fontsize=30)
     plt.savefig("Final_plots/"+plot_title.replace(" ", "_")+".png")
     plt.close()
     return mse_list
@@ -395,15 +400,33 @@ def monte_carlo_testing(model_list : list, X_test : np.ndarray, Y_test : np.ndar
 
 def generate_bar_error(error_list : list, name : str):
     error_list.sort(key = lambda x: x[1])
+    tmp_list = []
+    unique_vals = []
+    for some_list in error_list:
+        unique_vals.append(some_list[0][:some_list[0].rfind("_")-2])
+        tmp_list.append((some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]))
+    unique_vals = list(set(unique_vals))
+    colors = cm.Set2(np.linspace(0, 1, len(unique_vals)))
+    
+    bar_list = []
+    color_list = []
+    for some_list in tmp_list:
+        color_list.append(colors[unique_vals.index(some_list[0])])
+        bar_list.append((some_list[1][:-3].replace("_", ", "), some_list[2]))
+
     bar_fig = plt.figure(figsize=(20, 10), dpi = 200)
     bar_ax = bar_fig.add_subplot(111)
-    labels, values = zip(*error_list)
+    labels, values = zip(*bar_list)
     x_pos = np.arange(len(labels))
-    bar_ax.bar(x_pos, values)
+    bar_ax.bar(x_pos, values, color = color_list)
+    bar_ax.yaxis.offsetText.set_fontsize(15)
+    bar_ax.tick_params(axis = "y", labelsize=15)
     bar_ax.set_xticks(x_pos)
-    bar_ax.set_xticklabels(labels, rotation=90)
-    bar_fig.suptitle("MSE, "+name)
+    bar_ax.set_xticklabels(labels, rotation=45, fontsize=20, ha = "right")
+    bar_ax.set_title("MSE, "+name,size=25)
     plt.tight_layout()
+    handels = [plt.Rectangle((0,0),1,1, color=colors[i]) for i in range(len(unique_vals))]
+    plt.legend(handels, unique_vals, loc="upper left", prop={'size': 20})
     plt.savefig("Final_plots/"+name.replace(" ", "_")+"_mse.png")
     plt.close()
 
@@ -463,20 +486,30 @@ if __name__ == "__main__":
     Y_test_1 = np.loadtxt("Data/100000_imp.csv", delimiter = ",")[test_index_1, :]
     low_data_models = glob.glob("Models5/low_data/*.h5")
     low_data_models_mse = model_test_set(low_data_models, X_test_1, Y_test_1)
+    low_data_models_mse.sort(key = lambda x: x[1])
 
     test_index_3 = np.loadtxt("Data/test_index_300000.csv", delimiter=",").astype(int)
     X_test_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")[test_index_3, :]
     Y_test_3 = np.loadtxt("Data/300000_imp.csv", delimiter = ",")[test_index_3, :]
     high_data_models = glob.glob("Models5/high_data/*.h5")
     high_data_models_mse = model_test_set(high_data_models, X_test_3, Y_test_3)
+    high_data_models_mse.sort(key = lambda x: x[1])
+
 
     test_index_grid = np.loadtxt("Data/test_index_279936.csv", delimiter=",").astype(int)
     X_test_grid = np.loadtxt("Data/279936_input.csv", delimiter = ",")[test_index_grid, :]
     Y_test_grid = np.loadtxt("Data/279936_imp.csv", delimiter = ",")[test_index_grid, :]
+    X_test_sobol_grid = np.loadtxt("Data/grid_input.csv", delimiter = ",")[test_index_grid, :]
+    Y_test_sobol_grid = np.loadtxt("Data/grid_imp.csv", delimiter = ",")[test_index_grid, :]
     grid_models = glob.glob("Models5/grid/*.h5")
     sobol_models = glob.glob("Models5/sobol/*.h5")
     grid_models_mse = model_test_set(grid_models, X_test_grid, Y_test_grid)
     sobol_models_mse = model_test_set(sobol_models, X_test_grid, Y_test_grid)
+    grid_models_mse_grid_inp = model_test_set(grid_models, X_test_sobol_grid, Y_test_sobol_grid)
+    sobol_models_mse_grid_inp = model_test_set(sobol_models, X_test_sobol_grid, Y_test_sobol_grid)
+    grid_models_mse_grid_inp.sort(key = lambda x: x[1])
+    sobol_models_mse_grid_inp.sort(key = lambda x: x[1])
+    generate_bar_error(grid_models_mse_grid_inp[:5]+sobol_models_mse_grid_inp[:5], "Sobol vs grid on grid test set")
 
     combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
     for i in range(20):
@@ -498,6 +531,10 @@ if __name__ == "__main__":
         evaluation_first_list.append(
             [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
         )
+
+    ### Models not converging
+    non_convergence = ["output_scaling_4_1000.h5", "output_scaling_5_1000.h5"]
+    model_testing2(non_convergence, "Non converging models")
     
     ### Finding best models per group
     evaluation_first_list.sort(key = lambda x: x[0])
@@ -531,14 +568,21 @@ if __name__ == "__main__":
     top_first_network_list.sort(key = lambda x: x[1])
 
     models_for_evaluation = [
-        "standardize_single_5_100.h5",
-        "standardize_single_4_50.h5",
-        "standardize_mat_5_100.h5",
         "mix_standardize_5_1000.h5",
-        "tanh_1_50.h5",
-        "tanh_3_50.h5"
+        "standardize_5_100.h5",
+        "standardize_5_500.h5",
+        "mix_3_1000.h5",
+        "tanh_standardize_5_50.h5",
+        "mix_standardize_1_500.h5",
+        "tanh_standardize_1_50.h5"
     ]
     generate_plots(models_for_evaluation, "Top implied volatility models")
+
+    price_plot = ["price_output_normalize_5_1000.h5"]
+    generate_plots(price_plot, "Best price model")
+    
+    imp_plot = ["mix_standardize_5_1000.h5"]
+    generate_plots(imp_plot, "Best implied volatility model")
 
     ### Finding best models per setup, prices
     evaluation_setup_price_list = []
@@ -597,7 +641,7 @@ if __name__ == "__main__":
     for i in range(5):
         data_filter_models.append(benchmark_models[i][0])
         data_filter_models.append(benchmark_include_models[i][0])
-    model_testing2(data_filter_models, "Data filtering")
+    #model_testing2(data_filter_models, "Data filtering")
     generate_bar_error(benchmark_models[0:5] + benchmark_include_models[0:5], "Data filtering")
 
     ### Input scaling
@@ -620,7 +664,7 @@ if __name__ == "__main__":
         input_scaling_models.append(benchmark_models[i][0])
         input_scaling_models.append(standardize_models[i][0])
         input_scaling_models.append(non_input_scaling_models[i][0])
-    model_testing2(input_scaling_models, "Input scaling")
+    #model_testing2(input_scaling_models, "Input scaling")
 
     ### Output scaling
     benchmark_models = []
@@ -698,13 +742,8 @@ if __name__ == "__main__":
     model_testing2(all_activation_functions_list, "Activation functions")
 
     ### Grid vs sobol
-    sobol_models = []
-    grid_models = []
-    for some_list in combined_mse:
-        if (some_list[0][:some_list[0].rfind("_")-2] == "sobol"):
-            sobol_models.append(some_list)
-        elif (some_list[0][:some_list[0].rfind("_")-2] == "grid"):
-            grid_models.append(some_list)
+    sobol_models = sobol_models_mse
+    grid_models = grid_models_mse
     sobol_models.sort(key = lambda x: x[1])
     grid_models.sort(key = lambda x : x[1])
     generate_bar_error(sobol_models[0:5] + grid_models[0:5], "Sobol vs grid")
@@ -722,7 +761,7 @@ if __name__ == "__main__":
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "low_data"):
-            low_data_models.append(some_list)
+           low_data_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "high_data"):
             high_data_models.append(some_list)
     benchmark_models.sort(key = lambda x: x[1])
@@ -783,10 +822,9 @@ if __name__ == "__main__":
 
     evaluation_first_list = []
     for some_list in mc_mse:
-        if some_list[0].find("price") == -1:
-            evaluation_first_list.append(
-                [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
-            )
+        evaluation_first_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], '{0:.7f}'.format(round(some_list[1], 7))]
+        )
     
     ### Finding best models per group
     evaluation_first_list.sort(key = lambda x: x[0])
@@ -814,6 +852,13 @@ if __name__ == "__main__":
         top_first_network_list.append(some_list[0])
 
     top_first_network_list.sort(key = lambda x: x[1])
+
+    ### Regularization and dropout
+    regularization_models = glob.glob("Models5/regularization/*.h5")
+    dropout_models = glob.glob("Models5/dropout/*.h5")
+
+    regul_drop_mse = model_test_set(regularization_models+dropout_models, X_test, Y_test, Y_test_price)
+    regul_drop_mse.sort(key = lambda x: x[1])
 
     """
     grid_vs_sobol = glob.glob("Models4/grid_vs_sobol/*.h5")

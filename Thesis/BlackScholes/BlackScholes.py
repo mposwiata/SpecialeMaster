@@ -41,6 +41,19 @@ class BlackScholesForward:
         else:
             return -1
 
+    def total_delta(self, option : vo.VanillaOption, sigma_grad : float) -> float:
+        return self.BSDelta(option) + self.BSVega(option) * sigma_grad
+
+    def total_gamma(self, option : vo.VanillaOption, sigma_grad : float, sigma_grad2 : float) -> float:
+        def phi(x):
+            return - x * np.exp(- x ** 2 / 2) / (2 * np.sqrt(np.pi))
+        d1 = (np.log(self.forward / option.strike) + 0.5 * self.vol * self.vol * option.tau) / (self.vol * np.sqrt(option.tau))
+        d1_grad = option.tau / np.sqrt(option.tau) - d1 / self.vol
+        vega_grad = np.exp(-self.rate * option.tau) * self.forward * phi(d1) * d1_grad
+        delta_grad = np.exp(-self.rate * option.tau) * norm.pdf(d1) * d1_grad
+
+        return self.BSGamma(option) + vega_grad * sigma_grad * sigma_grad + self.BSVega(option) * sigma_grad2 + 2 * delta_grad * sigma_grad
+
     def delta2(self, option : vo.VanillaOption, a : float, b : float) -> float:
         x = self.forward
         k = option.strike

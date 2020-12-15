@@ -7,6 +7,7 @@ import glob
 import time
 import timeit
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.metrics import mean_squared_error as mse
 from keras.optimizers import Adam
 from keras import backend as k
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
@@ -22,6 +23,8 @@ from Thesis.Heston import MonteCarlo as mc, AndersenLake as al, HestonModel as h
 from Thesis.misc import VanillaOptions as vo
 from Thesis import NeuralNetworkGenerator as nng
 from Thesis.BlackScholes import BlackScholes as bs
+
+import glob
 
 def lr_schedule(epoch, rate):
     lower_lr = 1e-4
@@ -52,8 +55,8 @@ def plot_func(x_axis : np.array, plot_data : dict, title : str):
         
     handles, labels = easy_ax.get_legend_handles_labels()
     fig.suptitle(title,fontsize=20)
-    easy_ax.set_xlabel("Spot")
-    hard_ax.set_xlabel("Spot")
+    easy_ax.set_xlabel("Forward")
+    hard_ax.set_xlabel("Forward")
     easy_ax.set_title("Easy case")
     hard_ax.set_title("Hard case")
     fig.subplots_adjust(top=0.9, left=0.1, right=0.95, bottom=0.15)
@@ -236,12 +239,16 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
             model_bs_easy = bs.BlackScholesForward(spot_plot[i], predict_easy[i], rate)
             model_bs_hard = bs.BlackScholesForward(spot_plot[i], predict_hard[i], rate)
             price_easy[i] = model_bs_easy.BSFormula(option)
-            delta_easy[i] = model_bs_easy.delta_grads(option, grads_easy[i])
-            gamma_easy[i] = model_bs_easy.gamma_grads(option, grads_easy[i], grads2_easy[i])
+            #delta_easy[i] = model_bs_easy.delta_grads(option, grads_easy[i])
+            #gamma_easy[i] = model_bs_easy.gamma_grads(option, grads_easy[i], grads2_easy[i])
+            delta_easy[i] = model_bs_easy.total_delta(option, grads_easy[i])
+            gamma_easy[i] = model_bs_easy.total_gamma(option, grads_easy[i], grads2_easy[i])
             
             price_hard[i] = model_bs_hard.BSFormula(option)
-            delta_hard[i] = model_bs_hard.delta_grads(option, grads_hard[i])
-            gamma_hard[i] = model_bs_hard.gamma_grads(option, grads_hard[i], grads2_hard[i])
+            #delta_hard[i] = model_bs_hard.delta_grads(option, grads_hard[i])
+            #gamma_hard[i] = model_bs_hard.gamma_grads(option, grads_hard[i], grads2_hard[i])
+            delta_hard[i] = model_bs_hard.total_delta(option, grads_hard[i])
+            gamma_hard[i] = model_bs_hard.total_gamma(option, grads_hard[i], grads2_hard[i])
     else:
         price_easy = predict_easy
         delta_easy = grads_easy
@@ -314,6 +321,20 @@ def timing(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray) -
         hard_time = time.time() - hard_start
 
     return easy_time / 100, hard_time / 100
+
+def greeks_mse(model_list : list, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption, BM_greeks : dict) -> list:
+    greeks = []
+    for some_model in model_list:
+        some_grads = model_grads(some_model, easy_case, hard_case, option)
+
+        name = some_model[some_model.rfind("/")+1:]
+        easy_model_greeks = np.concatenate((some_grads["delta"][0], some_grads["gamma"][0]))
+        hard_model_greeks = np.concatenate((some_grads["delta"][1], some_grads["gamma"][1]))
+        easy_benchmark_greeks = np.concatenate((BM_greeks["delta"][0], BM_greeks["gamma"][0]))
+        hard_benchmark_greeks = np.concatenate((BM_greeks["delta"][1], BM_greeks["gamma"][1]))
+        greeks.append((name, mse(easy_model_greeks, hard_model_greeks), mse(hard_model_greeks, hard_benchmark_greeks)))
+
+    return greeks
 
 if __name__ == "__main__":
     ### Generating input data
@@ -503,6 +524,12 @@ if __name__ == "__main__":
         price_hard_al[i] = al_f_x_hard
         delta_hard_al[i] = ((al_f_x_p_hard2 - al_f_x_m_hard2) / h ) 
         gamma_hard_al[i] = (al_f_x_p_hard - 2 * al_f_x_hard + al_f_x_m_hard) / (h * h)
+
+    AL_greeks = {
+        "price" : [price_easy_al, price_hard_al],
+        "delta" : [delta_easy_al, delta_hard_al],
+        "gamma" : [gamma_easy_al, gamma_hard_al]
+    }
 
     test_input = norm_features.transform(spot_plot)
     model_input_multi_easy = norm_features_multiple.transform(input_multi_easy)
@@ -707,8 +734,8 @@ if __name__ == "__main__":
     plot_func(spot_plot, gamma_data_price, "Gamma price models")
 
     ### Timing
-    timing_list = [standardize_5_1000] + [standardize_5_100] + [standardize_5_500] + [standardize_4_50] + \
-        [tanh_5_50] + [tanh_1_50] + [tanh_3_50] + [price_output_normalize_2_50] + [price_output_normalize_3_100] + \
+    timing_list = [mix_standardize_5_1000] + [standardize_5_100] + [standardize_5_500] + [mix_3_1000] + \
+        [tanh_standardize_5_50] + [mix_standardize_1_500] + [tanh_standardize_1_50] + [price_output_normalize_2_50] + [price_output_normalize_3_100] + \
         [price_output_normalize_4_50] + [price_output_normalize_5_500] + [price_output_normalize_5_1000]
 
     timing_results = []
@@ -717,6 +744,8 @@ if __name__ == "__main__":
         name = some_model[some_model.rfind("/")+1:]
         timing_results.append([name, some_time])
 
+    model_class_easy = hm.HestonClass(100, 0.04, 2, 0.04, 0.5, -0.7, 0.05)
+    some_option = vo.EUCall(1, 100)
     al_start = time.time()
     al.Andersen_Lake(model_class_easy, some_option)
     al_time = time.time() - al_start
@@ -799,156 +828,102 @@ if __name__ == "__main__":
     mc_1_price_1_50 = "Models5/mc_1_price/mc_1_price_1_50.h5"
     mc_1_price_1_50_dict = model_grads(mc_1_price_1_50, input_good_easy, input_good_hard, some_option)
 
-    mc_1000_price_4_1000 = "Models5/mc_1000_price/mc_1000_price_4_1000.h5"
-    mc_1000_price_4_1000_dict = model_grads(mc_1000_price_4_1000, input_good_easy, input_good_hard, some_option)
+    mc_10000_price_4_500 = "Models5/mc_10000_price/mc_10000_price_4_500.h5"
+    mc_10000_price_4_500_dict = model_grads(mc_10000_price_4_500, input_good_easy, input_good_hard, some_option)
 
     mc_prediction_data = {
         "mc_100_price_5_500" : [mc_100_price_5_500_dict["pred"][0], mc_100_price_5_500_dict["pred"][1]],
         "mc_10_price_4_500" : [mc_10_price_4_500_dict["pred"][0], mc_10_price_4_500_dict["pred"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["pred"][0], mc_1000_price_4_1000_dict["pred"][1]],
+        #"mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["pred"][0], mc_1000_price_4_1000_dict["pred"][1]],
         "mc_1_price_1_50" : [mc_1_price_1_50_dict["pred"][0], mc_1_price_1_50_dict["pred"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["pred"][0], mc_1000_price_4_1000_dict["pred"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["pred"][0], mc_10000_price_4_500_dict["pred"][1]],
         "Andersen Lake, benchmark" : [price_easy_al, price_hard_al]
     }
 
     mc_delta_data= {
         "mc_100_price_5_500" : [mc_100_price_5_500_dict["delta"][0], mc_100_price_5_500_dict["delta"][1]],
         "mc_10_price_4_500" : [mc_10_price_4_500_dict["delta"][0], mc_10_price_4_500_dict["delta"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["delta"][0], mc_1000_price_4_1000_dict["delta"][1]],
+        #"mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["delta"][0], mc_1000_price_4_1000_dict["delta"][1]],
         "mc_1_price_1_50" : [mc_1_price_1_50_dict["delta"][0], mc_1_price_1_50_dict["delta"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["delta"][0], mc_1000_price_4_1000_dict["delta"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["delta"][0], mc_10000_price_4_500_dict["delta"][1]],
         "Andersen Lake, benchmark" : [delta_easy_al, delta_hard_al]
     }
 
     mc_gamma_data = {
         "mc_100_price_5_500" : [mc_100_price_5_500_dict["gamma"][0], mc_100_price_5_500_dict["gamma"][1]],
         "mc_10_price_4_500" : [mc_10_price_4_500_dict["gamma"][0], mc_10_price_4_500_dict["gamma"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["gamma"][0], mc_1000_price_4_1000_dict["gamma"][1]],
+        #"mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["gamma"][0], mc_1000_price_4_1000_dict["gamma"][1]],
         "mc_1_price_1_50" : [mc_1_price_1_50_dict["gamma"][0], mc_1_price_1_50_dict["gamma"][1]],
-        "mc_1000_price_4_1000" : [mc_1000_price_4_1000_dict["gamma"][0], mc_1000_price_4_1000_dict["gamma"][1]],
+        "mc_10000_price_4_500" : [mc_10000_price_4_500_dict["gamma"][0], mc_10000_price_4_500_dict["gamma"][1]],
         "Andersen Lake, benchmark" : [gamma_easy_al, gamma_hard_al]
     }
 
-    plot_func(spot_plot, mc_prediction_data, "Monte Price Carlo Predictions")
-    plot_func(spot_plot, mc_delta_data, "Monte Price Carlo Delta")
-    plot_func(spot_plot, mc_gamma_data, "Monte Price Carlo Gamma")
+    plot_func(spot_plot, mc_prediction_data, "Monte Carlo Price Predictions")
+    plot_func(spot_plot, mc_delta_data, "Monte Carlo Price Delta")
+    plot_func(spot_plot, mc_gamma_data, "Monte Carlo Price Gamma")
 
-    ### Noise
-    noise_model = "Models4/noise/noise_5_500.h5"
-    noise_dict = model_grads(noise_model, input_good_easy, input_good_hard, some_option, True)
-
-    #mc_price_model = "Models4/mc_10000/price/mc_10000_price_4_100.h5"
-    #mc_price_dict = model_grads(mc_price_model, input_good_easy, input_good_hard, some_option, True)
-
-    mc_imp_model = "Models4/mc_10000_include/mc_10000_2_50.h5"
-    mc_imp_dict = model_grads(mc_imp_model, input_good_easy, input_good_hard, some_option, True)
-
-    final2_model = "Models4/final2/final2_5_1000.h5"
-    final2_dict = model_grads(final2_model, input_good_easy, input_good_hard, some_option, True)
-
-    mix_model = "Models4/activation_functions/mix_5_1000.h5"
-    mix_dict = model_grads(mix_model, input_good_easy, input_good_hard, some_option, False)
-
-    new_data_model = "Models4/new_data/new_data_4_500.h5"
-    new_data_model_dict = model_grads(new_data_model, input_good_easy, input_good_hard, some_option, False)
-
-    new_data_include = "Models4/new_data_include_zero/include_zero_3_1000.h5"
-    new_data_include_dict = model_grads(new_data_include, input_good_easy, input_good_hard, some_option, False)
-
-    prediction_data = {
-        "Andersen Lake" : [al_predict1, al_predict2],
-        "Monte Carlo" : [mc_predict1, mc_predict2],
-        "Andersen Lake, multi" : [al_multi_predict1, al_multi_predict2],
-        "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
-        "Noise model" : [noise_dict["pred"][0], noise_dict["pred"][1]],
-        #"MC Price" : [mc_price_dict["pred"][0], mc_price_dict["pred"][1]],
-        "MC Imp" : [mc_imp_dict["pred"][0], mc_imp_dict["pred"][1]],
-        "Final model" : [final2_dict["pred"][0], final2_dict["pred"][1]],
-        "Mix model" : [mix_dict["pred"][0], mix_dict["pred"][1]],
-        "New data" : [new_data_model_dict["pred"][0], new_data_model_dict["pred"][1]],
-        "New data, include" : [new_data_include_dict["pred"][0], new_data_include_dict["pred"][1]]
-    }
-
-    delta_data = {
-        "Andersen Lake" : [al_grads1, al_grads2],
-        "Monte Carlo" : [mc_grads1, mc_grads2],
-        "Andersen Lake, multi" : [al_multi_grads1[:,0], al_multi_grads2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
-        "Noise model" : [noise_dict["delta"][0], noise_dict["delta"][1]],
-        #"MC Price" : [mc_price_dict["delta"][0], mc_price_dict["delta"][1]],
-        "MC Imp" : [mc_imp_dict["delta"][0], mc_imp_dict["delta"][1]],
-        "Final model" : [final2_dict["delta"][0], final2_dict["delta"][1]],
-        "Mix model" : [mix_dict["delta"][0], mix_dict["delta"][1]],
-        "New data" : [new_data_model_dict["delta"][0], new_data_model_dict["delta"][1]],
-        "New data, include" : [new_data_include_dict["delta"][0], new_data_include_dict["delta"][1]]
-    }
-
-    gamma_data = {
-        "Andersen Lake" : [al_grads1_2, al_grads2_2],
-        "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
-        "Andersen Lake, multi" : [al_multi_grads1_2[:,0], al_multi_grads2_2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
-        "Noise model" : [noise_dict["gamma"][0], noise_dict["gamma"][1]],
-        #"MC Price" : [mc_price_dict["gamma"][0], mc_price_dict["gamma"][1]],
-        "MC Imp" : [mc_imp_dict["gamma"][0], mc_imp_dict["gamma"][1]],
-        "Final model" : [final2_dict["gamma"][0], final2_dict["gamma"][1]],
-        "Mix model" : [mix_dict["gamma"][0], mix_dict["gamma"][1]],
-        "New data" : [new_data_model_dict["gamma"][0], new_data_model_dict["gamma"][1]],
-        "New data, include" : [new_data_include_dict["gamma"][0], new_data_include_dict["gamma"][1]]
-    }
-
-    plot_func(spot_plot, prediction_data, "Predictions")
-    plot_func(spot_plot, delta_data, "Delta")
-    plot_func(spot_plot, gamma_data, "Gamma")
-
-    ### MC
-    mc_10000_include = "Models4/mc_10000_include/mc_10000_2_50.h5"
-
-    mc_1000_include = "Models4/mc_1000_include/mc_1000_5_500.h5"
-
-    mc_100_include = "Models4/mc_100_include/mc_100_5_500.h5"
-
-    mc_10_include = "Models4/mc_10_include/mc_10_3_1000.h5"
-
-    mc_1_include = "Models4/mc_1_include/mc_1_4_1000.h5"
-
-    mc_10000 = "Models4/mc_10000/mc_10000_4_1000.h5"
-
-    mc_1000 = "Models4/mc_1000/mc_1000_4_1000.h5"
-
-    mc_100 = "Models4/mc_100/mc_100_4_50.h5"
-
-    mc_10 = "Models4/mc_10/mc_10_1_50.h5"
-
-    ### Different MC models
-    # 1 path
-    mc_list= [
-        #"Models4/mc_1/price/mc_1_price_2_100.h5",
-        #"Models4/mc_10/price/mc_10_price_3_50.h5",
-        #"Models4/mc_100/price/mc_100_price_5_500.h5",
-        #"Models4/mc_1000/price/mc_1000_price_4_100.h5",
-        #"Models4/mc_10000/price/mc_10000_price_4_100.h5",
-        "Models4/mc_10000/mc_10000_4_1000.h5",
-        "Models4/mc_1000/mc_1000_4_1000.h5",
-        "Models4/mc_100/mc_100_4_50.h5",
-        #"Models4/mc_10/mc_10_1_50.h5",
-        "Models4/mc_10000_include/mc_10000_2_50.h5",
-        "Models4/mc_1000_include/mc_1000_5_500.h5",
-        "Models4/mc_100_include/mc_100_5_500.h5",
-        "Models4/mc_10_include/mc_10_3_1000.h5",
-        "Models4/mc_1_include/mc_1_4_1000.h5"
+    ### MC Greeks mse
+    mc = [
+        "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price",
+        "mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat",
+        "mc_1_single", "mc_10_single", "mc_100_single", "mc_1000_single", "mc_10000_single"
     ]
-    
-    mc_pred = {}
-    mc_delta = {}
-    mc_gamma = {}
-    for model in mc_list:
-        name = model[model.find("/")+1:]
-        some_dict = model_grads(model, input_good_easy, input_good_hard, some_option, False)
-        mc_pred[name] = [some_dict["pred"][0], some_dict["pred"][1]]
-        mc_delta[name] = [some_dict["delta"][0], some_dict["delta"][1]]
-        mc_gamma[name] = [some_dict["gamma"][0], some_dict["gamma"][1]]
 
-    plot_func(spot_plot, mc_pred, "MC Predictions")
-    plot_func(spot_plot, mc_delta, "MC Delta")
-    plot_func(spot_plot, mc_gamma, "MC Gamma")
+    mc_list = []
+    for key in mc:
+        mc_list.append(glob.glob("Models5/"+key+"/*.h5"))
+
+    mc_list = [item for sublist in mc_list for item in sublist]
+    
+    mc_greeks_mce = greeks_mse(mc_list, input_good_easy, input_good_hard, some_option, AL_greeks)
+
+    mc_greeks_mce.sort(key = lambda x: x[1])
+
+    ### Top 5 delta models:
+    mc_greeks_mce[:6]
+
+    mc_greeks_mce.sort(key = lambda x: x[2])
+    mc_greeks_mce[:30]
+    
+    evaluation_first_list = []
+    for some_list in mc_greeks_mce:
+        evaluation_first_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1], some_list[2]]
+        )
+    
+    ### Finding best models per group
+    evaluation_first_list.sort(key = lambda x: x[0])
+    group_by_model = itertools.groupby(evaluation_first_list, key = lambda x: x[0])
+
+    top_first_models_list = []
+    for key, group in group_by_model:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[3])
+        top_first_models_list.append(some_list[0])
+
+    top_models = [
+        "mc_10000_mat_2_50.h5", "mc_10000_single_1_100.h5", "mc_1000_mat_1_500.h5", "mc_10000_price_4_500.h5",
+        "mix_standardize_5_1000.h5", "standardize_mat_5_100.h5", "standardize_mat_5_100.h5", "standardize_single_4_100.h5",
+        "price_output_normalize_4_50.h5"
+    ]
+
+    pred_dict = {}
+    delta_dict = {}
+    gamma_dict = {}
+    for some_model in top_models:
+        try:
+            some_model_string = ' '.join(glob.glob("Models5/*/"+some_model))
+            some_dict = model_grads(some_model_string, input_good_easy, input_good_hard, some_option)
+            pred_dict[some_model[:-3]] = [some_dict["pred"][0], some_dict["pred"][1]]
+            delta_dict[some_model[:-3]] = [some_dict["delta"][0], some_dict["delta"][1]]
+            gamma_dict[some_model[:-3]] = [some_dict["gamma"][0], some_dict["gamma"][1]]
+        except:
+            print(some_model)
+
+    pred_dict["Andersen Lake, benchmark"] = [AL_greeks["price"][0], AL_greeks["price"][1]]
+    delta_dict["Andersen Lake, benchmark"] = [AL_greeks["delta"][0], AL_greeks["delta"][1]]
+    gamma_dict["Andersen Lake, benchmark"] = [AL_greeks["gamma"][0], AL_greeks["gamma"][1]] 
+
+    plot_func(spot_plot, pred_dict, "Al vs MC model predictions")
+    plot_func(spot_plot, delta_dict, "Al vs MC model delta")
+    plot_func(spot_plot, gamma_dict, "Al vs MC model gamma")

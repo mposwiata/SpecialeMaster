@@ -28,7 +28,7 @@ def lr_schedule(epoch, rate):
 
     return lr
 
-def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str) -> float:
+def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_loss : bool = False) -> float:
     model_save = "Models5/"+folder+"/"+model_name+"_"+str(n_layers)+"_"+str(n_neurons)+".h5"
     model_path = "Models5/"+folder+"/"
 
@@ -96,7 +96,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     ]
 
     start_time = time.time()
-    model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    loss = model.fit(X_train, Y_train, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
     stop_time = time.time()
 
     score = model.evaluate(X_test, Y_test, verbose=2)
@@ -115,9 +115,14 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
         output_file.write(model_save+" has a score of: "+str(score)+", and took a total time of: "+str(stop_time - start_time))
 
     print("Done with: ", model_save)
-    return score
 
-def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool, special_type : str = None) -> float:
+    if include_loss:
+        return loss, score
+
+    else:
+        return score
+
+def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : int, n_neurons : int, nn_type : str,  output_scaling : str, input_scaling : str, include_zero : bool, special_type : str = None, include_loss : bool = False) -> float:
     X_train = data_set[0] 
     X_test = data_set[1]
     Y_train = data_set[2]
@@ -143,7 +148,7 @@ def NN_mc_model_1(data_set : list, folder : str, model_name : str, n_layers : in
     
     try:
         data_set = [X_train, X_test, Y_train, Y_test]
-        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  output_scaling, input_scaling)
+        score = NNModelNext(data_set, folder, model_name, n_layers, n_neurons, nn_type,  output_scaling, input_scaling, include_loss)
 
         return score
     except:

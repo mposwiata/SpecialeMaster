@@ -13,7 +13,7 @@ sys.path.append(os.getcwd()) # added for calc server support
 from Thesis.Heston import NNModelGenerator as mg, HestonModel as hm, AndersenLake as al, ModelGenerator
 from Thesis.misc import VanillaOptions as vo
 
-def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int):
+def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOption, paths : int, use_parity : bool = False):
     dt = 252
     time_steps = int(some_option.tau * dt)
     forward_log = np.log(some_model.forward)
@@ -42,9 +42,24 @@ def Heston_monte_carlo(some_model : hm.HestonClass, some_option : vo.VanillaOpti
     
     forward = np.exp(forward_log)
 
-    return np.exp(-some_model.rate * some_option.tau) * (np.average(some_option(forward)))
+    if (np.average(forward) < some_option.strike and use_parity):
+        some_put = vo.EUPut(some_option.tau, some_option.strike)
+        put_price = np.exp(-some_model.rate * some_option.tau) * (np.average(some_put(forward)))
+        print(put_price)
+        call_price = put_price - np.exp(-some_model.rate * some_option.tau) * (some_option.strike - some_model.forward)
+    else:
+        call_price = np.exp(-some_model.rate * some_option.tau) * (np.average(some_option(forward)))
+
+    return call_price
 
 if __name__ == '__main__':
+    test_model = hm.HestonClass(50, 0.01, 0.1, 0.01, 2, 0.8, 0.05)
+    test_option = vo.EUCall(0.01, 100)
+    print(Heston_monte_carlo(test_model, test_option , 5000))
+    print(Heston_monte_carlo(test_model, test_option , 5000, True ))
+    print(al.Andersen_Lake(test_model, test_option))
+
+    """
     model_input = np.loadtxt("Data/MC/HestonMC_input.csv", delimiter=",")
 
     mc_imp_vol_1 = np.loadtxt("Data/MC/Heston_mc_imp_vol_1.csv", delimiter=",")
@@ -244,3 +259,4 @@ if __name__ == '__main__':
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NN_mc_model_1, server_list, chunksize=1)
     pool.close()
+    """

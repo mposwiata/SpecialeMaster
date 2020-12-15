@@ -33,6 +33,32 @@ def model_input_generator() -> np.ndarray:
 
     return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 
+def model_input_random_generator(no : int) -> np.ndarray:
+    model_input = np.random.uniform(size = (no, 7))
+
+    # Forward
+    model_input[:,0] = model_input[:,0] * (150-50) + 50 # transformation from [[0,1] to [50,150]]
+
+    # vol
+    model_input[:,1] = model_input[:,1] * (0.2-0.01) + 0.01
+
+    # kappa
+    model_input[:,2] = model_input[:,2] * (2-0.1) + 0.1
+
+    # theta
+    model_input[:,3] = model_input[:,3] * (0.2-0.01) + 0.01
+
+    # epsilon
+    model_input[:,4] = model_input[:,4] * (2-0.1) + 0.1
+
+    # rho
+    model_input[:,5] = model_input[:,5] * (0.99 - (-0.99)) -0.99
+
+    # rate
+    model_input[:,6] = model_input[:,6] * 0.2
+
+    return model_input
+
 def model_input_generator_old() -> np.ndarray:
     # Forward
     forward = np.linspace(start = 50, stop = 150, num = 10)
@@ -123,7 +149,8 @@ def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.n
     return output_price_matrix, output_imp_vol_matrix
 
 if __name__ == "__main__":
-    model_input = model_input_generator()
+    #model_input = model_input_generator()
+    model_input = model_input_random_generator(200000)
 
     option_input = option_input_generator() # different option combinations
     some_option_list = np.array([])
@@ -150,6 +177,6 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/grid_input.csv", model_input, delimiter=",")
-    np.savetxt("Data/grid_price.csv", price_output, delimiter=",")
-    np.savetxt("Data/grid_imp.csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/random_input.csv", model_input, delimiter=",")
+    np.savetxt("Data/random_price.csv", price_output, delimiter=",")
+    np.savetxt("Data/random_imp.csv", imp_vol_output, delimiter=",")

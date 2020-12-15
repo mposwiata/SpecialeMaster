@@ -43,37 +43,39 @@ def plot_func(x_axis : np.array, plot_data : dict, title : str):
             c = 'black'
         else:
             c = next(color)
-        easy_ax.plot(x_axis, plot_data[key][0], color = c, label = key, alpha = 0.5)
-        hard_ax.plot(x_axis, plot_data[key][1], color = c, label = key, alpha = 0.5)
+        easy_ax.plot(x_axis, plot_data[key][0], color = c, label = key, alpha = 0.5, linewidth=2)
+        hard_ax.plot(x_axis, plot_data[key][1], color = c, label = key, alpha = 0.5, linewidth=2)
         
     handles, labels = easy_ax.get_legend_handles_labels()
-    fig.suptitle(title,fontsize=20)
-    easy_ax.set_xlabel("Spot")
-    hard_ax.set_xlabel("Spot")
-    easy_ax.set_title("Low volatility")
-    hard_ax.set_title("High volatilty")
+    fig.suptitle(title, fontsize=25)
+    easy_ax.tick_params(axis = "both", labelsize=15)
+    hard_ax.tick_params(axis = "both", labelsize=15)
+    easy_ax.set_xlabel("Spot", fontsize = 20)
+    hard_ax.set_xlabel("Spot", fontsize = 20)
+    easy_ax.set_title("Low volatility", fontsize = 20)
+    hard_ax.set_title("High volatilty", fontsize = 20)
     fig.subplots_adjust(top=0.9, left=0.1, right=0.95, bottom=0.15)
-    fig.legend(handles, labels, loc="lower center", ncol = 3, fontsize=15)
+    fig.legend(handles, labels, loc="lower center", ncol = 5, prop={'size': 20})
     plt.savefig("Final_plots/BS/bs_mc_"+title.replace(" ", "_").replace(",","")+".png")
     plt.close()
 
-def generate_network(X, Y):
+def generate_network(X, Y) -> list:
     # Modelling
     adam = Adam()
 
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
     ]
-    model = nng.NN_generator(4, 50, np.shape(X)[1], np.shape(Y)[1])
+    model = nng.NN_generator(4, 25, np.shape(X)[1], np.shape(Y)[1])
 
     model.compile(
         loss = 'mean_squared_error', #mean squared error
         optimizer = adam
     )
 
-    model.fit(X, Y, epochs=100, batch_size=10, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    loss_history = model.fit(X, Y, epochs=100, batch_size=128, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
 
-    return model
+    return loss_history, model
 
 def generate_multi_network(X, Y):
     # Modelling
@@ -82,16 +84,16 @@ def generate_multi_network(X, Y):
     callbacks_list = [
         LearningRateScheduler(lr_schedule, verbose = 0),
     ]
-    model = nng.NN_generator(4, 50, np.shape(X)[1], np.shape(Y)[1])
+    model = nng.NN_generator(4, 25, np.shape(X)[1], np.shape(Y)[1])
 
     model.compile(
         loss = 'mean_squared_error', #mean squared error
         optimizer = adam
     )
 
-    model.fit(X, Y, epochs=100, batch_size=128, verbose = 2, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
+    loss_history = model.fit(X, Y, epochs=100, batch_size=1024, verbose = 0, callbacks = callbacks_list, validation_split = 0.1, shuffle=True)
 
-    return model
+    return loss_history, model
 
 def generate_predictions(test_x, model, norm_feature, norm_labels):
     ### Derivatives
@@ -211,10 +213,10 @@ def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarr
 
 if __name__ == "__main__":
     ### Generating input data
-    spot = np.linspace(start = 50, stop = 150, num = 1000)
+    spot = np.linspace(start = 50, stop = 150, num = 5000)
     vol = np.linspace(start = 0.01, stop = 0.5, num = 20)
-    vol1 = vol[1]
-    vol2 = vol[8]
+    vol1 = vol[5]
+    vol2 = vol[15]
     rate = 0.05
     input_array = np.array(list(itertools.product(spot, vol)))
 
@@ -231,6 +233,7 @@ if __name__ == "__main__":
     output_high_vol = np.zeros(len(spot))
     output_bs_high = np.zeros(len(spot))
     i = 0
+    single_start = time.time()
     for some_spot in spot:
         some_model1 = bs.BlackScholesForward(some_spot, vol1, rate)
         some_model2 = bs.BlackScholesForward(some_spot, vol2, rate)
@@ -239,18 +242,22 @@ if __name__ == "__main__":
         output_high_vol[i] = mc.Black_monte_carlo(some_model2, some_option, 5000)
         output_bs_high[i] = some_model2.BSFormula(some_option)
         i += 1
+    single_stop = time.time()
+    single_stop - single_start
 
     low_index = input_array[:,1] == vol1
     high_index = input_array[:,1] == vol2
     output_multi = np.zeros(np.shape(input_array)[0])
     output_multi_bs = np.zeros(np.shape(input_array)[0])
     i = 0
+    multi_start = time.time()
     for some_spot, some_vol in input_array:
         some_model = bs.BlackScholesForward(some_spot, some_vol, rate)
         output_multi[i] = mc.Black_monte_carlo(some_model, some_option, 5000)
         output_multi_bs[i] = some_model.BSFormula(some_option)
         i += 1
-
+    multi_stop = time.time()
+    multi_stop - multi_start
     training_data = {
         "Black" : [output_bs_low, output_bs_high],
         "Monte Carlo" : [output_low_vol, output_high_vol],
@@ -282,31 +289,35 @@ if __name__ == "__main__":
     norm_labels_mc2 = MinMaxScaler()
     Y_mc2 = norm_labels_mc2.fit_transform(output_high_vol)
 
-    bs_model1 = load_model("Models5/BS/bs_model1.h5")
-    #bs_model1 = generate_network(X, Y_bs1)
-    #bs_model1.save("Models5/BS/bs_model1.h5")
-    mc_model1 = load_model("Models5/BS/mc_model1.h5")
-    #mc_model1 = generate_network(X, Y_mc1)
-    #mc_model1.save("Models5/BS/mc_model1.h5")
-    bs_model2 = load_model("Models5/BS/bs_model2.h5")
-    #bs_model2 = generate_network(X, Y_bs2)
-    #bs_model2.save("Models5/BS/bs_model2.h5")
-    mc_model2 = load_model("Models5/BS/mc_model2.h5")
-    #mc_model2 = generate_network(X, Y_mc2)
-    #mc_model2.save("Models5/BS/mc_model2.h5")
+    #bs_model1 = load_model("Models5/BS/bs_model1.h5")
+    single_model_start = time.time()
+    loss_bs_model1, bs_model1 = generate_network(X, Y_bs1)
+    single_model_stop = time.time()
+    bs_model1.save("Models5/BS/bs_model1.h5")
+    #mc_model1 = load_model("Models5/BS/mc_model1.h5")
+    loss_mc_model1, mc_model1 = generate_network(X, Y_mc1)
+    mc_model1.save("Models5/BS/mc_model1.h5")
+    #bs_model2 = load_model("Models5/BS/bs_model2.h5")
+    loss_bs_model2, bs_model2 = generate_network(X, Y_bs2)
+    bs_model2.save("Models5/BS/bs_model2.h5")
+    #mc_model2 = load_model("Models5/BS/mc_model2.h5")
+    loss_mc_model2, mc_model2 = generate_network(X, Y_mc2)
+    mc_model2.save("Models5/BS/mc_model2.h5")
 
     norm_labels_multi_bs1 = MinMaxScaler()
     Y_multi_bs1 = norm_labels_multi_bs1.fit_transform(output_multi_bs)
     norm_labels_multi_mc1 = MinMaxScaler()
     Y_multi_mc1 = norm_labels_multi_mc1.fit_transform(output_multi)
 
-    bs_multi_model1 = load_model("Models5/BS/bs_multi_model1.h5")
-    #bs_multi_model1 = generate_multi_network(X_multi, Y_multi_bs1)
-    #bs_multi_model1.save("Models5/BS/bs_multi_model1.h5")
+    multi_model_start = time.time()
+    #bs_multi_model1 = load_model("Models5/BS/bs_multi_model1.h5")
+    loss_bs_multi_model1, bs_multi_model1 = generate_multi_network(X_multi, Y_multi_bs1)
+    multi_model_stop = time.time()
+    bs_multi_model1.save("Models5/BS/bs_multi_model1.h5")
 
-    mc_multi_model1 = load_model("Models5/BS/mc_multi_model1.h5")
-    #mc_multi_model1 = generate_multi_network(X_multi, Y_multi_mc1)
-    #mc_multi_model1.save("Models5/BS/mc_multi_model1.h5")
+    #mc_multi_model1 = load_model("Models5/BS/mc_multi_model1.h5")
+    loss_mc_multi_model1, mc_multi_model1 = generate_multi_network(X_multi, Y_multi_mc1)
+    mc_multi_model1.save("Models5/BS/mc_multi_model1.h5")
 
     ### Model testing
     spot_plot = np.linspace(start = 75, stop = 125, num = 200)
