@@ -15,7 +15,7 @@ if __name__ == "__main__":
     train_index, test_index = ModelGenerator.load_index(200000)
     
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    imp_vol = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
     X_test = model_input[test_index, :]
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     res = np.concatenate(res, axis = 1)
     price_output = res[0]
     imp_vol_output = res[1]
-
+"""
     val_loss = np.array((low2_loss.history["val_loss"][-1], benchmark2_loss.history["val_loss"][-1], high_loss.history["val_loss"][-1]))
     loss = np.array((low2_loss.history["loss"][-1], benchmark2_loss.history["loss"][-1], high_loss.history["loss"][-1]))
     obs = np.array((100, 200, 300))
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     ax.set_ylim(0, 1e-4)
     plt.savefig("val_training_loss_numbers.png")
     plt.close()
-
+"""
     ### Random
     random_input = np.loadtxt("Data/random_input.csv", delimiter = ",")
     #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
@@ -167,3 +167,13 @@ if __name__ == "__main__":
     model_list3_mse = mt.model_test_set(model_list, X_test_1, Y_test_1)
 
     random_mse = mt.model_test_set(model_list, X_test_random, Y_test_random)
+
+    grid_sobol = [
+        "Models5/grid/grid_5_500.h5",
+        "Models5/sobol/sobol_5_500.h5"
+    ]
+
+    sobol_grid_random_mse = mt.model_test_set(grid_sobol, X_test_random, Y_test_random)
+
+    imp_old = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    imp_new = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")

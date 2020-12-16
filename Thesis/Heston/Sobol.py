@@ -106,7 +106,7 @@ if __name__ == "__main__":
     print("Done with 10000")
     """
     generate_sobol_data(100000)
-    generate_sobol_data(200000)
+    #generate_sobol_data(200000)
     generate_sobol_data(300000)
     
-    #generate_sobol_data(279936) # matching number of inputs for the wide model
+    generate_sobol_data(279936) # matching number of inputs for the wide model
