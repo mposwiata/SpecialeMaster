@@ -180,7 +180,7 @@ if __name__ == "__main__":
     np.savetxt("Data/random_input.csv", model_input, delimiter=",")
     np.savetxt("Data/random_price.csv", price_output, delimiter=",")
     np.savetxt("Data/random_imp.csv", imp_vol_output, delimiter=",")
-
+    """
     ### Grid sequence
     model_input = model_input_generator()
 
@@ -212,3 +212,4 @@ if __name__ == "__main__":
     np.savetxt("Data/grid_input.csv", model_input, delimiter=",")
     np.savetxt("Data/grid_price.csv", price_output, delimiter=",")
     np.savetxt("Data/grid_imp.csv", imp_vol_output, delimiter=",")
+    """
