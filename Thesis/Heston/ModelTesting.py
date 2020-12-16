@@ -435,6 +435,56 @@ def generate_plots(model_list : list, plot_title: str):
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
+    price_models = glob.glob("Models5/*price*/*.h5")
+
+    imp_model_keys = [
+        "benchmark",
+        "benchmark_include",
+        "output_scaling",
+        "output_scaling_normalize",
+        "mix",
+        "tanh",
+        "standardize",
+        "mix_standardize",
+        "tanh_standardize",
+        "non_input_scaling"
+    ]
+    imp_models = []
+    for key in imp_model_keys:
+        imp_models.append(glob.glob("Models5/"+key+"/*.h5"))
+
+    train_index, test_index = mg.load_index(200000)
+    model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
+    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
+    price_old = np.loadtxt("Data/benchmark_price_old.csv", delimiter=",")
+    imp_vol_old = np.loadtxt("Data/benchmark_imp_old.csv", delimiter = ",")  
+
+    X_test = model_input[test_index, :]
+    Y_test = imp_vol[test_index, :]
+    Y_test_old = imp_vol_old[test_index, :]
+    Y_test_price = price[test_index, :]
+    Y_test_price_old = price_old[test_index, :]
+
+    price_mse = model_test_set(price_models, X_test, Y_test, Y_test_price)
+    imp_mse = model_test_set(imp_models, X_test, Y_test, Y_test_price)
+
+    with open("price_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(price_mse, fp)
+
+    with open("imp_mse.pkl", "wb") as fp:   #Pickling
+        pickle.dump(imp_mse, fp)
+
+    ### Random vs sobol vs grid
+    data_type_model_keys = [
+        "random",
+        "grid_sobol",
+        "grid"
+    ]
+    imp_models = []
+    for key in data_type_model_keys:
+        imp_models.append(glob.glob("Models5/"+key+"/*.h5"))
+
     combined_list = []
     first_run_keys = [
         "benchmark",
@@ -456,33 +506,12 @@ if __name__ == "__main__":
         "standardize_mat"
     ]
 
-    tmp_run = [
-        "benchmark",
-        "benchmark_include",
-        "output_scaling",
-        "output_scaling_normalize",
-        "mix",
-        "standardize",
-        "tanh"
-    ]
-
     for key in tmp_run:
         combined_list.append(glob.glob("Models5/"+key+"/*.h5"))
 
     combined_list = [item for sublist in combined_list for item in sublist]
 
-    train_index, test_index = mg.load_index(200000)
-    model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
-    price_old = np.loadtxt("Data/benchmark_price_old.csv", delimiter=",")
-    imp_vol_old = np.loadtxt("Data/benchmark_imp_old.csv", delimiter = ",")  
 
-    X_test = model_input[test_index, :]
-    Y_test = imp_vol[test_index, :]
-    Y_test_old = imp_vol_old[test_index, :]
-    Y_test_price = price[test_index, :]
-    Y_test_price_old = price_old[test_index, :]
 
     ### 100.000
     test_index_1 = np.loadtxt("Data/test_index_100000.csv", delimiter=",").astype(int)

@@ -11,81 +11,89 @@ sys.path.append(os.getcwd()) # added for calc server support
 from Thesis.Heston import NNModelGenerator as mg, DataGeneration as dg, ModelGenerator, ModelTesting as mt, Sobol, HestonModel as hm, AndersenLake as al
 from Thesis.misc import VanillaOptions as vo
 
+def subset(no : int, model_input : np.ndarray, imp_vol : np.ndarray) -> list:
+    train_test_set = np.random.choice(np.arange(300000), size=no, replace=False)
+    train_index, test_index = train_test_split(train_test_set, test_size=0.3, random_state=42)
+
+    data_set = [
+        model_input[train_index, :], model_input[test_index, :],
+        imp_vol[train_index, :], imp_vol[test_index, :]
+    ]
+
+    return data_set
+
+def sobol_self(no : int, model_input : np.ndarray, imp_vol : np.ndarray) -> list:
+    train_index, test_index = train_test_split(np.arange(no), test_size=0.3, random_state=42)
+
+    data_set = [
+        model_input[train_index, :], model_input[test_index, :],
+        imp_vol[train_index, :], imp_vol[test_index, :]
+    ]
+
+    return data_set
+
 if __name__ == "__main__":
-    train_index, test_index = ModelGenerator.load_index(200000)
-    
-    model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-
-    X_train = model_input[train_index, :]
-    X_test = model_input[test_index, :]
-    Y_train = imp_vol[train_index, :]
-    Y_test = imp_vol[test_index, :]
-
-    data_set_1 = [X_train, X_test, Y_train, Y_test]
-
-    train_index_1, test_index_1 = ModelGenerator.load_index(100000)
-    model_input_1 = np.loadtxt("Data/sobol_final_input100000.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_final_imp100000.csv", delimiter=",")
-    X_train_1 = model_input_1[train_index_1, :]
-    X_test_1 = model_input_1[test_index_1, :]
-    Y_train_1 = imp_vol_1[train_index_1, :]
-    Y_test_1 = imp_vol_1[test_index_1, :]
-
-    data_set_100000 = [X_train_1, X_test_1, Y_train_1, Y_test_1]
-
-    train_index_3, test_index_3 = ModelGenerator.load_index(300000)
     model_input_3 = np.loadtxt("Data/sobol_final_input300000.csv", delimiter = ",")
     imp_vol_3 = np.loadtxt("Data/sobol_final_imp300000.csv", delimiter=",")
-    X_train_3 = model_input_3[train_index_3, :]
-    X_test_3 = model_input_3[test_index_3, :]
-    Y_train_3 = imp_vol_3[train_index_3, :]
-    Y_test_3 = imp_vol_3[test_index_3, :]
+    data_set_5 = subset(5000, model_input_3, imp_vol_3)
+    data_set_10 = subset(10000, model_input_3, imp_vol_3)
+    data_set_25 = subset(25000, model_input_3, imp_vol_3)
+    data_set_50 = subset(50000, model_input_3, imp_vol_3)
+    data_set_75 = subset(75000, model_input_3, imp_vol_3)
+    data_set_100 = subset(100000, model_input_3, imp_vol_3)
+    data_set_125 = subset(125000, model_input_3, imp_vol_3)
+    data_set_150 = subset(150000, model_input_3, imp_vol_3)
+    data_set_175 = subset(175000, model_input_3, imp_vol_3)
+    data_set_200 = subset(200000, model_input_3, imp_vol_3)
+    data_set_225 = subset(225000, model_input_3, imp_vol_3)
+    data_set_250 = subset(250000, model_input_3, imp_vol_3)
+    data_set_275 = subset(275000, model_input_3, imp_vol_3)
+    data_set_300 = subset(300000, model_input_3, imp_vol_3)
 
-    data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
-
-    ### Pulling 100k from the 300k
-    len_100k = len(train_index_1) + len(test_index_1)
-    train_test_100k = np.random.choice(np.arange(300000), size=len_100k, replace=False)
-    train_100k2, test_100k2 = train_test_split(train_test_100k, test_size=0.3, random_state=42)
-
-    data_set_300_100 = [
-        model_input_3[train_100k2, :], model_input_3[test_100k2, :],
-        imp_vol_3[train_100k2, :], imp_vol_3[test_100k2, :]
-    ]
-
-    ### Pulling 200k from the 300k
-    len_200k = len(train_index) + len(test_index)
-    train_test_200k = np.random.choice(np.arange(300000), size=len_200k, replace=False)
-    train_200k2, test_200k2 = train_test_split(train_test_200k, test_size=0.3, random_state=42)
-
-    data_set_300_200 = [
-        model_input_3[train_200k2, :], model_input_3[test_200k2, :],
-        imp_vol_3[train_200k2, :], imp_vol_3[test_200k2, :]
-    ]
-    """
-    benchmark_loss, benchmark_score = mg.NN_mc_model_1(data_set_1, "loss_history", "benchmark", 5, 500, \
-        "normal", "False", "standardize", False, None, True)
-
-    low_loss, low_score = mg.NN_mc_model_1(data_set_100000, "loss_history", "low", 5, 500, \
-        "normal", "False", "standardize", False, None, True)
-
-    low2_loss, low2_score = mg.NN_mc_model_1(data_set_300_100, "loss_history", "low2", 5, 500, \
-        "normal", "False", "standardize", False, None, True)
-
-    high_loss, high_score = mg.NN_mc_model_1(data_set_300000, "loss_history", "high", 5, 500, \
-        "normal", "False", "standardize", False, None, True)
-
-    benchmark2_loss, benchmark2_score = mg.NN_mc_model_1(data_set_300_200, "loss_history", "benchmark2", 5, 500, \
-        "normal", "False", "standardize", False, None, True)
-    """
+    sobol_set_5 = sobol_self(5000, model_input_3, imp_vol_3)
+    sobol_set_10 = sobol_self(10000, model_input_3, imp_vol_3)
+    sobol_set_25 = sobol_self(25000, model_input_3, imp_vol_3)
+    sobol_set_50 = sobol_self(50000, model_input_3, imp_vol_3)
+    sobol_set_75 = sobol_self(75000, model_input_3, imp_vol_3)
+    sobol_set_100 = sobol_self(100000, model_input_3, imp_vol_3)
+    sobol_set_125 = sobol_self(125000, model_input_3, imp_vol_3)
+    sobol_set_150 = sobol_self(150000, model_input_3, imp_vol_3)
+    sobol_set_175 = sobol_self(175000, model_input_3, imp_vol_3)
+    sobol_set_200 = sobol_self(200000, model_input_3, imp_vol_3)
+    sobol_set_225 = sobol_self(225000, model_input_3, imp_vol_3)
+    sobol_set_250 = sobol_self(250000, model_input_3, imp_vol_3)
+    sobol_set_275 = sobol_self(275000, model_input_3, imp_vol_3)
+    sobol_set_300 = sobol_self(300000, model_input_3, imp_vol_3)
 
     model_list = [
-        [data_set_1, "loss_history", "benchmark", 5, 500, "normal", "False", "standardize", False, None, True],
-        [data_set_100000, "loss_history", "low", 5, 500, "normal", "False", "standardize", False, None, True],
-        [data_set_300_100, "loss_history", "low2", 5, 500, "normal", "False", "standardize", False, None, True],
-        [data_set_300000, "loss_history", "high", 5, 500, "normal", "False", "standardize", False, None, True],
-        [data_set_300_200, "loss_history", "benchmark2", 5, 500, "normal", "False", "standardize", False, None, True]
+        [data_set_5, "loss_history", "data_set_5", 5, 500, "normal", "False", "standardize", False],
+        [data_set_10, "loss_history", "data_set_10", 5, 500, "normal", "False", "standardize", False],
+        [data_set_25, "loss_history", "data_set_25", 5, 500, "normal", "False", "standardize", False],
+        [data_set_50, "loss_history", "data_set_50", 5, 500, "normal", "False", "standardize", False],
+        [data_set_75, "loss_history", "data_set_75", 5, 500, "normal", "False", "standardize", False],
+        [data_set_100, "loss_history", "data_set_100", 5, 500, "normal", "False", "standardize", False],
+        [data_set_125, "loss_history", "data_set_125", 5, 500, "normal", "False", "standardize", False],
+        [data_set_150, "loss_history", "data_set_150", 5, 500, "normal", "False", "standardize", False],
+        [data_set_175, "loss_history", "data_set_175", 5, 500, "normal", "False", "standardize", False],
+        [data_set_200, "loss_history", "data_set_200", 5, 500, "normal", "False", "standardize", False],
+        [data_set_225, "loss_history", "data_set_225", 5, 500, "normal", "False", "standardize", False],
+        [data_set_250, "loss_history", "data_set_250", 5, 500, "normal", "False", "standardize", False],
+        [data_set_275, "loss_history", "data_set_275", 5, 500, "normal", "False", "standardize", False],
+        [data_set_300, "loss_history", "data_set_300", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_5, "loss_history", "sobol_set_5", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_10, "loss_history", "sobol_set_10", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_25, "loss_history", "sobol_set_25", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_50, "loss_history", "sobol_set_50", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_75, "loss_history", "sobol_set_75", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_100, "loss_history", "sobol_set_100", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_125, "loss_history", "sobol_set_125", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_150, "loss_history", "sobol_set_150", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_175, "loss_history", "sobol_set_175", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_200, "loss_history", "sobol_set_200", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_225, "loss_history", "sobol_set_225", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_250, "loss_history", "sobol_set_250", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_275, "loss_history", "sobol_set_275", 5, 500, "normal", "False", "standardize", False],
+        [sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False]
     ]
 
     if cpu_count() == 4:
@@ -97,60 +105,7 @@ if __name__ == "__main__":
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
 
-    res = np.concatenate(res, axis = 1)
-    price_output = res[0]
-    imp_vol_output = res[1]
-"""
-    val_loss = np.array((low2_loss.history["val_loss"][-1], benchmark2_loss.history["val_loss"][-1], high_loss.history["val_loss"][-1]))
-    loss = np.array((low2_loss.history["loss"][-1], benchmark2_loss.history["loss"][-1], high_loss.history["loss"][-1]))
-    obs = np.array((100, 200, 300))
-
-    fig = plt.figure(figsize=(10, 10), dpi = 200)
-    ax = plt.subplot(111)
-    ax.plot(benchmark2_loss.history["loss"], label = "200k subset loss")
-    ax.plot(benchmark2_loss.history["val_loss"], label = "200k subset val loss")
-    ax.plot(benchmark_loss.history["loss"], label = "200k Sobol loss")
-    ax.plot(benchmark_loss.history["val_loss"], label = "200k Sobol val loss")
-    ax.plot(high_loss.history["loss"], label = "300k Sobol loss")
-    ax.plot(high_loss.history["val_loss"], label = "300k Sobol val loss")
-    ax.plot(low2_loss.history["loss"], label = "100k subset loss")
-    ax.plot(low2_loss.history["val_loss"], label = "100k subset val loss")
-    ax.plot(low_loss.history["loss"], label = "100k Sobol loss")
-    ax.plot(low_loss.history["val_loss"], label = "100k Sobol val loss")
-        
-    fig.suptitle("Val vs training loss",fontsize=25)
-    ax.tick_params(axis="both",labelsize=15)
-    ax.yaxis.offsetText.set_fontsize(15)
-    ax.set_xlabel("Epoch", fontsize=20)
-    ax.set_ylabel("Loss", fontsize=20)
-    ax.legend(loc="lower left", fontsize=15)
-    ax.set_ylim(0, 1e-4)
-    plt.savefig("val_training_loss.png")
-    plt.close()
-
-    fig = plt.figure(figsize=(10, 10), dpi = 200)
-    ax = plt.subplot(111)
-    ax.plot(obs, val_loss, label = "val loss")
-    ax.plot(obs, loss, label = "loss")
-        
-    fig.suptitle("Val vs training loss",fontsize=25)
-    ax.tick_params(axis="both",labelsize=15)
-    ax.yaxis.offsetText.set_fontsize(15)
-    ax.set_xlabel("Epoch", fontsize=20)
-    ax.set_ylabel("Loss", fontsize=20)
-    ax.legend(loc="lower left", fontsize=15)
-    ax.set_ylim(0, 1e-4)
-    plt.savefig("val_training_loss_numbers.png")
-    plt.close()
-"""
-    ### Random
-    random_input = np.loadtxt("Data/random_input.csv", delimiter = ",")
-    #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    random_imp_vol = np.loadtxt("Data/random_imp.csv", delimiter=",")
-
-    X_test_random = random_input[test_index, :]
-    Y_test_random = random_imp_vol[test_index, :]
-
+    """
     ### Cross checking models
     model_list = [
         "Models5/loss_history/benchmark_5_500.h5",
@@ -177,3 +132,4 @@ if __name__ == "__main__":
 
     imp_old = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     imp_new = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
+    """

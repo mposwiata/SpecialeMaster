@@ -239,7 +239,6 @@ if __name__ == '__main__':
         itertools.repeat("dropout"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("dropout"), itertools.repeat("False"), itertools.repeat("standardize"), itertools.repeat(False)))
 
-
     same_param_list = [
         [data_set_1, "same_param", "same_param", 5, 100, "normal", "False", "standardize", False],
         [data_set_1, "same_param", "same_param", 1, 1324, "normal", "False", "standardize", False],
