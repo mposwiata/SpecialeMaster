@@ -180,3 +180,35 @@ if __name__ == "__main__":
     np.savetxt("Data/random_input.csv", model_input, delimiter=",")
     np.savetxt("Data/random_price.csv", price_output, delimiter=",")
     np.savetxt("Data/random_imp.csv", imp_vol_output, delimiter=",")
+
+    ### Grid sequence
+    model_input = model_input_generator()
+
+    option_input = option_input_generator() # different option combinations
+    some_option_list = np.array([])
+    for option in option_input:
+        some_option_list = np.append(some_option_list, vo.EUCall(option[0], option[1]))
+
+    # going parallel
+    if cpu_count() == 4:
+        cpu_cores = 4
+    else:
+        cpu_cores = int(min(cpu_count()/4, 16))
+    parallel_set = np.array_split(model_input, cpu_cores, axis=0)
+    parallel_list = []
+
+    # generating list of datasets for parallel
+    for i in range(cpu_cores):
+        parallel_list.append((parallel_set[i], some_option_list))
+
+    # parallel
+    pool = Pool(cpu_cores)
+    res = pool.starmap(imp_vol_generator, parallel_list)
+    res = np.concatenate(res, axis = 1)
+    price_output = res[0]
+    imp_vol_output = res[1]
+
+    # saving grid datasets
+    np.savetxt("Data/grid_input.csv", model_input, delimiter=",")
+    np.savetxt("Data/grid_price.csv", price_output, delimiter=",")
+    np.savetxt("Data/grid_imp.csv", imp_vol_output, delimiter=",")
