@@ -262,7 +262,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = standardize_mat_list + standardize_single_list
+    server_list = standardize_single_list + standardize_mat_list
 
     if cpu_count() == 4:
         cpu_cores = 4
