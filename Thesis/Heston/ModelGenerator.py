@@ -54,8 +54,7 @@ if __name__ == '__main__':
     train_index, test_index = load_index(200000)
     
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    imp_vol = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
+    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
@@ -79,10 +78,10 @@ if __name__ == '__main__':
     #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     random_imp_vol = np.loadtxt("Data/random_imp.csv", delimiter=",")
 
-    X_train_random = model_input[train_index, :]
-    X_test_random = model_input[test_index, :]
-    Y_train_random = imp_vol[train_index, :]
-    Y_test_random = imp_vol[test_index, :]
+    X_train_random = random_input[train_index, :]
+    X_test_random = random_input[test_index, :]
+    Y_train_random = random_imp_vol[train_index, :]
+    Y_test_random = random_imp_vol[test_index, :]
 
     data_set_random = [X_train_random, X_test_random, Y_train_random, Y_test_random]
 
@@ -144,8 +143,8 @@ if __name__ == '__main__':
         itertools.repeat("high_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
-    random_data_list = list(zip(itertools.repeat(data_set_random), itertools.repeat("random_data"), \
-        itertools.repeat("random_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    random_data_list = list(zip(itertools.repeat(data_set_random), itertools.repeat("random_data2"), \
+        itertools.repeat("random_data2"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     grid_sobol_list = list(zip(itertools.repeat(data_set_grid_sobol), itertools.repeat("grid_sobol"), \
@@ -264,7 +263,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = low_data_list + high_data_list + random_data_list
+    server_list = random_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4

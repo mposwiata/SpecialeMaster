@@ -595,6 +595,9 @@ if __name__ == "__main__":
     tanh_standardize_1_50 = "Models5/tanh_standardize/tanh_standardize_1_50.h5"
     tanh_standardize_1_50_dict = model_grads(tanh_standardize_1_50, input_good_easy, input_good_hard, some_option)
 
+    high_5_500 = "Models5/loss_history/high_5_500.h5"
+    high_5_500_dict = model_grads(high_5_500, input_good_easy, input_good_hard, some_option)
+
     prediction_data = {
         "mix_standardize_5_1000" : [mix_standardize_5_1000_dict["pred"][0], mix_standardize_5_1000_dict["pred"][1]],
         "standardize_5_100" : [standardize_5_100_dict["pred"][0], standardize_5_100_dict["pred"][1]],
@@ -603,6 +606,7 @@ if __name__ == "__main__":
         "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["pred"][0], tanh_standardize_5_50_dict["pred"][1]],
         "mix_standardize_1_500" : [mix_standardize_1_500_dict["pred"][0], mix_standardize_1_500_dict["pred"][1]],
         "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["pred"][0], tanh_standardize_1_50_dict["pred"][1]],
+        "high_5_500" : [high_5_500_dict["pred"][0], high_5_500_dict["pred"][1]],
         "Andersen Lake, benchmark" : [price_easy_al, price_hard_al]
     }
 
@@ -614,6 +618,7 @@ if __name__ == "__main__":
         "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["delta"][0], tanh_standardize_5_50_dict["delta"][1]],
         "mix_standardize_1_500" : [mix_standardize_1_500_dict["delta"][0], mix_standardize_1_500_dict["delta"][1]],
         "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["delta"][0], tanh_standardize_1_50_dict["delta"][1]],
+        "high_5_500" : [high_5_500_dict["delta"][0], high_5_500_dict["delta"][1]],
         "Andersen Lake, benchmark" : [delta_easy_al, delta_hard_al]
     }
 
@@ -625,6 +630,7 @@ if __name__ == "__main__":
         "tanh_standardize_5_50" : [tanh_standardize_5_50_dict["gamma"][0], tanh_standardize_5_50_dict["gamma"][1]],
         "mix_standardize_1_500" : [mix_standardize_1_500_dict["gamma"][0], mix_standardize_1_500_dict["gamma"][1]],
         "tanh_standardize_1_50" : [tanh_standardize_1_50_dict["gamma"][0], tanh_standardize_1_50_dict["gamma"][1]],
+        "high_5_500" : [high_5_500_dict["gamma"][0], high_5_500_dict["gamma"][1]],
         "Andersen Lake, benchmark" : [gamma_easy_al, gamma_hard_al]
     }
 

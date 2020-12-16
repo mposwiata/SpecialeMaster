@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     train_index_1, test_index_1 = ModelGenerator.load_index(100000)
     model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/100000_imp.csv", delimiter=",")
+    imp_vol_1 = np.loadtxt("Data/sobol_final100000.csv", delimiter=",")
     X_train_1 = model_input_1[train_index_1, :]
     X_test_1 = model_input_1[test_index_1, :]
     Y_train_1 = imp_vol_1[train_index_1, :]
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     train_index_3, test_index_3 = ModelGenerator.load_index(300000)
     model_input_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")
-    imp_vol_3 = np.loadtxt("Data/300000_imp.csv", delimiter=",")
+    imp_vol_3 = np.loadtxt("Data/sobol_final300000.csv", delimiter=",")
     X_train_3 = model_input_3[train_index_3, :]
     X_test_3 = model_input_3[test_index_3, :]
     Y_train_3 = imp_vol_3[train_index_3, :]
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         model_input_3[train_200k2, :], model_input_3[test_200k2, :],
         imp_vol_3[train_200k2, :], imp_vol_3[test_200k2, :]
     ]
-
+    """
     benchmark_loss, benchmark_score = mg.NN_mc_model_1(data_set_1, "loss_history", "benchmark", 5, 500, \
         "normal", "False", "standardize", False, None, True)
 
@@ -78,6 +78,28 @@ if __name__ == "__main__":
 
     benchmark2_loss, benchmark2_score = mg.NN_mc_model_1(data_set_300_200, "loss_history", "benchmark2", 5, 500, \
         "normal", "False", "standardize", False, None, True)
+    """
+
+    model_list = [
+        [data_set_1, "loss_history", "benchmark", 5, 500, "normal", "False", "standardize", False, None, True],
+        [data_set_100000, "loss_history", "low", 5, 500, "normal", "False", "standardize", False, None, True],
+        [data_set_300_100, "loss_history", "low2", 5, 500, "normal", "False", "standardize", False, None, True],
+        [data_set_300000, "loss_history", "high", 5, 500, "normal", "False", "standardize", False, None, True],
+        [data_set_300_200, "loss_history", "benchmark2", 5, 500, "normal", "False", "standardize", False, None, True]
+    ]
+
+    if cpu_count() == 4:
+        cpu_cores = 4
+    else:
+        cpu_cores = int(min(cpu_count()/4, 16))
+
+    pool = Pool(cpu_cores)
+    res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
+    pool.close()
+
+    res = np.concatenate(res, axis = 1)
+    price_output = res[0]
+    imp_vol_output = res[1]
 
     val_loss = np.array((low2_loss.history["val_loss"][-1], benchmark2_loss.history["val_loss"][-1], high_loss.history["val_loss"][-1]))
     loss = np.array((low2_loss.history["loss"][-1], benchmark2_loss.history["loss"][-1], high_loss.history["loss"][-1]))
@@ -121,6 +143,14 @@ if __name__ == "__main__":
     plt.savefig("val_training_loss_numbers.png")
     plt.close()
 
+    ### Random
+    random_input = np.loadtxt("Data/random_input.csv", delimiter = ",")
+    #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    random_imp_vol = np.loadtxt("Data/random_imp.csv", delimiter=",")
+
+    X_test_random = random_input[test_index, :]
+    Y_test_random = random_imp_vol[test_index, :]
+
     ### Cross checking models
     model_list = [
         "Models5/loss_history/benchmark_5_500.h5",
@@ -135,3 +165,5 @@ if __name__ == "__main__":
     model_list2_mse = mt.model_test_set(model_list, X_test, Y_test)
 
     model_list3_mse = mt.model_test_set(model_list, X_test_1, Y_test_1)
+
+    random_mse = mt.model_test_set(model_list, X_test_random, Y_test_random)
