@@ -89,8 +89,8 @@ if __name__ == '__main__':
     neurons = [50, 100, 500, 1000]
 
     train_index_1, test_index_1 = load_index(100000)
-    model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_final100000.csv", delimiter=",")
+    model_input_1 = np.loadtxt("Data/sobol_final_input100000.csv", delimiter = ",")
+    imp_vol_1 = np.loadtxt("Data/sobol_final_imp100000.csv", delimiter=",")
     X_train_1 = model_input_1[train_index_1, :]
     X_test_1 = model_input_1[test_index_1, :]
     Y_train_1 = imp_vol_1[train_index_1, :]
@@ -99,8 +99,8 @@ if __name__ == '__main__':
     data_set_100000 = [X_train_1, X_test_1, Y_train_1, Y_test_1]
 
     train_index_3, test_index_3 = load_index(300000)
-    model_input_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")
-    imp_vol_3 = np.loadtxt("Data/sobol_final300000.csv", delimiter=",")
+    model_input_3 = np.loadtxt("Data/sobol_final_input300000.csv", delimiter = ",")
+    imp_vol_3 = np.loadtxt("Data/sobol_final_imp300000.csv", delimiter=",")
     X_train_3 = model_input_3[train_index_3, :]
     X_test_3 = model_input_3[test_index_3, :]
     Y_train_3 = imp_vol_3[train_index_3, :]
@@ -109,8 +109,8 @@ if __name__ == '__main__':
     data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
 
     train_grid_compare_index, test_grid_compare_index  = load_index(279936)
-    grid_compare_sobol_input = np.loadtxt("Data/279936_input.csv", delimiter = ",")
-    grid_compare_sobol_imp = np.loadtxt("Data/279936_imp.csv", delimiter = ",")
+    grid_compare_sobol_input = np.loadtxt("Data/sobol_final_input279936.csv", delimiter = ",")
+    grid_compare_sobol_imp = np.loadtxt("Data/sobol_final_imp279936.csv", delimiter = ",")
     grid_compare_input = np.loadtxt("Data/grid_input.csv", delimiter = ",")
     grid_compare_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
     X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = random_data_list
+    server_list = grid_sobol_list + low_data_list + high_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4

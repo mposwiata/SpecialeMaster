@@ -15,7 +15,7 @@ if __name__ == "__main__":
     train_index, test_index = ModelGenerator.load_index(200000)
     
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    imp_vol = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
+    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
     X_test = model_input[test_index, :]
@@ -25,8 +25,8 @@ if __name__ == "__main__":
     data_set_1 = [X_train, X_test, Y_train, Y_test]
 
     train_index_1, test_index_1 = ModelGenerator.load_index(100000)
-    model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/sobol_final100000.csv", delimiter=",")
+    model_input_1 = np.loadtxt("Data/sobol_final_input100000.csv", delimiter = ",")
+    imp_vol_1 = np.loadtxt("Data/sobol_final_imp100000.csv", delimiter=",")
     X_train_1 = model_input_1[train_index_1, :]
     X_test_1 = model_input_1[test_index_1, :]
     Y_train_1 = imp_vol_1[train_index_1, :]
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     data_set_100000 = [X_train_1, X_test_1, Y_train_1, Y_test_1]
 
     train_index_3, test_index_3 = ModelGenerator.load_index(300000)
-    model_input_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")
-    imp_vol_3 = np.loadtxt("Data/sobol_final300000.csv", delimiter=",")
+    model_input_3 = np.loadtxt("Data/sobol_final_input300000.csv", delimiter = ",")
+    imp_vol_3 = np.loadtxt("Data/sobol_final_imp300000.csv", delimiter=",")
     X_train_3 = model_input_3[train_index_3, :]
     X_test_3 = model_input_3[test_index_3, :]
     Y_train_3 = imp_vol_3[train_index_3, :]
