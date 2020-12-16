@@ -475,10 +475,14 @@ if __name__ == "__main__":
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
     imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
     price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
+    price_old = np.loadtxt("Data/benchmark_price_old.csv", delimiter=",")
+    imp_vol_old = np.loadtxt("Data/benchmark_imp_old.csv", delimiter = ",")  
 
     X_test = model_input[test_index, :]
     Y_test = imp_vol[test_index, :]
+    Y_test_old = imp_vol_old[test_index, :]
     Y_test_price = price[test_index, :]
+    Y_test_price_old = price_old[test_index, :]
 
     ### 100.000
     test_index_1 = np.loadtxt("Data/test_index_100000.csv", delimiter=",").astype(int)
@@ -810,13 +814,13 @@ if __name__ == "__main__":
 
     mc_list = [item for sublist in mc_list for item in sublist]
 
-    mc_mse = model_test_set(mc_list, X_test, Y_test, Y_test_price)
+    mc_mse = model_test_set(mc_list, X_test, Y_test_old, Y_test_price_old)
 
     mc_mse.sort(key = lambda x: -x[1])
-    with open("mc_mse.pkl", "wb") as fp:   #Pickling
+    with open("mc_mse_final.pkl", "wb") as fp:   #Pickling
         pickle.dump(mc_mse, fp)
 
-    with open("mc_mse.pkl", "rb") as fp:   # Unpickling
+    with open("mc_mse_final.pkl", "rb") as fp:   # Unpickling
         mc_mse = pickle.load(fp)
 
     evaluation_first_list = []

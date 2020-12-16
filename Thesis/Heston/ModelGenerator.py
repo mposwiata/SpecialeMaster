@@ -54,7 +54,8 @@ if __name__ == '__main__':
     train_index, test_index = load_index(200000)
     
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
-    imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
+    imp_vol = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
     price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
@@ -78,7 +79,7 @@ if __name__ == '__main__':
 
     train_index_1, test_index_1 = load_index(100000)
     model_input_1 = np.loadtxt("Data/100000_input.csv", delimiter = ",")
-    imp_vol_1 = np.loadtxt("Data/100000_imp.csv", delimiter=",")
+    imp_vol_1 = np.loadtxt("Data/sobol_final100000.csv", delimiter=",")
     X_train_1 = model_input_1[train_index_1, :]
     X_test_1 = model_input_1[test_index_1, :]
     Y_train_1 = imp_vol_1[train_index_1, :]
@@ -88,7 +89,7 @@ if __name__ == '__main__':
 
     train_index_3, test_index_3 = load_index(300000)
     model_input_3 = np.loadtxt("Data/300000_input.csv", delimiter = ",")
-    imp_vol_3 = np.loadtxt("Data/300000_imp.csv", delimiter=",")
+    imp_vol_3 = np.loadtxt("Data/sobol_final300000.csv", delimiter=",")
     X_train_3 = model_input_3[train_index_3, :]
     X_test_3 = model_input_3[test_index_3, :]
     Y_train_3 = imp_vol_3[train_index_3, :]
@@ -247,7 +248,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = price_list + price_tanh_list + price_mix_list + price_include_list + price_standardize_list + price_output_standardize_list + price_output_normalize_list
+    server_list = low_data_list + high_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4

@@ -64,9 +64,9 @@ def generate_sobol_data(no_sobol : int):
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", gridInput, delimiter=",")
-    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", price_output, delimiter=",")
-    np.savetxt("Data/sobol_final"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/sobol_final_input"+str(no_sobol)+".csv", gridInput, delimiter=",")
+    np.savetxt("Data/sobol_final_price"+str(no_sobol)+".csv", price_output, delimiter=",")
+    np.savetxt("Data/sobol_final_imp"+str(no_sobol)+".csv", imp_vol_output, delimiter=",")
 
     return 0
 
