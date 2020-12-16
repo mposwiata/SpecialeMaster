@@ -247,7 +247,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = regul_list + dropout_list
+    server_list = price_list + price_tanh_list + price_mix_list + price_include_list + price_standardize_list + price_output_standardize_list + price_output_normalize_list
 
     if cpu_count() == 4:
         cpu_cores = 4

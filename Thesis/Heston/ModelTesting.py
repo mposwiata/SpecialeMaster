@@ -495,7 +495,6 @@ if __name__ == "__main__":
     high_data_models_mse = model_test_set(high_data_models, X_test_3, Y_test_3)
     high_data_models_mse.sort(key = lambda x: x[1])
 
-
     test_index_grid = np.loadtxt("Data/test_index_279936.csv", delimiter=",").astype(int)
     X_test_grid = np.loadtxt("Data/279936_input.csv", delimiter = ",")[test_index_grid, :]
     Y_test_grid = np.loadtxt("Data/279936_imp.csv", delimiter = ",")[test_index_grid, :]
