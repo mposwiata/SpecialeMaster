@@ -16,8 +16,6 @@ if __name__ == "__main__":
     
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
     imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    price = np.loadtxt("Data/benchmark_price.csv", delimiter=",")
-    price2 = np.loadtxt("Data/sobol_second_set_price200000.csv", delimiter=",")
 
     X_train = model_input[train_index, :]
     X_test = model_input[test_index, :]

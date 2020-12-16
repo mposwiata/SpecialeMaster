@@ -35,7 +35,7 @@ class BlackScholesForward:
             if some_vol < -1:
                 return -1
             return self.BSFormula(option) - price
-        root_result = root(root_func, 0.4, args = (price, option), tol=10e-5)
+        root_result = root(root_func, 0.4, args = (price, option), tol=10e-6)
         if root_result.success:
             return root_result.x
         else:

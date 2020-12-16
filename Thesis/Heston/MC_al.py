@@ -353,7 +353,7 @@ if __name__ == "__main__":
     rate = 0.05
     input_array = np.array(list(itertools.product(spot, epsilon)))
 
-    tau = 1.005 #set to match option data
+    tau = 1.05 #set to match option data
     strike = 100
 
     some_option = vo.EUCall(tau, strike)
