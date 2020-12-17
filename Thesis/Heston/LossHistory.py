@@ -5,6 +5,7 @@ from keras.models import load_model
 import matplotlib.pyplot as plt
 import sys
 import os
+import glob
 import itertools
 sys.path.append(os.getcwd()) # added for calc server support
 
@@ -33,6 +34,7 @@ def sobol_self(no : int, model_input : np.ndarray, imp_vol : np.ndarray) -> list
     return data_set
 
 if __name__ == "__main__":
+    """
     model_input_3 = np.loadtxt("Data/sobol_final_input300000.csv", delimiter = ",")
     imp_vol_3 = np.loadtxt("Data/sobol_final_imp300000.csv", delimiter=",")
     data_set_5 = subset(5000, model_input_3, imp_vol_3)
@@ -104,32 +106,45 @@ if __name__ == "__main__":
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
-
     """
-    ### Cross checking models
-    model_list = [
-        "Models5/loss_history/benchmark_5_500.h5",
-        "Models5/loss_history/benchmark2_5_500.h5",
-        "Models5/loss_history/low_5_500.h5",
-        "Models5/loss_history/low2_5_500.h5",
-        "Models5/loss_history/high_5_500.h5"
-    ]
 
-    model_list_mse = mt.model_test_set(model_list, X_test_3, Y_test_3)
+    random_input = np.loadtxt("Data/random_input_279936.csv", delimiter=",")
+    random_imp = np.loadtxt("Data/random_imp_279936.csv", delimiter=",")
+    test_index = np.random.choice(np.arange(len(random_imp)),size=30000, replace=False)
 
-    model_list2_mse = mt.model_test_set(model_list, X_test, Y_test)
+    models = glob.glob("Models5/loss_history/*.h5")
 
-    model_list3_mse = mt.model_test_set(model_list, X_test_1, Y_test_1)
+    models_mse = mt.model_test_set(models, random_input[test_index, :], random_imp[test_index, :])
 
-    random_mse = mt.model_test_set(model_list, X_test_random, Y_test_random)
+    data_set_list = []
+    sobol_set_list = []
 
-    grid_sobol = [
-        "Models5/grid/grid_5_500.h5",
-        "Models5/sobol/sobol_5_500.h5"
-    ]
+    for some_list in models_mse:
+        if (some_list[0].find("data") != -1):
+            data_set_list.append((some_list[0][:8], 
+            int(some_list[0][9:some_list[0].rfind("_")-2]),
+            some_list[1]))
+        else:
+            sobol_set_list.append((some_list[0][:9], 
+            int(some_list[0][10:some_list[0].rfind("_")-2]),
+            some_list[1]))
 
-    sobol_grid_random_mse = mt.model_test_set(grid_sobol, X_test_random, Y_test_random)
+    data_set_list.sort(key = lambda x: x[1])
+    data_set_x = [sublist[2] for sublist in data_set_list]
+    data_set_y = [sublist[1] for sublist in data_set_list]
+    sobol_set_list.sort(key = lambda x: x[1])
+    sobol_set_x = [sublist[2] for sublist in sobol_set_list]
+    sobol_set_y = [sublist[1] for sublist in sobol_set_list]
 
-    imp_old = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    imp_new = np.loadtxt("Data/sobol_final200000.csv", delimiter=",")
-    """
+    fig = plt.figure(figsize=(10, 10), dpi = 200)
+    ax = fig.add_subplot(111)
+    ax.plot(data_set_y, data_set_x, label = "Random from Sobol")
+    ax.plot(sobol_set_y, sobol_set_x, label = "Sobol")
+    ax.set_xlabel("Data set size", fontsize=20)
+    ax.set_ylabel("Loss", fontsize=20)
+    ax.tick_params(axis = "both", labelsize = 10)
+    ax.set_title("Data size MSE", fontsize=25)
+    ax.legend(loc="upper right", prop={'size': 20})
+    ax.set_ylim(0,2e-4)
+    plt.savefig("Data_size_mse.png")
+    plt.close()

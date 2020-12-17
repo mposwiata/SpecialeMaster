@@ -435,7 +435,7 @@ def generate_plots(model_list : list, plot_title: str):
     generate_bar_error(mse, plot_title)
 
 if __name__ == "__main__":
-    price_models = glob.glob("Models5/*price*/*.h5")
+    price_models = glob.glob("Models5/price*/*.h5")
 
     imp_model_keys = [
         "benchmark",
@@ -452,6 +452,8 @@ if __name__ == "__main__":
     imp_models = []
     for key in imp_model_keys:
         imp_models.append(glob.glob("Models5/"+key+"/*.h5"))
+    
+    imp_models = [item for sublist in imp_models for item in sublist]
 
     train_index, test_index = mg.load_index(200000)
     model_input = np.loadtxt("Data/benchmark_input.csv", delimiter = ",")
