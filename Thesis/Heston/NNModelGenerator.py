@@ -117,7 +117,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
     print("Done with: ", model_save)
 
     if include_loss:
-        return loss, score
+        return loss, model
 
     else:
         return score

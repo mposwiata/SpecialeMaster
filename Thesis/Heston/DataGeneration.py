@@ -11,25 +11,25 @@ from Thesis.misc import VanillaOptions as vo
 
 def model_input_generator() -> np.ndarray:
     # Forward
-    forward = np.linspace(start = 50, stop = 150, num = 6)
+    forward = np.linspace(start = 50, stop = 150, num = 5)
 
     # vol
-    vol = np.linspace(start = 0.01, stop = 0.2, num = 6)
+    vol = np.linspace(start = 0.01, stop = 0.2, num = 5)
 
     # kappa
-    kappa = np.linspace(start = 0.1, stop = 2, num = 6)
+    kappa = np.linspace(start = 0.1, stop = 2, num = 5)
 
     # theta
-    theta = np.linspace(start = 0.01, stop = 0.2, num = 6)
+    theta = np.linspace(start = 0.01, stop = 0.2, num = 5)
 
     # epsilon
-    epsilon = np.linspace(start = 0.1, stop = 2, num = 6)
+    epsilon = np.linspace(start = 0.1, stop = 2, num = 5)
 
     # rho
-    rho = np.linspace(start = -0.99, stop = 0.99, num = 6)
+    rho = np.linspace(start = -0.99, stop = 0.99, num = 5)
 
     # rate
-    rate = np.linspace(start = 0, stop = 0.2, num = 6)
+    rate = np.linspace(start = 0, stop = 0.2, num = 5)
 
     return np.array(list(itertools.product(forward, vol, kappa, theta, epsilon, rho, rate))) # model parameter combinations
 
@@ -150,7 +150,7 @@ def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.n
 
 if __name__ == "__main__":
     #model_input = model_input_generator()
-    model_input = model_input_random_generator(279936)
+    model_input = model_input_random_generator(5**7)
 
     option_input = option_input_generator() # different option combinations
     some_option_list = np.array([])
@@ -177,9 +177,9 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/random_input_279936.csv", model_input, delimiter=",")
-    np.savetxt("Data/random_price_279936.csv", price_output, delimiter=",")
-    np.savetxt("Data/random_imp_279936.csv", imp_vol_output, delimiter=",")
+    np.savetxt("Data/random_input_78125.csv", model_input, delimiter=",")
+    np.savetxt("Data/random_price_78125.csv", price_output, delimiter=",")
+    np.savetxt("Data/random_imp_78125.csv", imp_vol_output, delimiter=",")
     
     ### Grid sequence
     model_input = model_input_generator()

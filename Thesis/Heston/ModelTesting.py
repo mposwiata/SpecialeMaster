@@ -479,13 +479,17 @@ if __name__ == "__main__":
 
     ### Random vs sobol vs grid
     data_type_model_keys = [
-        "random",
+        "random_data2",
         "grid_sobol",
         "grid"
     ]
-    imp_models = []
+    data_type_models = []
     for key in data_type_model_keys:
-        imp_models.append(glob.glob("Models5/"+key+"/*.h5"))
+        data_type_models.append(glob.glob("Models5/"+key+"/*.h5"))
+    
+    data_type_models = [item for sublist in data_type_models for item in sublist]
+
+    data_type_mse = model_test_set(data_type_models, X_test, Y_test, Y_test_price)
 
     combined_list = []
     first_run_keys = [

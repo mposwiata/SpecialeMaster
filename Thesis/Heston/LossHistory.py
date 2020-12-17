@@ -2,6 +2,7 @@ import numpy as np
 from multiprocessing import Pool, cpu_count, Process
 from sklearn.model_selection import train_test_split
 from keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import matplotlib.pyplot as plt
 import sys
 import os
@@ -106,7 +107,38 @@ if __name__ == "__main__":
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
 
-    sobol_300_loss, sobol_300_score = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False)
+    sobol_300_loss, sobol_300_model = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False, None, True)
+
+    sobol_300_normalize_loss, sobol_300_normalize_model = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_300_normalize", 5, 500, "normal", "False", "normalize", False, None, True)
+
+
+    scaler = joblib.load("Models5/loss_history/norm_feature.pkl")
+
+    test_set = random_input[:2, :]
+    test_input = scaler.transform(test_set)
+    test_imp = random_imp[:2, :]
+    sobol_300_model.predict(test_set)
+    some_test = np.array((-2,-2,-1,0,0,0,0))
+    some_test = np.reshape(some_test, (1,-1))
+    sobol_300_model.predict(some_test)
+    some_model2 = load_model("Models5/loss_history/sobol_set_200_5_500.h5")
+
+    sobol2_300_loss, sobol2_300_score = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol2_set_300", 1, 50, "normal", "False", "standardize", False, None, True)
+
+
+
+    fig = plt.figure(figsize=(10, 10), dpi = 200)
+    ax = fig.add_subplot(111)
+    ax.plot(sobol_300_loss.history["loss"], label = "Loss")
+    ax.plot(sobol_300_loss.history["val_loss"], label = "Val Loss")
+    ax.set_xlabel("Data set size", fontsize=20)
+    ax.set_ylabel("Loss", fontsize=20)
+    ax.tick_params(axis = "both", labelsize = 10)
+    ax.set_title("Data size MSE", fontsize=25)
+    ax.legend(loc="upper right", prop={'size': 20})
+    ax.set_ylim(0,2e-2)
+    plt.savefig("test.png")
+    plt.close()
 
     random_input = np.loadtxt("Data/random_input_279936.csv", delimiter=",")
     random_imp = np.loadtxt("Data/random_imp_279936.csv", delimiter=",")
