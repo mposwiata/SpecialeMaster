@@ -73,18 +73,6 @@ if __name__ == '__main__':
     data_set_single = [X_train_single, X_test_single, Y_train_single, Y_test_single]
     data_set_mat = [X_train_mat, X_test_mat, Y_train_mat, Y_test_mat]
 
-    ### Random
-    random_input = np.loadtxt("Data/random_input.csv", delimiter = ",")
-    #imp_vol = np.loadtxt("Data/benchmark_imp.csv", delimiter=",")
-    random_imp_vol = np.loadtxt("Data/random_imp.csv", delimiter=",")
-
-    X_train_random = random_input[train_index, :]
-    X_test_random = random_input[test_index, :]
-    Y_train_random = random_imp_vol[train_index, :]
-    Y_test_random = random_imp_vol[test_index, :]
-
-    data_set_random = [X_train_random, X_test_random, Y_train_random, Y_test_random]
-
     layers = [1, 2, 3, 4, 5]
     neurons = [50, 100, 500, 1000]
 
@@ -108,11 +96,21 @@ if __name__ == '__main__':
 
     data_set_300000 = [X_train_3, X_test_3, Y_train_3, Y_test_3]
 
-    train_grid_compare_index, test_grid_compare_index  = load_index(279936)
-    grid_compare_sobol_input = np.loadtxt("Data/sobol_final_input279936.csv", delimiter = ",")
-    grid_compare_sobol_imp = np.loadtxt("Data/sobol_final_imp279936.csv", delimiter = ",")
+    train_grid_compare_index, test_grid_compare_index  = load_index(78125)
+    grid_compare_sobol_input = np.loadtxt("Data/sobol_final_input78125.csv", delimiter = ",")
+    grid_compare_sobol_imp = np.loadtxt("Data/sobol_final_imp78125.csv", delimiter = ",")
     grid_compare_input = np.loadtxt("Data/grid_input.csv", delimiter = ",")
     grid_compare_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
+
+    ### Random
+    random_input = np.loadtxt("Data/random_input_imp78125.csv", delimiter = ",")
+    random_imp_vol = np.loadtxt("Data/random_imp_imp78125.csv", delimiter=",")
+
+    X_train_random = random_input[train_grid_compare_index, :]
+    X_test_random = random_input[test_grid_compare_index, :]
+    Y_train_random = random_imp_vol[train_grid_compare_index, :]
+    Y_test_random = random_imp_vol[test_grid_compare_index, :]
+
     X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
     X_test_grid_sobol = grid_compare_sobol_input[test_grid_compare_index, :]
     Y_train_grid_sobol = grid_compare_sobol_imp[train_grid_compare_index, :]
@@ -125,6 +123,7 @@ if __name__ == '__main__':
 
     data_set_grid_sobol = [X_train_grid_sobol, X_test_grid_sobol, Y_train_grid_sobol, Y_test_grid_sobol]
     data_set_grid = [X_train_grid, X_test_grid, Y_train_grid, Y_test_grid]
+    data_set_random = [X_train_random, X_test_random, Y_train_random, Y_test_random]
 
     layer_neuron_combs = np.array(list(itertools.product(layers, neurons)))
     benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
@@ -262,7 +261,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = grid_list
+    server_list = grid_list + grid_sobol_list + random_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4
