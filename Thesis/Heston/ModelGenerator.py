@@ -103,8 +103,8 @@ if __name__ == '__main__':
     grid_compare_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
 
     ### Random
-    random_input = np.loadtxt("Data/random_input_imp78125.csv", delimiter = ",")
-    random_imp_vol = np.loadtxt("Data/random_imp_imp78125.csv", delimiter=",")
+    random_input = np.loadtxt("Data/random_input_78125.csv", delimiter = ",")
+    random_imp_vol = np.loadtxt("Data/random_imp_78125.csv", delimiter=",")
 
     X_train_random = random_input[train_grid_compare_index, :]
     X_test_random = random_input[test_grid_compare_index, :]
