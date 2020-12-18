@@ -68,34 +68,34 @@ if __name__ == "__main__":
     sobol_set_300 = sobol_self(300000, model_input_3, imp_vol_3)
 
     model_list = [
-        [data_set_5, "data_size/data_set_5", "data_set_5", 5, 100, "normal", "False", "standardize", False],
-        [data_set_10, "data_size/data_set_10", "data_set_10", 5, 100, "normal", "False", "standardize", False],
-        [data_set_25, "data_size/data_set_25", "data_set_25", 5, 100, "normal", "False", "standardize", False],
-        [data_set_50, "data_size/data_set_50", "data_set_50", 5, 100, "normal", "False", "standardize", False],
-        [data_set_75, "data_size/data_set_75", "data_set_75", 5, 100, "normal", "False", "standardize", False],
-        [data_set_100, "data_size/data_set_100", "data_set_100", 5, 100, "normal", "False", "standardize", False],
-        [data_set_125, "data_size/data_set_125", "data_set_125", 5, 100, "normal", "False", "standardize", False],
-        [data_set_150, "data_size/data_set_150", "data_set_150", 5, 100, "normal", "False", "standardize", False],
-        [data_set_175, "data_size/data_set_175", "data_set_175", 5, 100, "normal", "False", "standardize", False],
-        [data_set_200, "data_size/data_set_200", "data_set_200", 5, 100, "normal", "False", "standardize", False],
-        [data_set_225, "data_size/data_set_225", "data_set_225", 5, 100, "normal", "False", "standardize", False],
-        [data_set_250, "data_size/data_set_250", "data_set_250", 5, 100, "normal", "False", "standardize", False],
-        [data_set_275, "data_size/data_set_275", "data_set_275", 5, 100, "normal", "False", "standardize", False],
-        [data_set_300, "data_size/data_set_300", "data_set_300", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_5, "data_size/sobol_set_5", "sobol_set_5", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_10, "data_size/sobol_set_10", "sobol_set_10", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_25, "data_size/sobol_set_25", "sobol_set_25", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_50, "data_size/sobol_set_50", "sobol_set_50", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_75, "data_size/sobol_set_75", "sobol_set_75", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_100, "data_size/sobol_set_100", "sobol_set_100", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_125, "data_size/sobol_set_125", "sobol_set_125", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_150, "data_size/sobol_set_150", "sobol_set_150", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_175, "data_size/sobol_set_175", "sobol_set_175", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_200, "data_size/sobol_set_200", "sobol_set_200", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_225, "data_size/sobol_set_225", "sobol_set_225", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_250, "data_size/sobol_set_250", "sobol_set_250", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_275, "data_size/sobol_set_275", "sobol_set_275", 5, 100, "normal", "False", "standardize", False],
-        [sobol_set_300, "data_size/sobol_set_300", "sobol_set_300", 5, 100, "normal", "False", "standardize", False]
+        [data_set_5, "data_size2/data_set_5", "data_set_5", 3, 500, "normal", "False", "standardize", False],
+        [data_set_10, "data_size2/data_set_10", "data_set_10", 3, 500, "normal", "False", "standardize", False],
+        [data_set_25, "data_size2/data_set_25", "data_set_25", 3, 500, "normal", "False", "standardize", False],
+        [data_set_50, "data_size2/data_set_50", "data_set_50", 3, 500, "normal", "False", "standardize", False],
+        [data_set_75, "data_size2/data_set_75", "data_set_75", 3, 500, "normal", "False", "standardize", False],
+        [data_set_100, "data_size2/data_set_100", "data_set_100", 3, 500, "normal", "False", "standardize", False],
+        [data_set_125, "data_size2/data_set_125", "data_set_125", 3, 500, "normal", "False", "standardize", False],
+        [data_set_150, "data_size2/data_set_150", "data_set_150", 3, 500, "normal", "False", "standardize", False],
+        [data_set_175, "data_size2/data_set_175", "data_set_175", 3, 500, "normal", "False", "standardize", False],
+        [data_set_200, "data_size2/data_set_200", "data_set_200", 3, 500, "normal", "False", "standardize", False],
+        [data_set_225, "data_size2/data_set_225", "data_set_225", 3, 500, "normal", "False", "standardize", False],
+        [data_set_250, "data_size2/data_set_250", "data_set_250", 3, 500, "normal", "False", "standardize", False],
+        [data_set_275, "data_size2/data_set_275", "data_set_275", 3, 500, "normal", "False", "standardize", False],
+        [data_set_300, "data_size2/data_set_300", "data_set_300", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_5, "data_size2/sobol_set_5", "sobol_set_5", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_10, "data_size2/sobol_set_10", "sobol_set_10", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_25, "data_size2/sobol_set_25", "sobol_set_25", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_50, "data_size2/sobol_set_50", "sobol_set_50", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_75, "data_size2/sobol_set_75", "sobol_set_75", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_100, "data_size2/sobol_set_100", "sobol_set_100", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_125, "data_size2/sobol_set_125", "sobol_set_125", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_150, "data_size2/sobol_set_150", "sobol_set_150", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_175, "data_size2/sobol_set_175", "sobol_set_175", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_200, "data_size2/sobol_set_200", "sobol_set_200", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_225, "data_size2/sobol_set_225", "sobol_set_225", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_250, "data_size2/sobol_set_250", "sobol_set_250", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_275, "data_size2/sobol_set_275", "sobol_set_275", 3, 500, "normal", "False", "standardize", False],
+        [sobol_set_300, "data_size2/sobol_set_300", "sobol_set_300", 3, 500, "normal", "False", "standardize", False]
     ]
 
     if cpu_count() == 4:
@@ -103,9 +103,55 @@ if __name__ == "__main__":
     else:
         cpu_cores = int(min(cpu_count()/4, 16))
 
+    """
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
+
+    random_input = np.loadtxt("Data/random_input_279936.csv", delimiter=",")
+    random_imp = np.loadtxt("Data/random_imp_279936.csv", delimiter=",")
+    test_index = np.random.choice(np.arange(len(random_imp)),size=30000, replace=False)
+
+    # 5, 100 models
+    models = glob.glob("Models5/data_size/*/*.h5")
+
+    models_mse = mt.model_test_set(models, random_input[test_index, :], random_imp[test_index, :])
+
+    data_set_list = []
+    sobol_set_list = []
+
+    for some_list in models_mse:
+        if (some_list[0].find("data") != -1):
+            data_set_list.append((some_list[0][:8], 
+            int(some_list[0][9:some_list[0].rfind("_")-2]),
+            some_list[1]))
+        else:
+            sobol_set_list.append((some_list[0][:9], 
+            int(some_list[0][10:some_list[0].rfind("_")-2]),
+            some_list[1]))
+
+    data_set_list.sort(key = lambda x: x[1])
+    data_set_x = [sublist[2] for sublist in data_set_list]
+    data_set_y = [sublist[1] for sublist in data_set_list]
+    sobol_set_list.sort(key = lambda x: x[1])
+    sobol_set_x = [sublist[2] for sublist in sobol_set_list]
+    sobol_set_y = [sublist[1] for sublist in sobol_set_list]
+
+    fig = plt.figure(figsize=(10, 10), dpi = 200)
+    ax = fig.add_subplot(111)
+    ax.plot(data_set_y, data_set_x, label = "Random from Sobol")
+    ax.plot(sobol_set_y, sobol_set_x, label = "Sobol")
+    ax.set_xlabel("Data set size", fontsize=20)
+    ax.set_ylabel("Loss", fontsize=20)
+    ax.tick_params(axis = "both", labelsize = 10)
+    ax.set_title("Data size MSE", fontsize=25)
+    ax.legend(loc="upper right", prop={'size': 20})
+    ax.set_ylim(0,2e-4)
+    plt.savefig("Data_size_mse.png")
+    plt.close()
+
+    """
+
     """
 
     sobol_300_loss, sobol_300_model = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False, None, True)
