@@ -125,6 +125,8 @@ if __name__ == '__main__':
     data_set_grid = [X_train_grid, X_test_grid, Y_train_grid, Y_test_grid]
     data_set_random = [X_train_random, X_test_random, Y_train_random, Y_test_random]
 
+    ### Second random
+
     layer_neuron_combs = np.array(list(itertools.product(layers, neurons)))
     benchmark_list = list(zip(itertools.repeat(data_set_1), itertools.repeat("benchmark"), \
         itertools.repeat("benchmark"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \

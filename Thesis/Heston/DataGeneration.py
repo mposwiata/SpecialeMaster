@@ -150,7 +150,7 @@ def imp_vol_generator(input_array : np.ndarray, option_list : np.array) -> (np.n
 
 if __name__ == "__main__":
     #model_input = model_input_generator()
-    model_input = model_input_random_generator(5**7)
+    model_input = model_input_random_generator(200000)
 
     option_input = option_input_generator() # different option combinations
     some_option_list = np.array([])
@@ -177,10 +177,10 @@ if __name__ == "__main__":
     imp_vol_output = res[1]
 
     # saving grid datasets
-    np.savetxt("Data/random_input_78125.csv", model_input, delimiter=",")
-    np.savetxt("Data/random_price_78125.csv", price_output, delimiter=",")
-    np.savetxt("Data/random_imp_78125.csv", imp_vol_output, delimiter=",")
-    
+    np.savetxt("Data/random_input_200000.csv", model_input, delimiter=",")
+    np.savetxt("Data/random_price_200000.csv", price_output, delimiter=",")
+    np.savetxt("Data/random_imp_200000.csv", imp_vol_output, delimiter=",")
+    """
     ### Grid sequence
     model_input = model_input_generator()
 
@@ -212,4 +212,4 @@ if __name__ == "__main__":
     np.savetxt("Data/grid_input.csv", model_input, delimiter=",")
     np.savetxt("Data/grid_price.csv", price_output, delimiter=",")
     np.savetxt("Data/grid_imp.csv", imp_vol_output, delimiter=",")
-    
+    """

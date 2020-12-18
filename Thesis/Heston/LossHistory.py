@@ -138,10 +138,37 @@ if __name__ == "__main__":
     sobol_set_x = [sublist[2] for sublist in sobol_set_list]
     sobol_set_y = [sublist[1] for sublist in sobol_set_list]
 
+    # 3, 500 models
+    models2 = glob.glob("Models5/data_size2/*/*.h5")
+
+    models2_mse = mt.model_test_set(models2, random_input[test_index, :], random_imp[test_index, :])
+
+    data2_set_list = []
+    sobol2_set_list = []
+
+    for some_list in models2_mse:
+        if (some_list[0].find("data") != -1):
+            data2_set_list.append((some_list[0][:8], 
+            int(some_list[0][9:some_list[0].rfind("_")-2]),
+            some_list[1]))
+        else:
+            sobol2_set_list.append((some_list[0][:9], 
+            int(some_list[0][10:some_list[0].rfind("_")-2]),
+            some_list[1]))
+
+    data2_set_list.sort(key = lambda x: x[1])
+    data2_set_x = [sublist[2] for sublist in data2_set_list]
+    data2_set_y = [sublist[1] for sublist in data2_set_list]
+    sobol2_set_list.sort(key = lambda x: x[1])
+    sobol2_set_x = [sublist[2] for sublist in sobol2_set_list]
+    sobol2_set_y = [sublist[1] for sublist in sobol2_set_list]
+
     fig = plt.figure(figsize=(10, 10), dpi = 200)
     ax = fig.add_subplot(111)
-    ax.plot(data_set_y, data_set_x, label = "Random from Sobol")
-    ax.plot(sobol_set_y, sobol_set_x, label = "Sobol")
+    ax.plot(data_set_y, data_set_x, label = "Random from Sobol, 5, 100")
+    ax.plot(sobol_set_y, sobol_set_x, label = "Sobol, 5, 100")
+    ax.plot(data2_set_y, data2_set_x, label = "Random from Sobol, 3, 500")
+    ax.plot(sobol2_set_y, sobol2_set_x, label = "Sobol, 3, 500")
     ax.set_xlabel("Data set size", fontsize=20)
     ax.set_ylabel("Loss", fontsize=20)
     ax.tick_params(axis = "both", labelsize = 10)

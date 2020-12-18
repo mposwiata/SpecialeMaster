@@ -489,7 +489,15 @@ if __name__ == "__main__":
     
     data_type_models = [item for sublist in data_type_models for item in sublist]
 
-    data_type_mse = model_test_set(data_type_models, X_test, Y_test, Y_test_price)
+    random_train_index, random_test_index = mg.load_index(78125)
+    random_input = np.loadtxt("Data/random_input_78125.csv", delimiter = ",")
+    random_imp = np.loadtxt("Data/random_imp_78125.csv", delimiter = ",")
+    grid_input = np.loadtxt("Data/grid_input.csv", delimiter = ",")
+    grid_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
+
+    data_type_mse = model_test_set(data_type_models, random_input[random_test_index, :], random_imp[random_test_index, :])
+    data_type_mse_sobol = model_test_set(data_type_models, model_input[random_test_index, :], imp_vol[random_test_index, :])
+    data_type_mse_grid = model_test_set(data_type_models, grid_input[random_test_index, :], grid_imp[random_test_index, :])
 
     combined_list = []
     first_run_keys = [
