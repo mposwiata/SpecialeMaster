@@ -68,34 +68,34 @@ if __name__ == "__main__":
     sobol_set_300 = sobol_self(300000, model_input_3, imp_vol_3)
 
     model_list = [
-        #[data_set_5, "loss_history", "data_set_5", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_10, "loss_history", "data_set_10", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_25, "loss_history", "data_set_25", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_50, "loss_history", "data_set_50", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_75, "loss_history", "data_set_75", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_100, "loss_history", "data_set_100", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_125, "loss_history", "data_set_125", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_150, "loss_history", "data_set_150", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_175, "loss_history", "data_set_175", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_200, "loss_history", "data_set_200", 5, 500, "normal", "False", "standardize", False],
-        #[data_set_225, "loss_history", "data_set_225", 5, 500, "normal", "False", "standardize", False],
-        [data_set_250, "loss_history", "data_set_250", 5, 500, "normal", "False", "standardize", False],
-        [data_set_275, "loss_history", "data_set_275", 5, 500, "normal", "False", "standardize", False],
-        [data_set_300, "loss_history", "data_set_300", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_5, "loss_history", "sobol_set_5", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_10, "loss_history", "sobol_set_10", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_25, "loss_history", "sobol_set_25", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_50, "loss_history", "sobol_set_50", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_75, "loss_history", "sobol_set_75", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_100, "loss_history", "sobol_set_100", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_125, "loss_history", "sobol_set_125", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_150, "loss_history", "sobol_set_150", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_175, "loss_history", "sobol_set_175", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_200, "loss_history", "sobol_set_200", 5, 500, "normal", "False", "standardize", False],
-        #[sobol_set_225, "loss_history", "sobol_set_225", 5, 500, "normal", "False", "standardize", False],
-        [sobol_set_250, "loss_history", "sobol_set_250", 5, 500, "normal", "False", "standardize", False],
-        [sobol_set_275, "loss_history", "sobol_set_275", 5, 500, "normal", "False", "standardize", False],
-        [sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False]
+        [data_set_5, "loss_history", "data_set_5", 5, 100, "normal", "False", "standardize", False],
+        [data_set_10, "loss_history", "data_set_10", 5, 100, "normal", "False", "standardize", False],
+        [data_set_25, "loss_history", "data_set_25", 5, 100, "normal", "False", "standardize", False],
+        [data_set_50, "loss_history", "data_set_50", 5, 100, "normal", "False", "standardize", False],
+        [data_set_75, "loss_history", "data_set_75", 5, 100, "normal", "False", "standardize", False],
+        [data_set_100, "loss_history", "data_set_100", 5, 100, "normal", "False", "standardize", False],
+        [data_set_125, "loss_history", "data_set_125", 5, 100, "normal", "False", "standardize", False],
+        [data_set_150, "loss_history", "data_set_150", 5, 100, "normal", "False", "standardize", False],
+        [data_set_175, "loss_history", "data_set_175", 5, 100, "normal", "False", "standardize", False],
+        [data_set_200, "loss_history", "data_set_200", 5, 100, "normal", "False", "standardize", False],
+        [data_set_225, "loss_history", "data_set_225", 5, 100, "normal", "False", "standardize", False],
+        [data_set_250, "loss_history", "data_set_250", 5, 100, "normal", "False", "standardize", False],
+        [data_set_275, "loss_history", "data_set_275", 5, 100, "normal", "False", "standardize", False],
+        [data_set_300, "loss_history", "data_set_300", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_5, "loss_history", "sobol_set_5", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_10, "loss_history", "sobol_set_10", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_25, "loss_history", "sobol_set_25", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_50, "loss_history", "sobol_set_50", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_75, "loss_history", "sobol_set_75", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_100, "loss_history", "sobol_set_100", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_125, "loss_history", "sobol_set_125", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_150, "loss_history", "sobol_set_150", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_175, "loss_history", "sobol_set_175", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_200, "loss_history", "sobol_set_200", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_225, "loss_history", "sobol_set_225", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_250, "loss_history", "sobol_set_250", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_275, "loss_history", "sobol_set_275", 5, 100, "normal", "False", "standardize", False],
+        [sobol_set_300, "loss_history", "sobol_set_300", 5, 100, "normal", "False", "standardize", False]
     ]
 
     if cpu_count() == 4:
@@ -106,13 +106,11 @@ if __name__ == "__main__":
     pool = Pool(cpu_cores)
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
+    """
 
     sobol_300_loss, sobol_300_model = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_set_300", 5, 500, "normal", "False", "standardize", False, None, True)
 
     sobol_300_normalize_loss, sobol_300_normalize_model = mg.NN_mc_model_1(sobol_set_300, "loss_history", "sobol_300_normalize", 5, 500, "normal", "False", "normalize", False, None, True)
-
-
-    scaler = joblib.load("Models5/loss_history/norm_feature.pkl")
 
     test_set = random_input[:2, :]
     test_input = scaler.transform(test_set)
@@ -180,3 +178,4 @@ if __name__ == "__main__":
     ax.set_ylim(0,2e-4)
     plt.savefig("Data_size_mse.png")
     plt.close()
+"""
