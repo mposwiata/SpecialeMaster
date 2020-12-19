@@ -499,6 +499,26 @@ if __name__ == "__main__":
     data_type_mse_sobol = model_test_set(data_type_models, model_input[random_test_index, :], imp_vol[random_test_index, :])
     data_type_mse_grid = model_test_set(data_type_models, grid_input[random_test_index, :], grid_imp[random_test_index, :])
 
+    ### 200K
+    ### Random vs sobol vs grid
+    data_type_model_keys = [
+        "random_data200000",
+        "benchmark"
+    ]
+    data_type_models = []
+    for key in data_type_model_keys:
+        data_type_models.append(glob.glob("Models5/"+key+"/*.h5"))
+    
+    data_type_models = [item for sublist in data_type_models for item in sublist]
+    random_input_200 = np.loadtxt("Data/random_input_200000.csv", delimiter = ",")
+    random_imp_200 = np.loadtxt("Data/random_imp_200000.csv", delimiter = ",")
+
+    data_type_200_mse = model_test_set(data_type_models, X_test, Y_test)
+    data_type_200_random_mse = model_test_set(data_type_models, random_input_200[test_index, :], random_imp_200[test_index, :])
+    data_type_200_mse.sort(key = lambda x: x[1])
+    data_type_200_random_mse.sort(key = lambda x: x[1])
+    generate_bar_error(data_type_200_mse, "Mickey")
+
     combined_list = []
     first_run_keys = [
         "benchmark",

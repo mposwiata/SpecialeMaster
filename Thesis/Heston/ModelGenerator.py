@@ -105,11 +105,14 @@ if __name__ == '__main__':
     ### Random
     random_input = np.loadtxt("Data/random_input_200000.csv", delimiter = ",")
     random_imp_vol = np.loadtxt("Data/random_imp_200000.csv", delimiter=",")
+    random_price = np.loadtxt("Data/random_price_200000.csv", delimiter=",")
 
     X_train_random = random_input[train_index, :]
     X_test_random = random_input[test_index, :]
     Y_train_random = random_imp_vol[train_index, :]
     Y_test_random = random_imp_vol[test_index, :]
+    Y_train_price_random = random_price[train_index, :]
+    Y_test_price_random = random_price[test_index, :]
 
     X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
     X_test_grid_sobol = grid_compare_sobol_input[test_grid_compare_index, :]
@@ -124,6 +127,7 @@ if __name__ == '__main__':
     data_set_grid_sobol = [X_train_grid_sobol, X_test_grid_sobol, Y_train_grid_sobol, Y_test_grid_sobol]
     data_set_grid = [X_train_grid, X_test_grid, Y_train_grid, Y_test_grid]
     data_set_random = [X_train_random, X_test_random, Y_train_random, Y_test_random]
+    data_set_random_price = [X_train_random, X_test_random, Y_train_random, Y_test_random]
 
     ### Second random
 
@@ -146,6 +150,10 @@ if __name__ == '__main__':
 
     random_data_list = list(zip(itertools.repeat(data_set_random), itertools.repeat("random_data200000"), \
         itertools.repeat("random_data200000"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+        itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
+
+    random_price_data_list = list(zip(itertools.repeat(data_set_random_price), itertools.repeat("random_data200000_price"), \
+        itertools.repeat("random_data200000_price"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     grid_sobol_list = list(zip(itertools.repeat(data_set_grid_sobol), itertools.repeat("grid_sobol"), \
@@ -263,7 +271,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = standardize_single_list
+    server_list = random_price_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4

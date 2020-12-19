@@ -54,11 +54,15 @@ def plot_func(x_axis : np.array, plot_data : dict, title : str):
         hard_ax.plot(x_axis, plot_data[key][1], color = c, label = key)
         
     handles, labels = easy_ax.get_legend_handles_labels()
-    fig.suptitle(title,fontsize=20)
-    easy_ax.set_xlabel("Forward")
-    hard_ax.set_xlabel("Forward")
-    easy_ax.set_title("Easy case")
-    hard_ax.set_title("Hard case")
+    fig.suptitle(title,fontsize=25)
+    easy_ax.tick_params(axis = "both", labelsize = 15)
+    hard_ax.tick_params(axis = "both", labelsize = 15)
+    easy_ax.set_xlabel("Forward", fontsize=15)
+    hard_ax.set_xlabel("Forward", fontsize=15)
+    easy_ax.set_ylabel("Price", fontsize=15)
+    hard_ax.set_ylabel("Price", fontsize=15)
+    easy_ax.set_title("Easy case", fontsize=20)
+    hard_ax.set_title("Hard case", fontsize=20)
     fig.subplots_adjust(top=0.9, left=0.1, right=0.95, bottom=0.15)
     fig.legend(handles, labels, loc="lower center", ncol = 3, fontsize=15)
     plt.savefig("al_mc_"+title.replace(" ", "_").replace(",","")+".png")
@@ -572,6 +576,48 @@ if __name__ == "__main__":
     plot_func(spot_plot, prediction_data, "MC Predictions")
     plot_func(spot_plot, delta_data, "MC Delta")
     plot_func(spot_plot, gamma_data, "MC Gamma")
+
+    ### Plotting for random vs benchmark
+    random_data200000_5_500 = "Models5/random_data200000/random_data200000_5_500.h5"
+    random_data200000_5_500_dict = model_grads(random_data200000_5_500, input_good_easy, input_good_hard, some_option)
+
+    random_data200000_4_500 = "Models5/random_data200000/random_data200000_4_500.h5"
+    random_data200000_4_500_dict = model_grads(random_data200000_4_500, input_good_easy, input_good_hard, some_option)
+
+    benchmark_5_500 = "Models5/benchmark/benchmark_5_500.h5"
+    benchmark_5_500_dict = model_grads(benchmark_5_500, input_good_easy, input_good_hard, some_option)
+
+    benchmark_4_500 = "Models5/benchmark/benchmark_4_500.h5"
+    benchmark_4_500_dict = model_grads(benchmark_4_500, input_good_easy, input_good_hard, some_option)
+    
+    prediction_data = {
+        "random_data_5_500" : [random_data200000_5_500_dict["pred"][0], random_data200000_5_500_dict["pred"][1]],
+        "random_data_4_500" : [random_data200000_4_500_dict["pred"][0], random_data200000_4_500_dict["pred"][1]],
+        "benchmark_5_500" : [benchmark_5_500_dict["pred"][0], benchmark_5_500_dict["pred"][1]],
+        "benchmark_4_500" : [benchmark_4_500_dict["pred"][0], benchmark_4_500_dict["pred"][1]],
+        "Andersen Lake, benchmark" : [price_easy_al, price_hard_al]
+    }
+
+    delta_data = {
+        "random_data_5_500" : [random_data200000_5_500_dict["delta"][0], random_data200000_5_500_dict["delta"][1]],
+        "random_data_4_500" : [random_data200000_4_500_dict["delta"][0], random_data200000_4_500_dict["delta"][1]],
+        "benchmark_5_500" : [benchmark_5_500_dict["delta"][0], benchmark_5_500_dict["delta"][1]],
+        "benchmark_4_500" : [benchmark_4_500_dict["delta"][0], benchmark_4_500_dict["delta"][1]],
+        "Andersen Lake, benchmark" : [delta_easy_al, delta_hard_al]
+    }
+
+    gamma_data = {
+        "random_data_5_500" : [random_data200000_5_500_dict["gamma"][0], random_data200000_5_500_dict["gamma"][1]],
+        "random_data_4_500" : [random_data200000_4_500_dict["gamma"][0], random_data200000_4_500_dict["gamma"][1]],
+        "benchmark_5_500" : [benchmark_5_500_dict["gamma"][0], benchmark_5_500_dict["gamma"][1]],
+        "benchmark_4_500" : [benchmark_4_500_dict["gamma"][0], benchmark_4_500_dict["gamma"][1]],
+        "Andersen Lake, benchmark" : [gamma_easy_al, gamma_hard_al]
+    }
+
+    plot_func(spot_plot, prediction_data, "Predictions random vs benchmark")
+    plot_func(spot_plot, delta_data, "Delta random vs benchmark")
+    plot_func(spot_plot, gamma_data, "Gamma random vs benchmark")
+
 
     ### Plotting grads for best models
     mix_standardize_5_1000 = "Models5/mix_standardize/mix_standardize_5_1000.h5"
