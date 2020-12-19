@@ -103,13 +103,13 @@ if __name__ == '__main__':
     grid_compare_imp = np.loadtxt("Data/grid_imp.csv", delimiter = ",")
 
     ### Random
-    random_input = np.loadtxt("Data/random_input_78125.csv", delimiter = ",")
-    random_imp_vol = np.loadtxt("Data/random_imp_78125.csv", delimiter=",")
+    random_input = np.loadtxt("Data/random_input_200000.csv", delimiter = ",")
+    random_imp_vol = np.loadtxt("Data/random_imp_200000.csv", delimiter=",")
 
-    X_train_random = random_input[train_grid_compare_index, :]
-    X_test_random = random_input[test_grid_compare_index, :]
-    Y_train_random = random_imp_vol[train_grid_compare_index, :]
-    Y_test_random = random_imp_vol[test_grid_compare_index, :]
+    X_train_random = random_input[train_index, :]
+    X_test_random = random_input[test_index, :]
+    Y_train_random = random_imp_vol[train_index, :]
+    Y_test_random = random_imp_vol[test_index, :]
 
     X_train_grid_sobol = grid_compare_sobol_input[train_grid_compare_index, :]
     X_test_grid_sobol = grid_compare_sobol_input[test_grid_compare_index, :]
@@ -144,8 +144,8 @@ if __name__ == '__main__':
         itertools.repeat("high_data"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
-    random_data_list = list(zip(itertools.repeat(data_set_random), itertools.repeat("random_data2"), \
-        itertools.repeat("random_data2"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
+    random_data_list = list(zip(itertools.repeat(data_set_random), itertools.repeat("random_data200000"), \
+        itertools.repeat("random_data200000"), layer_neuron_combs[:, 0], layer_neuron_combs[:, 1], \
         itertools.repeat("normal"), itertools.repeat("False"), itertools.repeat("normalize"), itertools.repeat(False)))
 
     grid_sobol_list = list(zip(itertools.repeat(data_set_grid_sobol), itertools.repeat("grid_sobol"), \
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         [data_set_1, "same_param", "same_param", 20, 47, "normal", "False", "standardize", False]
     ]
 
-    server_list = standardize_mat_list + standardize_single_list
+    server_list = random_data_list
 
     if cpu_count() == 4:
         cpu_cores = 4

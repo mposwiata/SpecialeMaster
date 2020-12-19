@@ -97,7 +97,7 @@ def NNModelNext(data_set : list, folder : str, model_name : str, n_layers : int,
 
     if (model_name.find("mat") != -1):
         n_batch_size = 1024 * 5
-    elif (model_name.find("mat") != -1):
+    elif (model_name.find("single") != -1):
         n_batch_size = 1024 * 25
     elif np.shape(X_train)[0] > 140000:
         n_batch_size = 1024 * 2
