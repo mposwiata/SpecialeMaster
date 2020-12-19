@@ -108,10 +108,9 @@ if __name__ == "__main__":
     res = pool.starmap(mg.NN_mc_model_1, model_list, chunksize=1)
     pool.close()
 
-    """
-    random_input = np.loadtxt("Data/random_input_279936.csv", delimiter=",")
-    random_imp = np.loadtxt("Data/random_imp_279936.csv", delimiter=",")
-    test_index = np.random.choice(np.arange(len(random_imp)),size=30000, replace=False)
+    random_input = np.loadtxt("Data/random_input_78125.csv", delimiter=",")
+    random_imp = np.loadtxt("Data/random_imp_78125.csv", delimiter=",")
+    test_index = np.random.choice(np.arange(len(random_imp)),size=10000, replace=False)
 
     # 5, 100 models
     models = glob.glob("Models5/data_size/*/*.h5")
@@ -178,7 +177,7 @@ if __name__ == "__main__":
     plt.savefig("Data_size_mse.png")
     plt.close()
 
-    """
+    
 
     """
 
