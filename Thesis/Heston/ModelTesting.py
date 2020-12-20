@@ -18,7 +18,7 @@ from Thesis.misc import VanillaOptions as vo
 def hard_case() -> np.ndarray:
     # Model inputs for test
     # Forward
-    forward = 150
+    forward = 100
 
     # vol
     vol = 0.01
@@ -367,12 +367,18 @@ def model_test_set(model_list : list, X_test : np.ndarray, Y_test : np.ndarray, 
         if os.path.exists(model_folder+"/norm_feature.pkl"):
             norm_feature = joblib.load(model_folder+"norm_feature.pkl")
             x_test_loop = norm_feature.transform(x_test_loop)
+        normal_out = False
         if os.path.exists(model_folder+"/norm_labels.pkl"):
             norm_labels = joblib.load(model_folder+"norm_labels.pkl")
-            y_test_loop = norm_labels.transform(y_test_loop)
+            #y_test_loop = norm_labels.transform(y_test_loop)
+            normal_out = True
         name = model_string[model_string.rfind("/")+1:]
-        score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
-        mse(model.predict(x_test_loop), y_test_loop)
+        if normal_out:
+            predictions = norm_labels.inverse_transform(model.predict(x_test_loop))
+        else:
+            predictions = model.predict(x_test_loop)
+        #score = model.evaluate(x_test_loop, y_test_loop, verbose=0)
+        score = mse(predictions, y_test_loop)
         mse_list.append((name, score))
     
     return mse_list
@@ -477,6 +483,45 @@ if __name__ == "__main__":
     with open("imp_mse.pkl", "wb") as fp:   #Pickling
         pickle.dump(imp_mse, fp)
 
+    with open("imp_mse.pkl", "rb") as fp:   #Pickling
+        imp_mse = pickle.load(fp)
+
+    with open("price_mse.pkl", "rb") as fp:   #Pickling
+        price_mse = pickle.load(fp)
+
+    evaluation_first_list = []
+    for some_list in price_mse:
+        evaluation_first_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
+        )
+    
+    ### Finding best models per group
+    evaluation_first_list.sort(key = lambda x: x[0])
+    group_by_model = itertools.groupby(evaluation_first_list, key = lambda x: x[0])
+
+    top_first_models_list = []
+    for key, group in group_by_model:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_first_models_list.append(some_list[0])
+
+    ### Finding best models per setup
+    evaluation_setup_list = []
+    for some_list in price_mse:
+        evaluation_setup_list.append(
+            [some_list[0][:some_list[0].rfind("_")-2], some_list[0][some_list[0].rfind("_")-1:], some_list[1]]
+        )
+    evaluation_setup_list.sort(key = lambda x: x[1])
+    group_by_network = itertools.groupby(evaluation_setup_list, key = lambda x: x[1])
+
+    top_first_network_list = []
+    for key, group in group_by_network:
+        some_list = list(group)
+        some_list.sort(key = lambda x: x[2])
+        top_first_network_list.append(some_list[0])
+
+    top_first_network_list.sort(key = lambda x: x[1])
+
     ### Random vs sobol vs grid
     data_type_model_keys = [
         "random_data2",
@@ -498,6 +543,12 @@ if __name__ == "__main__":
     data_type_mse = model_test_set(data_type_models, random_input[random_test_index, :], random_imp[random_test_index, :])
     data_type_mse_sobol = model_test_set(data_type_models, model_input[random_test_index, :], imp_vol[random_test_index, :])
     data_type_mse_grid = model_test_set(data_type_models, grid_input[random_test_index, :], grid_imp[random_test_index, :])
+    data_type_mse.sort(key = lambda x: x[1])
+    data_type_mse_sobol.sort(key = lambda x: x[1])
+    data_type_mse_grid.sort(key = lambda x: x[1])
+    generate_bar_error(data_type_mse[:15], "Model input on random test set")
+    generate_bar_error(data_type_mse_sobol[:15], "Model input on sobol test set")
+    generate_bar_error(data_type_mse_grid[:15], "Model input on grid test set")
 
     ### 200K
     ### Random vs sobol vs grid
@@ -517,7 +568,6 @@ if __name__ == "__main__":
     data_type_200_random_mse = model_test_set(data_type_models, random_input_200[test_index, :], random_imp_200[test_index, :])
     data_type_200_mse.sort(key = lambda x: x[1])
     data_type_200_random_mse.sort(key = lambda x: x[1])
-    generate_bar_error(data_type_200_mse, "Mickey")
 
     combined_list = []
     first_run_keys = [
@@ -575,7 +625,7 @@ if __name__ == "__main__":
     sobol_models_mse_grid_inp = model_test_set(sobol_models, X_test_sobol_grid, Y_test_sobol_grid)
     grid_models_mse_grid_inp.sort(key = lambda x: x[1])
     sobol_models_mse_grid_inp.sort(key = lambda x: x[1])
-    generate_bar_error(grid_models_mse_grid_inp[:5]+sobol_models_mse_grid_inp[:5], "Sobol vs grid on grid test set")
+    generate_bar_error(grid_models_mse_grid_inp[:5]+sobol_models_mse_grid_inp[:5], "Model input generation")
 
     combined_mse = model_test_set(combined_list, X_test, Y_test, Y_test_price)
     for i in range(20):
@@ -635,19 +685,26 @@ if __name__ == "__main__":
 
     models_for_evaluation = [
         "mix_standardize_5_1000.h5",
-        "standardize_5_100.h5",
+        "output_scaling_5_100.h5",
         "standardize_5_500.h5",
         "mix_3_1000.h5",
-        "tanh_standardize_5_50.h5",
+        "mix_standardize_2_500.h5",
         "mix_standardize_1_500.h5",
-        "tanh_standardize_1_50.h5"
+        "tanh_standardize_1_50.h5",
+        "output_scaling_4_50.h5"
     ]
-    generate_plots(models_for_evaluation, "Top implied volatility models")
+    model_testing2(models_for_evaluation, "Top implied volatility models")
+    model_top_list = []
+    for some_model in models_for_evaluation:
+        model_top_list.append(' '.join(glob.glob("Models5/*/"+some_model)))
 
-    price_plot = ["price_output_normalize_5_1000.h5"]
+    top_mse = model_test_set(model_top_list, X_test, Y_test, Y_test_price)
+    generate_bar_error(top_mse, "Top implied volatility models")
+
+    price_plot = ["price_standardize_4_1000.h5"]
     generate_plots(price_plot, "Best price model")
     
-    imp_plot = ["mix_standardize_5_1000.h5"]
+    imp_plot = ["standardize_5_1000.h5"]
     generate_plots(imp_plot, "Best implied volatility model")
 
     ### Finding best models per setup, prices
@@ -678,7 +735,7 @@ if __name__ == "__main__":
 
     price_models = []
     imp_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (price_imp_dict["price"].count(some_list[0][:some_list[0].rfind("_")-2]) > 0):
             price_models.append(some_list)
         elif (price_imp_dict["imp"].count(some_list[0][:some_list[0].rfind("_")-2]) > 0):
@@ -696,7 +753,7 @@ if __name__ == "__main__":
     ### Data filtering
     benchmark_models = []
     benchmark_include_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "benchmark_include"):
@@ -714,7 +771,7 @@ if __name__ == "__main__":
     benchmark_models = []
     standardize_models = []
     non_input_scaling_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
@@ -736,7 +793,7 @@ if __name__ == "__main__":
     benchmark_models = []
     output_scaling_models = []
     output_scaling_normalize_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "output_scaling"):
@@ -758,7 +815,7 @@ if __name__ == "__main__":
     benchmark_models = []
     tanh_models = []
     mix_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "benchmark"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "tanh"):
@@ -780,7 +837,7 @@ if __name__ == "__main__":
     tanh_standard_models = []
     mix_standard_models = []
     standardize_models = []
-    for some_list in combined_mse:
+    for some_list in price_mse + imp_mse:
         if (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
             standardize_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "mix_standardize"):
@@ -842,10 +899,13 @@ if __name__ == "__main__":
     model_testing2(data_no_models, "Data size")
 
     ### Standardize vs mat vs single
+    standardize_mat_model = glob.glob("Models5/*/standardize_mat*.h5")
+    standardize_single_model = glob.glob("Models5/*/standardize_single*.h5")
+    mat_single_mse = model_test_set(standardize_mat_model+standardize_single_model, X_test, Y_test, Y_test_price)
     benchmark_models = []
     mat_models = []
     single_models = []
-    for some_list in combined_mse:
+    for some_list in mat_single_mse+imp_models:
         if (some_list[0][:some_list[0].rfind("_")-2] == "standardize"):
             benchmark_models.append(some_list)
         elif (some_list[0][:some_list[0].rfind("_")-2] == "standardize_mat"):
@@ -866,10 +926,21 @@ if __name__ == "__main__":
 
     ### Monte Carlo
     mc = [
-        "mc_10", "mc_100", "mc_1000", "mc_10000", "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price",
-        "mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat",
-        "mc_1_single", "mc_10_single", "mc_100_single", "mc_1000_single", "mc_10000_single"
+        #"mc_10", "mc_100", "mc_1000", "mc_10000", 
+        "mc_1_price", "mc_10_price", "mc_100_price", "mc_1000_price", "mc_10000_price"#,
+        #"mc_1_mat", "mc_10_mat", "mc_100_mat", "mc_1000_mat", "mc_10000_mat",
+        #"mc_1_single", "mc_10_single", "mc_100_single", "mc_1000_single", "mc_10000_single"
     ]
+
+    top_mc_models = [
+        "Models5/mc_1_mat/mc_1_mat_4_500.h5", "Models5/mc_1_single/mc_1_single_5_1000.h5", "Models5/mc_1_price/mc_1_price_4_100.h5",
+        "Models5/mc_10_mat/mc_10_mat_1_1000.h5", "Models5/mc_10_single/mc_10_single_1_50.h5", "Models5/mc_10_price/mc_10_price_5_100.h5", "Models5/mc_10/mc_10_4_500.h5",
+        "Models5/mc_100_mat/mc_100_mat_1_1000.h5", "Models5/mc_100_single/mc_100_single_1_100.h5", "Models5/mc_100_price/mc_100_price_4_500.h5", "Models5/mc_100/mc_100_4_1000.h5",
+        "Models5/mc_1000_mat/mc_1000_mat_1_500.h5", "Models5/mc_1000_single/mc_1000_single_1_100.h5", "Models5/mc_1000_price/mc_1000_price_4_1000.h5", "Models5/mc_1000/mc_1000_5_100.h5",
+        "Models5/mc_10000_mat/mc_10000_mat_2_50.h5", "Models5/mc_10000_single/mc_10000_single_1_50.h5", "Models5/mc_10000_price/mc_10000_price_4_500.h5", "Models5/mc_10000/mc_10000_5_1000.h5"
+    ]
+
+    mc_mse2 = model_test_set(top_mc_models, X_test, Y_test, Y_test_price)
 
     mc_list = []
     for key in mc:
@@ -877,7 +948,7 @@ if __name__ == "__main__":
 
     mc_list = [item for sublist in mc_list for item in sublist]
 
-    mc_mse = model_test_set(mc_list, X_test, Y_test_old, Y_test_price_old)
+    mc_price_mse = model_test_set(mc_list, X_test, Y_test_old, Y_test_price_old)
 
     mc_mse.sort(key = lambda x: -x[1])
     with open("mc_mse_final.pkl", "wb") as fp:   #Pickling

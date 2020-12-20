@@ -33,7 +33,7 @@ def lr_schedule(epoch, rate):
 
     return lr
 
-def plot_func(x_axis : np.array, plot_data : dict, title : str):
+def plot_func(x_axis : np.array, plot_data : dict,  title : str):
     fig = plt.figure(figsize=(20, 10), dpi = 200)
     easy_ax = plt.subplot(121)
     hard_ax = plt.subplot(122)
@@ -52,8 +52,9 @@ def plot_func(x_axis : np.array, plot_data : dict, title : str):
     hard_ax.tick_params(axis = "both", labelsize=15)
     easy_ax.set_xlabel("Forward", fontsize=15)
     hard_ax.set_xlabel("Forward", fontsize=15)
-    easy_ax.set_ylabel("Price", fontsize=15)
-    hard_ax.set_ylabel("Price", fontsize=15)
+    if (title.find("Predictions") != -1) or (title.find("Training") != -1):
+        easy_ax.set_ylabel("Price", fontsize=15)
+        hard_ax.set_ylabel("Price", fontsize=15)
     easy_ax.set_title("Low volatility", fontsize = 20)
     hard_ax.set_title("High volatilty", fontsize = 20)
     fig.subplots_adjust(top=0.9, left=0.1, right=0.95, bottom=0.15)
@@ -102,20 +103,20 @@ def generate_predictions(test_x, model, norm_feature, norm_labels):
     inp_tensor = tf.convert_to_tensor(test_x)
 
     ### Andersen Lake model
-    with tf.GradientTape() as tape:
+    with tf.GradientTape(persistent = True) as tape:
         tape.watch(inp_tensor)
-        with tf.GradientTape() as tape2:
+        with tf.GradientTape(persistent = True) as tape2:
             tape2.watch(inp_tensor)
             predict = model(inp_tensor)
-        grads = tape2.gradient(predict, inp_tensor)
+        grads = tape2.gradient(predict, inp_tensor)[:, 0]
 
-    grads2 = tape.gradient(grads, inp_tensor) * (norm_labels.data_max_ - norm_labels.data_min_) / (np.sqrt(norm_feature.var_[0]) ** 2)
+    grads2 = tape.gradient(grads, inp_tensor)[:, 0] * (norm_labels.data_max_ - norm_labels.data_min_) / (np.sqrt(norm_feature.var_[0]) ** 2)
 
     grads = grads * (norm_labels.data_max_ - norm_labels.data_min_) / np.sqrt(norm_feature.var_[0])
 
     predict = norm_labels.inverse_transform(predict)
 
-    return predict, grads, grads2
+    return predict, grads.numpy(), grads2.numpy()
 
 def model_grads(model_string : str, easy_case : np.ndarray, hard_case : np.ndarray, option : vo.VanillaOption) -> dict:
     model = load_model(model_string)
@@ -292,34 +293,30 @@ if __name__ == "__main__":
     Y_mc2 = norm_labels_mc2.fit_transform(output_high_vol)
 
     #bs_model1 = load_model("Models5/BS/bs_model1.h5")
-    single_model_start = time.time()
     loss_bs_model1, bs_model1 = generate_network(X, Y_bs1)
-    single_model_stop = time.time()
-    bs_model1.save("Models5/BS/bs_model1.h5")
+    #bs_model1.save("Models5/BS/bs_model1.h5")
     #mc_model1 = load_model("Models5/BS/mc_model1.h5")
     loss_mc_model1, mc_model1 = generate_network(X, Y_mc1)
-    mc_model1.save("Models5/BS/mc_model1.h5")
+    #mc_model1.save("Models5/BS/mc_model1.h5")
     #bs_model2 = load_model("Models5/BS/bs_model2.h5")
     loss_bs_model2, bs_model2 = generate_network(X, Y_bs2)
-    bs_model2.save("Models5/BS/bs_model2.h5")
+    #bs_model2.save("Models5/BS/bs_model2.h5")
     #mc_model2 = load_model("Models5/BS/mc_model2.h5")
     loss_mc_model2, mc_model2 = generate_network(X, Y_mc2)
-    mc_model2.save("Models5/BS/mc_model2.h5")
+    #mc_model2.save("Models5/BS/mc_model2.h5")
 
     norm_labels_multi_bs1 = MinMaxScaler()
     Y_multi_bs1 = norm_labels_multi_bs1.fit_transform(output_multi_bs)
     norm_labels_multi_mc1 = MinMaxScaler()
     Y_multi_mc1 = norm_labels_multi_mc1.fit_transform(output_multi)
 
-    multi_model_start = time.time()
     #bs_multi_model1 = load_model("Models5/BS/bs_multi_model1.h5")
     loss_bs_multi_model1, bs_multi_model1 = generate_multi_network(X_multi, Y_multi_bs1)
-    multi_model_stop = time.time()
-    bs_multi_model1.save("Models5/BS/bs_multi_model1.h5")
+    #bs_multi_model1.save("Models5/BS/bs_multi_model1.h5")
 
     #mc_multi_model1 = load_model("Models5/BS/mc_multi_model1.h5")
     loss_mc_multi_model1, mc_multi_model1 = generate_multi_network(X_multi, Y_multi_mc1)
-    mc_multi_model1.save("Models5/BS/mc_multi_model1.h5")
+    #mc_multi_model1.save("Models5/BS/mc_multi_model1.h5")
 
     ### Model testing
     spot_plot = np.linspace(start = 75, stop = 125, num = 200)
@@ -365,7 +362,7 @@ if __name__ == "__main__":
         i += 1
 
     prediction_data = {
-        "Black, ANN" : [bs_predict1, bs_predict2],
+        "Black" : [bs_predict1, bs_predict2],
         "Monte Carlo" : [mc_predict1, mc_predict2],
         "Black, multi" : [bs_multi_predict1, bs_multi_predict2],
         "Monte Carlo, multi" : [mc_multi_predict1, mc_multi_predict2],
@@ -373,18 +370,18 @@ if __name__ == "__main__":
     }
 
     delta_data = {
-        "Black, ANN" : [bs_grads1, bs_grads2],
+        "Black" : [bs_grads1, bs_grads2],
         "Monte Carlo" : [mc_grads1, mc_grads2],
-        "Black, multi" : [bs_multi_grads1[:,0], bs_multi_grads2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1[:,0], mc_multi_grads2[:,0]],
+        "Black, multi" : [bs_multi_grads1, bs_multi_grads2],
+        "Monte Carlo, multi" : [mc_multi_grads1, mc_multi_grads2],
         "Black 76" : [delta_low, delta_high]
     }
 
     gamma_data = {
-        "Black, ANN" : [bs_grads1_2, bs_grads2_2],
+        "Black" : [bs_grads1_2, bs_grads2_2],
         "Monte Carlo" : [mc_grads1_2, mc_grads2_2],
-        "Black, multi" : [bs_multi_grads1_2[:,0], bs_multi_grads2_2[:,0]],
-        "Monte Carlo, multi" : [mc_multi_grads1_2[:,0], mc_multi_grads2_2[:,0]],
+        "Black, multi" : [bs_multi_grads1_2, bs_multi_grads2_2],
+        "Monte Carlo, multi" : [mc_multi_grads1_2, mc_multi_grads2_2],
         "Black 76" : [gamma_low, gamma_high]
     }
 

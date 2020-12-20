@@ -695,22 +695,22 @@ if __name__ == "__main__":
     standardize_mat_5_100 = "Models5/standardize_mat/standardize_mat_5_100.h5"
     standardize_mat_5_100_dict = model_grads(standardize_mat_5_100, input_good_easy, input_good_hard, some_option)
 
-    standardize_mat_4_100 = "Models5/standardize_mat/standardize_mat_4_100.h5"
-    standardize_mat_4_100_dict = model_grads(standardize_mat_4_100, input_good_easy, input_good_hard, some_option)
+    standardize_mat_4_500 = "Models5/standardize_mat/standardize_mat_4_500.h5"
+    standardize_mat_4_500_dict = model_grads(standardize_mat_4_500, input_good_easy, input_good_hard, some_option)
 
-    standardize_single_5_100 = "Models5/standardize_single/standardize_single_5_100.h5"
-    standardize_single_5_100_dict = model_grads(standardize_single_5_100, input_good_easy, input_good_hard, some_option)
+    standardize_single_4_1000 = "Models5/standardize_single/standardize_single_4_1000.h5"
+    standardize_single_4_1000_dict = model_grads(standardize_single_4_1000, input_good_easy, input_good_hard, some_option)
 
-    standardize_single_4_100 = "Models5/standardize_single/standardize_single_4_100.h5"
-    standardize_single_4_100_dict = model_grads(standardize_single_4_100, input_good_easy, input_good_hard, some_option)
+    standardize_single_5_1000 = "Models5/standardize_single/standardize_single_5_1000.h5"
+    standardize_single_5_1000_dict = model_grads(standardize_single_5_1000, input_good_easy, input_good_hard, some_option)
 
     prediction_data = {
         "standardize_5_1000" : [standardize_5_1000_dict["pred"][0], standardize_5_1000_dict["pred"][1]],
         "standardize_5_500" : [standardize_5_500_dict["pred"][0], standardize_5_500_dict["pred"][1]],
         "standardize_mat_5_100" : [standardize_mat_5_100_dict["pred"][0], standardize_mat_5_100_dict["pred"][1]],
-        "standardize_mat_4_100" : [standardize_mat_4_100_dict["pred"][0], standardize_mat_4_100_dict["pred"][1]],
-        "standardize_single_5_100" : [standardize_single_5_100_dict["pred"][0], standardize_single_5_100_dict["pred"][1]],
-        "standardize_single_4_100" : [standardize_single_4_100_dict["pred"][0], standardize_single_4_100_dict["pred"][1]],
+        "standardize_mat_4_500" : [standardize_mat_4_500_dict["pred"][0], standardize_mat_4_500_dict["pred"][1]],
+        "standardize_single_4_1000" : [standardize_single_4_1000_dict["pred"][0], standardize_single_4_1000_dict["pred"][1]],
+        "standardize_single_5_1000" : [standardize_single_5_1000_dict["pred"][0], standardize_single_5_1000_dict["pred"][1]],
         "Andersen Lake, benchmark" : [price_easy_al, price_hard_al]
     }
 
@@ -718,9 +718,9 @@ if __name__ == "__main__":
         "standardize_5_1000" : [standardize_5_1000_dict["delta"][0], standardize_5_1000_dict["delta"][1]],
         "standardize_5_500" : [standardize_5_500_dict["delta"][0], standardize_5_500_dict["delta"][1]],
         "standardize_mat_5_100" : [standardize_mat_5_100_dict["delta"][0], standardize_mat_5_100_dict["delta"][1]],
-        "standardize_mat_4_100" : [standardize_mat_4_100_dict["delta"][0], standardize_mat_4_100_dict["delta"][1]],
+        "standardize_mat_4_500" : [standardize_mat_4_500_dict["delta"][0], standardize_mat_4_500_dict["delta"][1]],
         "standardize_single_5_100" : [standardize_single_5_100_dict["delta"][0], standardize_single_5_100_dict["delta"][1]],
-        "standardize_single_4_100" : [standardize_single_4_100_dict["delta"][0], standardize_single_4_100_dict["delta"][1]],
+        "standardize_single_5_1000" : [standardize_single_5_1000_dict["delta"][0], standardize_single_5_1000_dict["delta"][1]],
         "Andersen Lake, benchmark" : [delta_easy_al, delta_hard_al]
     }
 
@@ -728,9 +728,9 @@ if __name__ == "__main__":
         "standardize_5_1000" : [standardize_5_1000_dict["gamma"][0], standardize_5_1000_dict["gamma"][1]],
         "standardize_5_500" : [standardize_5_500_dict["gamma"][0], standardize_5_500_dict["gamma"][1]],
         "standardize_mat_5_100" : [standardize_mat_5_100_dict["gamma"][0], standardize_mat_5_100_dict["gamma"][1]],
-        "standardize_mat_4_100" : [standardize_mat_4_100_dict["gamma"][0], standardize_mat_4_100_dict["gamma"][1]],
-        "standardize_single_5_100" : [standardize_single_5_100_dict["gamma"][0], standardize_single_5_100_dict["gamma"][1]],
-        "standardize_single_4_100" : [standardize_single_4_100_dict["gamma"][0], standardize_single_4_100_dict["gamma"][1]],
+        "standardize_mat_4_500" : [standardize_mat_4_500_dict["gamma"][0], standardize_mat_4_500_dict["gamma"][1]],
+        "standardize_single_4_1000" : [standardize_single_4_1000_dict["gamma"][0], standardize_single_4_1000_dict["gamma"][1]],
+        "standardize_single_5_1000" : [standardize_single_5_1000_dict["gamma"][0], standardize_single_5_1000_dict["gamma"][1]],
         "Andersen Lake, benchmark" : [gamma_easy_al, gamma_hard_al]
     }
 
@@ -954,28 +954,53 @@ if __name__ == "__main__":
         top_first_models_list.append(some_list[0])
 
     top_models = [
-        "mc_10000_mat_2_50.h5", "mc_10000_single_1_100.h5", "mc_1000_mat_1_500.h5", "mc_10000_price_4_500.h5",
-        "mix_standardize_5_1000.h5", "standardize_mat_5_100.h5", "standardize_mat_5_100.h5", "standardize_single_4_100.h5",
-        "price_output_normalize_4_50.h5"
+        "mc_10000_mat_2_50.h5",
+        "mix_standardize_5_1000.h5",
+        "output_scaling_5_100.h5",
+        "price_standardize_4_1000.h5"
+    ]
+
+    models_for_evaluation = [
+        "mix_standardize_5_1000.h5",
+        "output_scaling_5_100.h5",
+        "standardize_5_500.h5",
+        "mix_3_1000.h5",
+        "mix_standardize_2_500.h5",
+        "mix_standardize_1_500.h5",
+        "tanh_standardize_1_50.h5",
+        "output_scaling_4_50.h5"
+    ]
+
+    price_models = [
+        "price_standardize_4_1000.h5",
+        "price_standardize_3_1000.h5",
+        "price_output_standardize_5_500.h5",
+        "price_3_1000.h5",
+        "price_standardize_5_100.h5",
+        "price_output_standardize_5_100.h5"
     ]
 
     pred_dict = {}
     delta_dict = {}
     gamma_dict = {}
-    for some_model in top_models:
-        try:
-            some_model_string = ' '.join(glob.glob("Models5/*/"+some_model))
-            some_dict = model_grads(some_model_string, input_good_easy, input_good_hard, some_option)
-            pred_dict[some_model[:-3]] = [some_dict["pred"][0], some_dict["pred"][1]]
-            delta_dict[some_model[:-3]] = [some_dict["delta"][0], some_dict["delta"][1]]
-            gamma_dict[some_model[:-3]] = [some_dict["gamma"][0], some_dict["gamma"][1]]
-        except:
-            print(some_model)
+    for some_model in price_models:
+        some_model_string = ' '.join(glob.glob("Models5/*/"+some_model))
+        some_dict = model_grads(some_model_string, input_good_easy, input_good_hard, some_option)
+        pred_dict[some_model[:-3]] = [some_dict["pred"][0], some_dict["pred"][1]]
+        delta_dict[some_model[:-3]] = [some_dict["delta"][0], some_dict["delta"][1]]
+        gamma_dict[some_model[:-3]] = [some_dict["gamma"][0], some_dict["gamma"][1]]
+
+    timing_results = []
+    for some_model in price_models+models_for_evaluation:
+        some_model_string = ' '.join(glob.glob("Models5/*/"+some_model))
+        some_time = timing(some_model_string, input_good_easy, input_good_hard)
+        name = some_model[some_model.rfind("/")+1:]
+        timing_results.append([name, some_time])
 
     pred_dict["Andersen Lake, benchmark"] = [AL_greeks["price"][0], AL_greeks["price"][1]]
     delta_dict["Andersen Lake, benchmark"] = [AL_greeks["delta"][0], AL_greeks["delta"][1]]
     gamma_dict["Andersen Lake, benchmark"] = [AL_greeks["gamma"][0], AL_greeks["gamma"][1]] 
 
-    plot_func(spot_plot, pred_dict, "Al vs MC model predictions")
-    plot_func(spot_plot, delta_dict, "Al vs MC model delta")
-    plot_func(spot_plot, gamma_dict, "Al vs MC model gamma")
+    plot_func(spot_plot, pred_dict, "Top models predictions")
+    plot_func(spot_plot, delta_dict, "Top models delta")
+    plot_func(spot_plot, gamma_dict, "Top models gamma")
