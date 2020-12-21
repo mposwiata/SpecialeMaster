@@ -18,7 +18,7 @@ Thesis/Heston/MonteCarlo.py - methods for the Monte Carlo simulations under Hest
 
 Thesis/Heston/SimpleExample.py - a simple example using the Andersen & Lake method
 
-The remaining scripts in the Heston folder are meassy, and primarily just a bunch of function callings.
+The remaining scripts in the Heston folder are messy, and primarily just a bunch of function callings.
 
 
 Thesis/BlackScholes/BlackScholes.py - the BlackScholes class object
